@@ -1,1 +1,1 @@
-# Nugget Chat - Let's Chat and Play
+# Nugget Chat Android App - Let's Chat and Play
