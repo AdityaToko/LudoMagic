@@ -15,6 +15,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:id="@+id/pic"
+            android:background="@drawable/circular_image"
             android:src="@drawable/nuggeticon" />
 
         <TextView

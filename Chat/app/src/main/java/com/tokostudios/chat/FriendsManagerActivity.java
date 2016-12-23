@@ -53,25 +53,6 @@ public class FriendsManagerActivity extends AppCompatActivity{
         ShareLinkContent linkContent = new ShareLinkContent.Builder()
                 .setContentTitle("....")
                 .build();
-
-        /*SendButton sendButton = (SendButton)findViewById(R.id.postMessagetoFriends);
-        sendButton.setShareContent(linkContent);
-        sendButton.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
-            @Override
-            public void onSuccess(Sharer.Result result) {
-                Log.d(LOG_TAG, "Success " + result.toString());
-            }
-
-            @Override
-            public void onCancel() {
-                Log.d(LOG_TAG, "Cancelled ");
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                Log.d(LOG_TAG, "Error ", error);
-            }
-        });*/
     }
 
     private void getUserFriends(String id) {
