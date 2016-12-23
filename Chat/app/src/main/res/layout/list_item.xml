@@ -11,17 +11,21 @@
         android:layout_margin="5dp"
         android:weightSum="3">
 
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/pic"
-            android:background="@drawable/circular_image"
-            android:src="@drawable/nuggeticon" />
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/profile_image"
+            android:layout_width="76dp"
+            android:layout_height="66dp"
+            android:src="@drawable/nuggeticon"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#FF000000"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/name"
+            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:text="User name"
             android:textSize="18dp"
             android:layout_gravity="center"/>

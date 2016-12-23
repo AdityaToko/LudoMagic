@@ -60,7 +60,7 @@ public class UserFriendsAdapter extends BaseAdapter {
         viewHolder = new ViewHolder();
 
         viewHolder.title = (TextView) view.findViewById(R.id.name);
-        viewHolder.imageView = (ImageView) view.findViewById(R.id.pic);
+        viewHolder.imageView = (ImageView) view.findViewById(R.id.profile_image);
 
         final UserDetails data = userDetails.get(i);
         viewHolder.title.setText(data.getName());
