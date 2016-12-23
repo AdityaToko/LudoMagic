@@ -1,17 +1,22 @@
 package com.tokostudios.chat;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.share.model.ShareLinkContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +36,7 @@ public class FriendsManagerActivity extends AppCompatActivity{
     // Pop up
     ContentResolver resolver;
     UserFriendsAdapter adapter;
+    CallbackManager callbackManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,10 +44,34 @@ public class FriendsManagerActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_friendsmanager);
         getUserFriends(SharedPreferenceUtility.getFacebookUserId(FriendsManagerActivity.this));
+        callbackManager = CallbackManager.Factory.create();
 
         selectUsers = new ArrayList<>();
         resolver = this.getContentResolver();
         listView = (ListView) findViewById(R.id.contacts_list);
+
+        ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                .setContentTitle("....")
+                .build();
+
+        /*SendButton sendButton = (SendButton)findViewById(R.id.postMessagetoFriends);
+        sendButton.setShareContent(linkContent);
+        sendButton.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
+            @Override
+            public void onSuccess(Sharer.Result result) {
+                Log.d(LOG_TAG, "Success " + result.toString());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(LOG_TAG, "Cancelled ");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(LOG_TAG, "Error ", error);
+            }
+        });*/
     }
 
     private void getUserFriends(String id) {
@@ -74,5 +104,33 @@ public class FriendsManagerActivity extends AppCompatActivity{
                     }
                 }
         ).executeAsync();
+    }
+
+    public void sendMessagetoFriends(View v) {
+        Log.d(LOG_TAG, "Message to friends called");
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setPackage("com.facebook.orca");
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play YO!");
+        try {
+            startActivity(intent);
+        }
+        catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this,"You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void sendShareIntent(View v) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play YO!");
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 }

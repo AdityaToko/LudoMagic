@@ -7,6 +7,24 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="100dp"
         android:id="@+id/contacts_list"/>
+
+    <Button
+        android:id="@+id/send_share_intent"
+        android:layout_alignParentBottom="true"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:onClick="sendShareIntent"
+        android:text="Send message to other friends"/>
+
+    <Button
+        android:id="@+id/postMessagetoFBFriends"
+        android:layout_above="@id/send_share_intent"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:onClick="sendMessagetoFriends"
+        android:text="Send Message to Facebook Friends"/>
 
 </RelativeLayout>
