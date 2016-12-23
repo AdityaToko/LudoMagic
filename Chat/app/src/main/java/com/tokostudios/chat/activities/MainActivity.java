@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.tokostudios.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,8 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.tokostudios.chat.R;
+import com.tokostudios.chat.utils.SharedPreferenceUtility;
 
 import org.json.JSONException;
 import org.json.JSONObject;
