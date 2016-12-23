@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         if (AccessToken.getCurrentAccessToken() != null) {
             Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity.class);
             startActivity(intent);
+            finish();
         }
         setContentView(R.layout.activity_main);
         callbackManager = CallbackManager.Factory.create();
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
                         Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity.class);
                         startActivity(intent);
+                        finish();
                     }
                 });
                 Bundle parameters = new Bundle();
