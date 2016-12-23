@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.tokostudios.chat.activities;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -17,6 +17,10 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.share.model.ShareLinkContent;
+import com.tokostudios.chat.R;
+import com.tokostudios.chat.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.datamodel.UserDetails;
+import com.tokostudios.chat.UserFriendsAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;

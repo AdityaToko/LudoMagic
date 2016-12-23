@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.tokostudios.chat.datamodel;
 
 public class UserDetails {
     String name;

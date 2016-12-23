@@ -1,7 +1,9 @@
-package com.tokostudios.chat;
+package com.tokostudios.chat.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.tokostudios.chat.BuildConfig;
 
 public class SharedPreferenceUtility {
     private static final String PREF_FILE_NAME = BuildConfig.APPLICATION_ID + ".common.pref";

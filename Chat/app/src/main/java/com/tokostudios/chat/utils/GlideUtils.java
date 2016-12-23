@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.tokostudios.chat.utils;
 
 import android.content.Context;
 import android.util.Log;
@@ -12,6 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.tokostudios.chat.BuildConfig;
 
 public class GlideUtils {
     private static final String LOG_TAG = GlideUtils.class.getSimpleName();
