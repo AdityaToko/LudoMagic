@@ -1,27 +1,42 @@
 package com.tokostudios.chat;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.activities.FriendsManagerActivity;
+import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
 import com.tokostudios.chat.webRtcClient.RtcListener;
 import com.tokostudios.chat.webRtcClient.WebRtcClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChatActivity extends AppCompatActivity implements RtcListener {
 
@@ -52,7 +67,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     private Button endCall;
     private String targetId;
     private User user1;
-
+    ArrayList<UserDetails> selectUsers = new ArrayList<>();
+    List<UserDetails> temp;
+    UserFriendsAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +85,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         setContentView(R.layout.activity_chat);
         button = (Button) findViewById(R.id.start_call_button);
         endCall = (Button) findViewById(R.id.end_call);
-
+        getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
 
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
@@ -76,14 +93,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         rtcView.setKeepScreenOn(true);
         String userId  = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
         String username = SharedPreferenceUtility.getFacebookUserName(ChatActivity.this);
-       /* if("".equals(userId) || userId == null) {
-            user1 = new User(WebRtcClient.getRandomString(), WebRtcClient.getRandomString());
-            SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("userId", user1.getId());
-            editor.putString("username", user1.getName());
-            editor.apply();
-        }*/
+        Log.e(LOG_TAG, "User is : " + userId + " " + username );
         user1 = new User(userId, username);
 
         VideoRendererGui.setView(rtcView, new Runnable() {
@@ -102,8 +112,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                webRtcClient.setInitiator(true);
-                webRtcClient.createOffer(webRtcClient.peers.get(0));
+                showFriendsDialog();
+               // webRtcClient.setInitiator(true);
+               // webRtcClient.createOffer(webRtcClient.peers.get(0));
             }
         });
 
@@ -116,7 +127,10 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         });
 
     }
-
+    private void startCall(){
+        webRtcClient.setInitiator(true);
+        webRtcClient.createOffer(webRtcClient.peers.get(0));
+    }
     private void init(User user1, String targetId) {
         Point displaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(displaySize);
@@ -126,7 +140,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
 
         webRtcClient = new WebRtcClient(this, socketAddress, params,
                 VideoRendererGui.getEGLContext(), user1, targetId);
-
+        //startCall();
     }
 
     public void startCam() {
@@ -192,5 +206,64 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         if (webRtcClient != null) {
             webRtcClient.onDestroy();
         }
+    }
+
+    private void showFriendsDialog(){
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
+        builderSingle.setTitle("Choose a friend");
+
+        builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                UserDetails user = (UserDetails) adapter.getItem(which);
+                String userId = user.getUserId();
+                webRtcClient.userId2 = userId;
+                webRtcClient.setInitiator(true);
+                if(webRtcClient.peers.isEmpty()){
+                    webRtcClient.addPeer(user1, new Friend(user1,new User(userId,"abc"),"abcd"));
+                }
+                webRtcClient.createOffer(webRtcClient.peers.get(0));
+            }
+        });
+        builderSingle.show();
+    }
+
+    private void getUserFriends() {
+        new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/me/friends",
+                null,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+                        Log.d(LOG_TAG, response.toString());
+                        JSONObject object = response.getJSONObject();
+                        try {
+                            for (int i = 0; i < object.getJSONArray("data").length(); i++) {
+                                JSONObject dataObject = (object.getJSONArray("data")).getJSONObject(i);
+                                Log.d(LOG_TAG, dataObject.toString());
+                                String name = dataObject.getString("name");
+                                String userId = dataObject.getString("id");
+                                UserDetails userData = new UserDetails();
+                                userData.setUserId(userId);
+                                userData.setName(name);
+                                selectUsers.add(userData);
+                                Log.d(LOG_TAG, "Values " + name + "  " + userId);
+                            }
+                            adapter = new UserFriendsAdapter(selectUsers, ChatActivity.this);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        ).executeAsync();
     }
 }

@@ -35,7 +35,7 @@ public class SharedPreferenceUtility {
 
     public static void setFacebookUserName(String facebookUserName, Context context) {
         SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FACEBOOK_USER_ID, facebookUserName);
+        editor.putString(FACEBOOK_USER_NAME, facebookUserName);
         editor.apply();
     }
 

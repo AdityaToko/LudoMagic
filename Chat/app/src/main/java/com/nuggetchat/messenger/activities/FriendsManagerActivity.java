@@ -32,14 +32,16 @@ import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.ChatActivity;
+import com.tokostudios.chat.webRtcClient.RtcListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.MediaStream;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FriendsManagerActivity extends AppCompatActivity {
+public class FriendsManagerActivity extends AppCompatActivity{
     private static final String LOG_TAG = FriendsManagerActivity.class.getSimpleName();
     ArrayList<UserDetails> selectUsers;
     List<UserDetails> temp;
@@ -64,7 +66,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
         selectUsers = new ArrayList<>();
         resolver = this.getContentResolver();
         listView = (ListView) findViewById(R.id.contacts_list);
-        checkPermissions();
         ShareLinkContent linkContent = new ShareLinkContent.Builder()
                 .setContentTitle("....")
                 .build();
@@ -73,7 +74,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     private void getUserFriends(String id) {
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
-                "/" + id + "/friends",
+                "/me/friends",
                 null,
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
@@ -113,9 +114,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
         ).executeAsync();
     }
 
-    public void onItemClick() {
-
-    }
 
     public void sendMessagetoFriends(View v) {
         Log.d(LOG_TAG, "Message to friends called");
@@ -164,33 +162,5 @@ public class FriendsManagerActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return true;
-    }
-
-    public void checkPermissions() {
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    100);
-        }
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    100);
-        }
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    100);
-        }
     }
 }

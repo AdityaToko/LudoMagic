@@ -82,7 +82,7 @@ public class WebRtcClient {
             }
         };
 
-        private Emitter.Listener onCallRequested = new Emitter.Listener() {
+        private Emitter.Listener onCallRequested =  new Emitter.Listener() {
             @Override
             public void call(Object... args) {
 
@@ -210,7 +210,8 @@ public class WebRtcClient {
         User user2 = new User(targetId,WebRtcClient.getRandomString());
         Friend friend = new Friend(user1, user2, WebRtcClient.getRandomString());
         userId1 = user1.getId();
-        userId2 = user2.getId();
+        Log.e(LOG_TAG, "User ID 1 is : " + userId1);
+        //userId2 = user2.getId();
         try {
             socket = IO.socket(host);
         } catch (URISyntaxException e) {

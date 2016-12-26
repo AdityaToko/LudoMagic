@@ -33,6 +33,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         //peerConnection.addStream(webRtcClient.localMediaStream);
         webRtcClient.rtcListener.onStatusChanged("CONNECTING");
     }
+    
     public void setLocalStream(){
         Log.e(LOG_TAG, "setLocalStream called " + webRtcClient.toString());
         peerConnection.addStream(webRtcClient.localMediaStream);
@@ -87,7 +88,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
               //  payload.put("from",webRtcClient.userId2);
               //  payload.put("to", webRtcClient.userId1);
             //}
-            payload.put("token", friend.getToken());
+            payload.put("token", "abcd");
             webRtcClient.socket.emit("ice_candidates", payload);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -169,13 +170,14 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.e(LOG_TAG, "sendOfferLocalDescription: sending Offer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
+        Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
         try {
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
             callData.put("from", webRtcClient.userId1);
             callData.put("to", webRtcClient.userId2);
             callData.put("offer", localDesc);
-            callData.put("token", friend.getToken());
+            callData.put("token", "abcd");
             webRtcClient.socket.emit("request_call", callData);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -186,12 +188,13 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.e(LOG_TAG, "sendAnswerLocalDescription: sending answer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
+
         try {
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
             callData.put("from", webRtcClient.userId1);
             callData.put("to", webRtcClient.userId2);
-            callData.put("token", friend.getToken());
+            callData.put("token", "abcd");
             callData.put("answer", localDesc);
             webRtcClient.socket.emit("accept_call", callData);
         } catch (JSONException e) {
