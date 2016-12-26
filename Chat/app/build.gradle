@@ -4,17 +4,45 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.tokostudios.chat"
+        applicationId "com.nuggetchat.messenger"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 18
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    signingConfigs {
+        debug {
+            storeFile file('key/imaginry1.keystore')
+            storePassword 'tokostudios'
+            keyAlias 'appdebug'
+            keyPassword 'appdebug'
+        }
+        release {
+            initWith debug
+            if (project.hasProperty('prodKeyStoreFile')) {
+                storeFile file(project.property('prodKeyStoreFile'))
+                storePassword project.property('prodKeyStorePwd')
+                keyAlias project.property('prodKeyAlias')
+                keyPassword project.property('prodKeyPwd')
+            }
+            return this
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '.DEBUG'
+            signingConfig signingConfigs.debug
+            return this
         }
     }
 }
@@ -37,3 +65,5 @@ dependencies {
     compile 'com.android.support:design:25.1.0'
     testCompile 'junit:junit:4.12'
 }
+
+apply plugin: 'com.google.gms.google-services'

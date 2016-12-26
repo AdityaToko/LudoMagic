@@ -1,4 +1,4 @@
-package com.tokostudios.chat.activities;
+package com.nuggetchat.messenger.activities;
 
 import android.app.ActionBar;
 import android.graphics.Color;
@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.tokostudios.chat.R;
+import com.nuggetchat.messenger.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

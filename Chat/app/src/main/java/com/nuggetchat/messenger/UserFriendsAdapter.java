@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.nuggetchat.messenger;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -10,8 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.tokostudios.chat.datamodel.UserDetails;
-import com.tokostudios.chat.utils.GlideUtils;
+import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.messenger.utils.GlideUtils;
 
 import java.util.ArrayList;
 import java.util.List;
