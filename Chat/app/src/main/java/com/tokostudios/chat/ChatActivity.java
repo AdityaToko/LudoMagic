@@ -70,6 +70,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     ArrayList<UserDetails> selectUsers = new ArrayList<>();
     List<UserDetails> temp;
     UserFriendsAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,9 +92,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-        String userId  = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
+        String userId = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
         String username = SharedPreferenceUtility.getFacebookUserName(ChatActivity.this);
-        Log.e(LOG_TAG, "User is : " + userId + " " + username );
+        Log.e(LOG_TAG, "User is : " + userId + " " + username);
         user1 = new User(userId, username);
 
         VideoRendererGui.setView(rtcView, new Runnable() {
@@ -113,24 +114,35 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-               // webRtcClient.setInitiator(true);
-               // webRtcClient.createOffer(webRtcClient.peers.get(0));
             }
         });
 
         endCall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                webRtcClient.socket.emit("message","end_call");
+                JSONObject payload = new JSONObject();
+                try {
+                    Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                    payload.put("from", webRtcClient.userId1);
+                    payload.put("to", webRtcClient.userId2);
+                    payload.put("token", "abcd");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                webRtcClient.socket.emit("end_call", payload);
                 webRtcClient.endCall();
+                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                        LOCAL_HEIGHT_CONNECTING, scalingType, true);
             }
         });
 
     }
-    private void startCall(){
+
+    private void startCall() {
         webRtcClient.setInitiator(true);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
     }
+
     private void init(User user1, String targetId) {
         Point displaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(displaySize);
@@ -139,7 +151,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         );
 
         webRtcClient = new WebRtcClient(this, socketAddress, params,
-                VideoRendererGui.getEGLContext(), user1, targetId);
+                VideoRendererGui.getEGLContext(), user1);
         //startCall();
     }
 
@@ -208,7 +220,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         }
     }
 
-    private void showFriendsDialog(){
+    private void showFriendsDialog() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setTitle("Choose a friend");
 
@@ -224,11 +236,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
             public void onClick(DialogInterface dialog, int which) {
                 UserDetails user = (UserDetails) adapter.getItem(which);
                 String userId = user.getUserId();
-                webRtcClient.userId2 = userId;
                 webRtcClient.setInitiator(true);
-                if(webRtcClient.peers.isEmpty()){
-                    webRtcClient.addPeer(user1, new Friend(user1,new User(userId,"abc"),"abcd"));
-                }
+                webRtcClient.addFriendForChat(userId);
                 webRtcClient.createOffer(webRtcClient.peers.get(0));
             }
         });
