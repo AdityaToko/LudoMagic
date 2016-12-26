@@ -19,7 +19,42 @@
           "client_type": 3
         }
       ],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtdx0PZ-azyK467c5bU0l_EtKCGSbtT3Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1089559694082:android:bf3d2e39fe3dad26",
+        "android_client_info": {
+          "package_name": "com.nuggetchat.messenger.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1089559694082-vt275e1psh6o3pomecd1g1hj5vvus8fe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtdx0PZ-azyK467c5bU0l_EtKCGSbtT3Y"
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 1
