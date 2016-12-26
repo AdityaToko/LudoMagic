@@ -3,4 +3,8 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="dim_foreground_dark">#BEBEBE</color>
+    <color name="send_message_other_friends">#E35C38</color>
+    <color name="send_message_facebook_friends">#35B8ED</color>
+    <color name="colorWhite">#FFFFFF</color>
 </resources>

@@ -1,6 +1,7 @@
 package com.tokostudios.chat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
@@ -12,6 +13,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
 import com.tokostudios.chat.webRtcClient.RtcListener;
 import com.tokostudios.chat.webRtcClient.WebRtcClient;
@@ -47,7 +50,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     private String socketAddress;
     private Button button;
     private Button endCall;
-
+    private String targetId;
     private User user1;
 
     @Override
@@ -60,6 +63,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
                         | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        Intent intent = getIntent();
+        targetId = intent.getStringExtra("userId");
         setContentView(R.layout.activity_chat);
         button = (Button) findViewById(R.id.start_call_button);
         endCall = (Button) findViewById(R.id.end_call);
@@ -69,22 +74,22 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-        String userId  = this.getSharedPreferences("MyPrefs",Context.MODE_PRIVATE).getString("userId","");
-        if("".equals(userId) || userId == null) {
+        String userId  = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
+        String username = SharedPreferenceUtility.getFacebookUserName(ChatActivity.this);
+       /* if("".equals(userId) || userId == null) {
             user1 = new User(WebRtcClient.getRandomString(), WebRtcClient.getRandomString());
             SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("userId", user1.getId());
             editor.putString("username", user1.getName());
             editor.apply();
-        }
-        String userName = this.getSharedPreferences("MyPrefs",Context.MODE_PRIVATE).getString("username","");
-        user1 = new User(userId, userName);
+        }*/
+        user1 = new User(userId, username);
 
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                init(user1);
+                init(user1, targetId);
             }
         });
 
@@ -112,14 +117,15 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
 
     }
 
-    private void init(User user1) {
+    private void init(User user1, String targetId) {
         Point displaySize = new Point();
         getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
 
-        webRtcClient = new WebRtcClient(this, socketAddress, params, VideoRendererGui.getEGLContext(), user1);
+        webRtcClient = new WebRtcClient(this, socketAddress, params,
+                VideoRendererGui.getEGLContext(), user1, targetId);
 
     }
 

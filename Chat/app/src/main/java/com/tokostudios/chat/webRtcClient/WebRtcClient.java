@@ -44,8 +44,8 @@ public class WebRtcClient {
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
-    public String userId1 = "101";
-    public String userId2 = "103";
+    public String userId1;
+    public String userId2;
 
     private class MessageHandler {
 
@@ -198,7 +198,8 @@ public class WebRtcClient {
         return peer;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, EGLContext mEGLcontext, User user1) {
+    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params,
+                        EGLContext mEGLcontext, User user1, String targetId) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(listener, true /* initializedAudio */,
@@ -206,8 +207,10 @@ public class WebRtcClient {
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
         currentUser = user1;
-        User user2 = new User(WebRtcClient.getRandomString(), WebRtcClient.getRandomString());
+        User user2 = new User(targetId,WebRtcClient.getRandomString());
         Friend friend = new Friend(user1, user2, WebRtcClient.getRandomString());
+        userId1 = user1.getId();
+        userId2 = user2.getId();
         try {
             socket = IO.socket(host);
         } catch (URISyntaxException e) {
