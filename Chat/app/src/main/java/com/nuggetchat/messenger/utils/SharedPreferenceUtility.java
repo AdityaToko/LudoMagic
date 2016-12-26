@@ -1,9 +1,9 @@
-package com.tokostudios.chat.utils;
+package com.nuggetchat.messenger.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.tokostudios.chat.BuildConfig;
+import com.nuggetchat.messenger.BuildConfig;
 
 public class SharedPreferenceUtility {
     private static final String PREF_FILE_NAME = BuildConfig.APPLICATION_ID + ".common.pref";

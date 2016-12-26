@@ -1,4 +1,4 @@
-package com.tokostudios.chat.datamodel;
+package com.nuggetchat.messenger.datamodel;
 
 public class UserDetails {
     String name;

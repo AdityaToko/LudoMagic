@@ -1,4 +1,4 @@
-package com.tokostudios.chat.activities;
+package com.nuggetchat.messenger.activities;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -21,10 +21,10 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.share.model.ShareLinkContent;
-import com.tokostudios.chat.R;
-import com.tokostudios.chat.UserFriendsAdapter;
-import com.tokostudios.chat.datamodel.UserDetails;
-import com.tokostudios.chat.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import org.json.JSONException;
 import org.json.JSONObject;
