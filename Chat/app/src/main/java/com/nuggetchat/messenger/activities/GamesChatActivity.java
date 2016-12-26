@@ -1,6 +1,5 @@
 package com.nuggetchat.messenger.activities;
 
-import android.app.ActionBar;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -15,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
+import com.tokostudios.chat.activities.ChatFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -67,11 +67,11 @@ public class GamesChatActivity extends AppCompatActivity {
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
                 if (position == 0) {
                     imageView.setImageResource(R.drawable.game);
-                    tabView.setBackgroundResource(R.drawable.tab_background);
+                    tabView.setBackgroundResource(R.drawable.first_tab_background);
                     textView.setTextColor(Color.parseColor("#FF4081"));
                 } else  {
                     imageView.setImageResource(R.drawable.chat_icon);
-                    tabView.setBackgroundResource(R.drawable.tab_background);
+                    tabView.setBackgroundResource(R.drawable.second_tab_background);
                     textView.setTextColor(Color.parseColor("#FF4081"));
                 }
             }
@@ -150,5 +150,4 @@ public class GamesChatActivity extends AppCompatActivity {
             tab.requestLayout();
         }
     }
-
 }

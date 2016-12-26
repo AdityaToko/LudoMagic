@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
-/**
- * Created by vartikasharma on 26/12/16.
- */
-public class GamesFragment {
+import android.support.v4.app.Fragment;
+
+public class GamesFragment extends Fragment {
 }

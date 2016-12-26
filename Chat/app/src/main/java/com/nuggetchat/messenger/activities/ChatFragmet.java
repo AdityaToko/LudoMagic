@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.nuggetchat.messenger.debug.R;
+import com.nuggetchat.messenger.R;
 
 /**
  * A simple {@link Fragment} subclass.
