@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "1089559694082",
+    "firebase_url": "https://nuggetplay-ceaaf.firebaseio.com",
+    "project_id": "nuggetplay-ceaaf",
+    "storage_bucket": "nuggetplay-ceaaf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1089559694082:android:1ec2762abe0bd625",
+        "android_client_info": {
+          "package_name": "com.nuggetchat.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1089559694082-vt275e1psh6o3pomecd1g1hj5vvus8fe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
