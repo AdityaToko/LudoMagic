@@ -66,7 +66,7 @@ public class FriendsManagerActivity extends AppCompatActivity{
     private void getUserFriends(String id) {
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
-                "/"+id+"/friends",
+                "/me/friends",
                 null,
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
