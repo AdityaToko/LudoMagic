@@ -95,17 +95,6 @@ public class FriendsManagerActivity extends AppCompatActivity{
                             }
                             adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
                             listView.setAdapter(adapter);
-                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                    UserDetails userDetails = (UserDetails) adapterView.getAdapter().getItem(i);
-                                    String userId = userDetails.getUserId();
-                                    Log.e(LOG_TAG, "onItemClick: " + userId + " " + userDetails.getName());
-                                    Intent intent = new Intent(FriendsManagerActivity.this, ChatActivity.class);
-                                    intent.putExtra("userId", userId);
-                                    startActivity(intent);
-                                }
-                            });
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
