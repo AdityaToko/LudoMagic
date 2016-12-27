@@ -16,8 +16,6 @@ public class ChatFragmet extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Intent intent = new Intent(getActivity(), ChatActivity.class);
-        startActivity(intent);
         return inflater.inflate(R.layout.fragment_chat_fragmet, container, false);
     }
 }
