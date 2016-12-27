@@ -4,17 +4,45 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.tokostudios.chat"
+        applicationId "com.nuggetchat.messenger"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 18
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    signingConfigs {
+        debug {
+            storeFile file('key/imaginry1.keystore')
+            storePassword 'tokostudios'
+            keyAlias 'appdebug'
+            keyPassword 'appdebug'
+        }
+        release {
+            initWith debug
+            if (project.hasProperty('prodKeyStoreFile')) {
+                storeFile file(project.property('prodKeyStoreFile'))
+                storePassword project.property('prodKeyStorePwd')
+                keyAlias project.property('prodKeyAlias')
+                keyPassword project.property('prodKeyPwd')
+            }
+            return this
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '.DEBUG'
+            signingConfig signingConfigs.debug
+            return this
         }
     }
 }
@@ -25,13 +53,29 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.google.firebase:firebase-database:9.6.1'
+    compile 'com.google.firebase:firebase-auth:9.6.1'
+    compile 'com.google.firebase:firebase-core:9.6.1'
+    compile 'com.google.firebase:firebase-crash:9.6.1'
+    compile 'com.google.firebase:firebase-messaging:9.6.1'
+    compile 'com.makeramen:roundedimageview:2.3.0'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile 'com.jakewharton:butterknife:8.4.0'
     compile 'com.facebook.android:facebook-android-sdk:4.18.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.android.support:design:25.1.0'
+    compile 'com.android.support:support-v4:25.1.0'
+    compile 'io.pristine:libjingle:9694@aar'
+    compile ('io.socket:socket.io-client:0.8.3') {
+        // excluding org.json which is provided by Android
+        exclude group: 'org.json', module: 'json'
+    }
     testCompile 'junit:junit:4.12'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 }
+
+apply plugin: 'com.google.gms.google-services'
