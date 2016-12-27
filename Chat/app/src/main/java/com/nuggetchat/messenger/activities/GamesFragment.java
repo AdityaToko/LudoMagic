@@ -30,7 +30,7 @@ public class GamesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_chat_fragmet, container, false);
+        View view = inflater.inflate(R.layout.fragment_games_layout, container, false);
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
         gridView = (GridView)view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);

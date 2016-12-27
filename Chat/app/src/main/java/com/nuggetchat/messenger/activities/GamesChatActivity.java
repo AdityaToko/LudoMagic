@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
+import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.activities.ChatFragment;
 
 import butterknife.BindView;
@@ -99,11 +100,6 @@ public class GamesChatActivity extends AppCompatActivity {
 
             }
         });
-       /* tabItem = (TextView) LayoutInflater.from(this)
-                .inflate(R.layout.tab_layout_item, null);
-        tabItemText = (TextView)tabItem.findViewById(R.id.tab_item_text);
-        tabItemImage = (ImageView)tabItem.findViewById(R.id.tab_item_image);
-        setUpTabItems();*/
     }
 
     private void setUpToolbar() {
@@ -142,12 +138,5 @@ public class GamesChatActivity extends AppCompatActivity {
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
         secondImageView.setImageResource(R.drawable.nuggeticon);
         gamesChatTabLayout.getTabAt(1).setCustomView(tabSecondItem);
-
-        for(int i = 0; i < gamesChatTabLayout.getTabCount(); i++) {
-            View tab = (ViewGroup)gamesChatTabLayout.getTabAt(i).getCustomView();
-            ViewGroup.MarginLayoutParams param = (ViewGroup.MarginLayoutParams)tab.getLayoutParams();
-           // param.setMargins(-10,0,50,0);
-            tab.requestLayout();
-        }
     }
 }
