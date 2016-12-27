@@ -13,8 +13,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -37,6 +37,8 @@ import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
 
 public class ChatActivity extends AppCompatActivity implements RtcListener {
 
@@ -63,7 +65,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
 
     private WebRtcClient webRtcClient;
     private String socketAddress;
-    private Button button;
+    private ImageView startCallButton;
     private Button endCall;
     private String targetId;
     private User user1;
@@ -84,7 +86,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         Intent intent = getIntent();
         targetId = intent.getStringExtra("userId");
         setContentView(R.layout.activity_chat);
-        button = (Button) findViewById(R.id.start_call_button);
+        startCallButton = (ImageView) findViewById(R.id.caller_button);
         endCall = (Button) findViewById(R.id.end_call);
         getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
@@ -110,7 +112,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
@@ -151,7 +153,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         );
 
         webRtcClient = new WebRtcClient(this, socketAddress, params,
-                VideoRendererGui.getEGLContext(), user1);
+                VideoRendererGui.getEGLContext(), user1, this);
         //startCall();
     }
 
@@ -205,7 +207,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     @Override
     protected void onPause() {
         super.onPause();
-        rtcView.onResume();
+        rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }

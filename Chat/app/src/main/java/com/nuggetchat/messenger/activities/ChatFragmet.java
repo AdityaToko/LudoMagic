@@ -11,9 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -38,8 +38,11 @@ import org.webrtc.VideoRendererGui;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatFragmet extends Fragment implements RtcListener {
-    private static final String LOG_TAG = ChatActivity.class.getSimpleName();
+import butterknife.BindView;
+
+public class ChatFragmet extends Fragment implements RtcListener  {
+    private static final String LOG_TAG = ChatFragmet.class.getSimpleName();
+    private static final String WEB_RTC_CLIENT = "webRtcClient" ;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -62,7 +65,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
 
     private WebRtcClient webRtcClient;
     private String socketAddress;
-    private Button button;
+    private ImageView startCallButton;
     private Button endCall;
     private String targetId;
     private User user1;
@@ -74,29 +77,33 @@ public class ChatFragmet extends Fragment implements RtcListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_chat, container, false);
-       /* requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(
+       // getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getActivity().getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
                         | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                         | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);*/
-        //Intent intent = getIntent();
-      //  targetId = intent.getStringExtra("userId");
-        button = (Button) view.findViewById(R.id.start_call_button);
+                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        View view = inflater.inflate(R.layout.activity_chat, container, false);
+
+        Intent intent = getActivity().getIntent();
+        targetId = intent.getStringExtra("userId");
+
+        startCallButton = (ImageView) view.findViewById(R.id.caller_button);
         endCall = (Button) view.findViewById(R.id.end_call);
         getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
 
+        String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
+        String username = SharedPreferenceUtility.getFacebookUserName(getActivity());
+        Log.e(LOG_TAG, "User is : " + userId + " " + username);
+        user1 = new User(userId, username);
+        Log.e(LOG_TAG, "User is : " + userId + " " + username);
         rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-       /* String userId = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
-        String username = SharedPreferenceUtility.getFacebookUserName(ChatActivity.this);*/
-       /* Log.e(LOG_TAG, "User is : " + userId + " " + username);
+
         user1 = new User(userId, username);
-*/
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
@@ -110,10 +117,10 @@ public class ChatFragmet extends Fragment implements RtcListener {
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //showFriendsDialog();
+                showFriendsDialog();
             }
         });
 
@@ -144,15 +151,15 @@ public class ChatFragmet extends Fragment implements RtcListener {
         webRtcClient.createOffer(webRtcClient.peers.get(0));
     }
 
-    private void init(User user1, String targetId) {
+   private void init(User user1, String targetId) {
         Point displaySize = new Point();
-      //  getWindowManager().getDefaultDisplay().getSize(displaySize);
+        getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
 
         webRtcClient = new WebRtcClient(this, socketAddress, params,
-                VideoRendererGui.getEGLContext(), user1);
+                VideoRendererGui.getEGLContext(), user1, getActivity());
         //startCall();
     }
 
@@ -207,7 +214,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
     @Override
     public void onPause() {
         super.onPause();
-        rtcView.onResume();
+        rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
@@ -221,6 +228,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
             webRtcClient.onDestroy();
         }
     }
+
 
     private void showFriendsDialog() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
