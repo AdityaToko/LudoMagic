@@ -7,4 +7,6 @@
     <color name="send_message_other_friends">#E35C38</color>
     <color name="send_message_facebook_friends">#35B8ED</color>
     <color name="colorWhite">#FFFFFF</color>
+    <color name="first_tab_text_color">#F2830A</color>
+    <color name="second_tab_text_color">#2290D3</color>
 </resources>
