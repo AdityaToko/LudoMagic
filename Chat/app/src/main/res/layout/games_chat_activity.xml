@@ -39,11 +39,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
                 android:textStyle="bold"
                 android:textAllCaps="true"
                 android:gravity="end"
                 android:text="Vartika Sharma \n40000XP"
-                android:textSize="15sp" />
+                android:textSize="13sp" />
 
             <ImageView
                 android:id="@+id/kid_image"
@@ -67,7 +68,7 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="5dp"
+            android:layout_height="3dp"
             android:alpha="0.3"
             android:background="@drawable/toolbar_shadow" />
 
@@ -77,6 +78,7 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_marginTop="2dp"
         android:layout_marginLeft="-10dp"
         android:layout_marginRight="-10dp"
         android:clipToPadding="false"
@@ -89,12 +91,13 @@
         app:tabMode="fixed"
         app:tabGravity="fill"
         android:layout_below="@id/toolbar"
-        android:background="@color/dim_foreground_dark"
+        android:background="#454563"
         app:tabSelectedTextColor="@color/colorWhite" />
 
     <!-- View pager to swipe views -->
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
+        android:background="@color/colorWhite"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

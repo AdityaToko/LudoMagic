@@ -1,5 +1,6 @@
 package com.tokostudios.chat.webRtcClient;
 
+import android.content.Context;
 import android.opengl.EGLContext;
 import android.util.Log;
 
@@ -209,10 +210,10 @@ public class WebRtcClient {
     }
 
     public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params,
-                        EGLContext mEGLcontext, User user1) {
+                        EGLContext mEGLcontext, User user1, Context context) {
         rtcListener = listener;
         this.params = params;
-        PeerConnectionFactory.initializeAndroidGlobals(listener, true /* initializedAudio */,
+        PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
