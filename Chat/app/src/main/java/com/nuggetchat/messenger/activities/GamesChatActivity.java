@@ -7,14 +7,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
-import com.tokostudios.chat.activities.ChatFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -117,7 +114,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpViewPager(ViewPager viewPager) {
         ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
-        viewPagerAdapter.addFrag(new ChatFragment(), "chat");
+        viewPagerAdapter.addFrag(new ChatFragmet(), "chat");
         viewPager.setAdapter(viewPagerAdapter);
     }
 
