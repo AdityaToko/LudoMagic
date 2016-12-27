@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
+import com.nuggetchat.lib.Conf;
 
 import com.nuggetchat.messenger.R;
 
@@ -31,6 +32,7 @@ public class GamesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_games_layout, container, false);
+        fetchDataForGames();
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
         gridView = (GridView)view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);
@@ -41,5 +43,10 @@ public class GamesFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    private void fetchDataForGames() {
+        String firebaseUri = Conf.firebaseGamesURI();
+
     }
 }
