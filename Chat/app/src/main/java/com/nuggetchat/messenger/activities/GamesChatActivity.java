@@ -1,62 +1,24 @@
 package com.nuggetchat.messenger.activities;
 
-import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
-import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatActivity;
-import com.tokostudios.chat.User;
-import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
-import com.tokostudios.chat.webRtcClient.RtcListener;
-import com.tokostudios.chat.webRtcClient.WebRtcClient;
-
-import org.webrtc.MediaStream;
-import org.webrtc.VideoRenderer;
-import org.webrtc.VideoRendererGui;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class GamesChatActivity extends AppCompatActivity {
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
-
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
-    private static final int LOCAL_WIDTH = 25;
-    private static final int LOCAL_HEIGHT = 25;
-
-    private static final int REMOTE_X = 0;
-    private static final int REMOTE_Y = 0;
-    private static final int REMOTE_WIDTH = 100;
-    private static final int REMOTE_HEIGHT = 100;
-
-    private static final int LOCAL_X_CONNECTING = 0;
-    private static final int LOCAL_Y_CONNECTING = 0;
-    private static final int LOCAL_WIDTH_CONNECTING = 100;
-    private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
-
-    private WebRtcClient webRtcClient;
-    private String socketAddress;
-
-    private String targetId;
-    private User user1;
 
     @BindView(R.id.toolbar)
     /* package-local */ Toolbar toolbar;
@@ -116,7 +78,8 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView().setBackgroundColor(Color.parseColor("#FEFCFF"));
+                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView()
+                        .setBackgroundColor(Color.parseColor("#FEFCFF"));
                 int position = tab.getPosition();
                 LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
                 TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);

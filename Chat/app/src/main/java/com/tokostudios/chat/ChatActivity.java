@@ -1,9 +1,7 @@
 package com.tokostudios.chat;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -13,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 
 import com.facebook.AccessToken;
@@ -22,7 +19,6 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
-import com.nuggetchat.messenger.activities.FriendsManagerActivity;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
@@ -37,8 +33,6 @@ import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindView;
 
 public class ChatActivity extends AppCompatActivity implements RtcListener {
 
@@ -66,7 +60,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     private WebRtcClient webRtcClient;
     private String socketAddress;
     private ImageView startCallButton;
-    private Button endCall;
+    private ImageView endCall;
     private String targetId;
     private User user1;
     ArrayList<UserDetails> selectUsers = new ArrayList<>();
@@ -86,8 +80,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         Intent intent = getIntent();
         targetId = intent.getStringExtra("userId");
         setContentView(R.layout.activity_chat);
-        startCallButton = (ImageView) findViewById(R.id.caller_button);
-        endCall = (Button) findViewById(R.id.end_call);
+        startCallButton = (ImageView) findViewById(R.id.start_call_button);
+        endCall = (ImageView) findViewById(R.id.end_call_button);
         getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
 
@@ -116,6 +110,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
+                startCallButton.setImageResource(R.drawable.end_call_button);
             }
         });
 

@@ -23,7 +23,6 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.User;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
 import com.tokostudios.chat.webRtcClient.RtcListener;
@@ -38,11 +37,8 @@ import org.webrtc.VideoRendererGui;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-
 public class ChatFragmet extends Fragment implements RtcListener  {
     private static final String LOG_TAG = ChatFragmet.class.getSimpleName();
-    private static final String WEB_RTC_CLIENT = "webRtcClient" ;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -66,11 +62,10 @@ public class ChatFragmet extends Fragment implements RtcListener  {
     private WebRtcClient webRtcClient;
     private String socketAddress;
     private ImageView startCallButton;
-    private Button endCall;
+    private ImageView endCall;
     private String targetId;
     private User user1;
     ArrayList<UserDetails> selectUsers = new ArrayList<>();
-    List<UserDetails> temp;
     UserFriendsAdapter adapter;
 
     @Override
@@ -89,8 +84,8 @@ public class ChatFragmet extends Fragment implements RtcListener  {
         Intent intent = getActivity().getIntent();
         targetId = intent.getStringExtra("userId");
 
-        startCallButton = (ImageView) view.findViewById(R.id.caller_button);
-        endCall = (Button) view.findViewById(R.id.end_call);
+        startCallButton = (ImageView) view.findViewById(R.id.start_call_button);
+        endCall = (ImageView) view.findViewById(R.id.end_call_button);
         getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
 
@@ -121,6 +116,8 @@ public class ChatFragmet extends Fragment implements RtcListener  {
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
+                startCallButton.setImageResource(R.drawable.end_call_button);
+                endCall.setVisibility(View.VISIBLE);
             }
         });
 
