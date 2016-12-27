@@ -23,7 +23,9 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
     appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.48'
+    compile 'com.google.appengine:appengine-api-1.0-sdk:1.9.48'
     compile 'javax.servlet:servlet-api:2.5'
+    compile 'com.google.firebase:firebase-admin:4.0.3'
     compile 'com.restfb:restfb:2.0.0-rc.1'
     compile project(':lib')
 }
