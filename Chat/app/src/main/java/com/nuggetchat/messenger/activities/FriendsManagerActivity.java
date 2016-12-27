@@ -1,16 +1,22 @@
 package com.nuggetchat.messenger.activities;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -25,9 +31,12 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
+import com.tokostudios.chat.webRtcClient.RtcListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.MediaStream;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +66,6 @@ public class FriendsManagerActivity extends AppCompatActivity{
         selectUsers = new ArrayList<>();
         resolver = this.getContentResolver();
         listView = (ListView) findViewById(R.id.contacts_list);
-
         ShareLinkContent linkContent = new ShareLinkContent.Builder()
                 .setContentTitle("....")
                 .build();
@@ -66,7 +74,7 @@ public class FriendsManagerActivity extends AppCompatActivity{
     private void getUserFriends(String id) {
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
-                "/"+id+"/friends",
+                "/me/friends",
                 null,
                 HttpMethod.GET,
                 new GraphRequest.Callback() {
@@ -74,7 +82,7 @@ public class FriendsManagerActivity extends AppCompatActivity{
                         Log.d(LOG_TAG, response.toString());
                         JSONObject object = response.getJSONObject();
                         try {
-                            for (int i=0; i<object.getJSONArray("data").length(); i++) {
+                            for (int i = 0; i < object.getJSONArray("data").length(); i++) {
                                 JSONObject dataObject = (object.getJSONArray("data")).getJSONObject(i);
                                 Log.d(LOG_TAG, dataObject.toString());
                                 String name = dataObject.getString("name");
@@ -95,6 +103,7 @@ public class FriendsManagerActivity extends AppCompatActivity{
         ).executeAsync();
     }
 
+
     public void sendMessagetoFriends(View v) {
         Log.d(LOG_TAG, "Message to friends called");
 
@@ -104,9 +113,8 @@ public class FriendsManagerActivity extends AppCompatActivity{
         intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play YO!");
         try {
             startActivity(intent);
-        }
-        catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this,"You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
         }
     }
 
