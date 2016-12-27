@@ -18,12 +18,14 @@ apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'appengine'
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.34'
+    appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.48'
     compile 'javax.servlet:servlet-api:2.5'
+    compile 'com.restfb:restfb:2.0.0-rc.1'
+    compile project(':lib')
 }
 
 appengine {
