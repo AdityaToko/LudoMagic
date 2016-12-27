@@ -4,6 +4,7 @@ public class UserDetails {
     String name;
     String email;
     String userId;
+    String firebaseUserId;
 
     public String getName() {
         return name;
@@ -31,5 +32,13 @@ public class UserDetails {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getFirebaseUserId() {
+        return firebaseUserId;
+    }
+
+    public void setFirebaseUserId(String firebaseUserId) {
+        this.firebaseUserId = firebaseUserId;
     }
 }

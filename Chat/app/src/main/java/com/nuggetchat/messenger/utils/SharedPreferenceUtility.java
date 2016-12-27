@@ -9,6 +9,7 @@ public class SharedPreferenceUtility {
     private static final String PREF_FILE_NAME = BuildConfig.APPLICATION_ID + ".common.pref";
     private final static String LOG_TAG = SharedPreferenceUtility.class.getSimpleName();
     private static final String FACEBOOK_USER_ID = "facebook_user_id";
+    private static final String FACEBOOK_USER_NAME = "facebook_username";
     private Context context;
 
     private static SharedPreferences.Editor getEditor(Context context) {
@@ -30,5 +31,15 @@ public class SharedPreferenceUtility {
 
     public static String getFacebookUserId(Context context){
         return getPreferences(context).getString(FACEBOOK_USER_ID, "");
+    }
+
+    public static void setFacebookUserName(String facebookUserName, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FACEBOOK_USER_NAME, facebookUserName);
+        editor.apply();
+    }
+
+    public static String getFacebookUserName(Context context) {
+        return getPreferences(context).getString(FACEBOOK_USER_NAME,"");
     }
 }

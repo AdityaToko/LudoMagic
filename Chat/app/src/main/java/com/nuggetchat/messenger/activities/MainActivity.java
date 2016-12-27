@@ -13,8 +13,10 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.nuggetchat.messenger.AddFriendsActivity;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (AccessToken.getCurrentAccessToken() != null) {
-            Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity.class);
+            Intent intent =  new Intent(MainActivity.this, GamesChatActivity.class);
             startActivity(intent);
             finish();
         }
@@ -57,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
                         // Get facebook data from login
                         Bundle bFacebookData = getFacebookData(object);
 
-                        Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity.class);
+                        //Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity.class);
+                        Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                         startActivity(intent);
                         finish();
                     }
@@ -87,7 +90,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             Bundle bundle = new Bundle();
             String id = object.getString("id");
+            Log.e(LOG_TAG, "getFacebookData: USER ID " + id );
             SharedPreferenceUtility.setFacebookUserId(id, MainActivity.this);
+            String name = object.getString("first_name");
+            SharedPreferenceUtility.setFacebookUserName(name, MainActivity.this);
             URL profile_pic;
 
             try {

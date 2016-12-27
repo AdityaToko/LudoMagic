@@ -1,6 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/colorWhite"
+        android:foreground="?android:windowContentOverlay"
+        android:padding="5dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/logo_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/nuggeticon" />
+
+            <LinearLayout
+                android:layout_marginLeft="50dp"
+                android:layout_marginStart="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/kid_name_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:gravity="end"
+                android:text="Vartika Sharma \n40000XP"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/kid_image"
+                android:layout_width="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
+                android:layout_gravity="right"
+                android:src="@drawable/nuggeticon"
+                android:layout_height="40dp" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+    <FrameLayout
+        android:id="@+id/shadow_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:alpha="0.3"
+            android:background="@drawable/toolbar_shadow" />
+
+    </FrameLayout>
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginLeft="-10dp"
+        android:layout_marginRight="-10dp"
+        android:clipToPadding="false"
+        app:tabPaddingStart="-1dp"
+        app:tabPaddingEnd="-1dp"
+        app:tabIndicatorHeight="1dp"
+        app:tabIndicatorColor="@color/colorWhite"
+        app:tabMaxWidth="0dp"
+        app:tabMinWidth="50dp"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        android:layout_below="@id/toolbar"
+        android:background="@color/dim_foreground_dark"
+        app:tabSelectedTextColor="@color/colorWhite" />
+
+    <!-- View pager to swipe views -->
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tabLayout" />
 
 </RelativeLayout>
