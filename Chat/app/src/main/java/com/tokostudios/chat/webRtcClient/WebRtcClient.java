@@ -75,25 +75,26 @@ public class WebRtcClient {
                     for (int i = 0; i < stunUrls.length(); i++) {
                         iceServers.add(new PeerConnection.IceServer(stunUrls.getString(i)));
                     }
-                    //start("Aman";
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         };
 
-        private Emitter.Listener onCallRequested =  new Emitter.Listener() {
+        private Emitter.Listener onCallRequested = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-
                 JSONObject argsObject = (JSONObject) args[0];
-                Log.e(LOG_TAG, "call requested" + args[0].toString() );
+                Log.e(LOG_TAG, "call requested" + args[0].toString());
                 try {
+                    if (!isInitiator()) {
+                        addFriendForChat(argsObject.getString("from"));
+                    }
                     Peer peer = peers.get(0);
-                    Log.e(LOG_TAG, "call requested inside try" + " " +peer.getUser().getId() + " " + argsObject.getString("to"));
+                    Log.e(LOG_TAG, "call requested inside try" + " " + peer.getUser().getId() + " " + argsObject.getString("to"));
                     if (userId1.equals(argsObject.getString("to"))
                             && argsObject.getJSONObject("offer") != null) {
-                        Log.e(LOG_TAG, "call requested inside if" );
+                        Log.e(LOG_TAG, "call requested inside if");
                         JSONObject offerObj = argsObject.getJSONObject("offer");
                         SessionDescription sdp = new SessionDescription(
                                 SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
@@ -101,8 +102,8 @@ public class WebRtcClient {
                         );
                         Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + argsObject.getString("to"));
                         peer.getPeerConnection().setRemoteDescription(peer, sdp);
-                        Log.e(LOG_TAG, "getRemoteDescription  " + peer.getPeerConnection().getRemoteDescription().description+
-                                " "+ peer.getPeerConnection().getRemoteDescription().type.canonicalForm());
+                        Log.e(LOG_TAG, "getRemoteDescription  " + peer.getPeerConnection().getRemoteDescription().description +
+                                " " + peer.getPeerConnection().getRemoteDescription().type.canonicalForm());
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -116,6 +117,9 @@ public class WebRtcClient {
                 Log.d(LOG_TAG, "inside onCallAccepted ");
                 JSONObject argsObject = (JSONObject) args[0];
                 try {
+                    if (!isInitiator() && peers.isEmpty()) {
+                        addFriendForChat(argsObject.getString("from"));
+                    }
                     Peer peer = peers.get(0);
                     if (userId1.equals(argsObject.getString("to"))
                             && argsObject.get("answer") != null) {
@@ -124,7 +128,7 @@ public class WebRtcClient {
                                 SessionDescription.Type.fromCanonicalForm(answerObj.getString("type")),
                                 answerObj.getString("sdp")
                         );
-                        Log.e(LOG_TAG, "Setting remote desc after onCallAccepted for "+ argsObject.getString("to"));
+                        Log.e(LOG_TAG, "Setting remote desc after onCallAccepted for " + argsObject.getString("to"));
                         peer.getPeerConnection().setRemoteDescription(peer, sdp);
                     }
                 } catch (JSONException e) {
@@ -140,6 +144,9 @@ public class WebRtcClient {
 
                 try {
                     JSONObject iceCandidateObj = (JSONObject) args[0];
+                    if (!isInitiator() && peers.isEmpty()) {
+                        addFriendForChat(iceCandidateObj.getString("from"));
+                    }
                     Peer peer = peers.get(0);
                     if (userId1.equals(iceCandidateObj.getString("to"))
                             && iceCandidateObj.get("candidate") != null) {
@@ -148,11 +155,14 @@ public class WebRtcClient {
                                 iceCandidateObj.getInt("label"),
                                 iceCandidateObj.getString("candidate"));
                         if (queuedRemoteCandidates != null) {
-                            Log.e(LOG_TAG, "local desc before queueing peers :" +
-                                    peer.getPeerConnection().getLocalDescription());
-                            Log.e(LOG_TAG, "remote desc before queueing peers :" +
-                                    peer.getPeerConnection().getRemoteDescription());
-                            queuedRemoteCandidates.add(candidate);
+                            if (!queuedRemoteCandidates.isEmpty()) {
+                                Log.e(LOG_TAG, "local desc before queueing peers :" +
+                                        peer.getPeerConnection().getLocalDescription());
+                                Log.e(LOG_TAG, "remote desc before queueing peers :" +
+                                        peer.getPeerConnection().getRemoteDescription());
+                                queuedRemoteCandidates.add(candidate);
+                            }
+
                         } else {
                             Log.e(LOG_TAG, "local desc before adding peers :" +
                                     peer.getPeerConnection().getLocalDescription());
@@ -163,7 +173,7 @@ public class WebRtcClient {
                         Log.e(LOG_TAG, "setting ice candidates successfully for :" + iceCandidateObj.getString("to"));
                     } else {
                         Log.e(LOG_TAG, "candidate is null or " + userId1
-                                + " is  not equal to :" + iceCandidateObj.getString("to") );
+                                + " is  not equal to :" + iceCandidateObj.getString("to"));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -176,19 +186,19 @@ public class WebRtcClient {
             @Override
             public void call(Object... args) {
                 Log.d(LOG_TAG, "inside onCallEnded");
-                //peers.get(0).getPeerConnection().close();
-                videoSource.dispose();
-                factory.dispose();
-               // rtcListener.onRemoveRemoteStream();
+                endCall();
             }
         };
     }
-    public void endCall(){
+
+    public void endCall() {
         setInitiator(false);
+        for (Peer peer : peers) {
+            peer.getPeerConnection().dispose();
+        }
         videoSource.dispose();
         factory.dispose();
-        //rtcListener.onRemoveRemoteStream();
-        //peers.get(0).getPeerConnection().close();
+        rtcListener.onRemoveRemoteStream();
     }
 
     public Peer addPeer(User user, Friend friend) {
@@ -199,7 +209,7 @@ public class WebRtcClient {
     }
 
     public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params,
-                        EGLContext mEGLcontext, User user1, String targetId) {
+                        EGLContext mEGLcontext, User user1) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(listener, true /* initializedAudio */,
@@ -207,11 +217,8 @@ public class WebRtcClient {
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
         currentUser = user1;
-        User user2 = new User(targetId,WebRtcClient.getRandomString());
-        Friend friend = new Friend(user1, user2, WebRtcClient.getRandomString());
         userId1 = user1.getId();
         Log.e(LOG_TAG, "User ID 1 is : " + userId1);
-        //userId2 = user2.getId();
         try {
             socket = IO.socket(host);
         } catch (URISyntaxException e) {
@@ -230,38 +237,24 @@ public class WebRtcClient {
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
         setCamera();
-        addPeer(user1, friend);
-
     }
 
-    public void startCall(Friend friend) {
-        JSONObject participants = new JSONObject();
-        try {
-            participants.put("userId", friend.getUser1().getId());
-            participants.put("friendId", friend.getUser2().getId());
-            participants.put("token", friend.getToken());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public void addFriendForChat(String userId) {
+        User user2 = new User(userId, WebRtcClient.getRandomString());
+        Friend friend = new Friend(currentUser, user2, WebRtcClient.getRandomString());
+        userId1 = currentUser.getId();
+        userId2 = userId;
+        addPeer(currentUser, friend);
     }
 
-    /**
-     * Call this method in Activity.onPause()
-     */
     public void onPause() {
         if (videoSource != null) videoSource.stop();
     }
 
-    /**
-     * Call this method in Activity.onResume()
-     */
     public void onResume() {
         if (videoSource != null) videoSource.restart();
     }
 
-    /**
-     * Call this method in Activity.onDestroy()
-     */
     public void onDestroy() {
         for (Peer peer : peers) {
             peer.getPeerConnection().dispose();
@@ -272,14 +265,6 @@ public class WebRtcClient {
         socket.close();
     }
 
-    /**
-     * Start the socket.
-     * <p>
-     * Set up the local stream and notify the signaling server.
-     * Call this method after onCallReady.
-     *
-     * @param name socket name
-     */
     public void start(String name) {
         setCamera();
         try {
@@ -326,10 +311,6 @@ public class WebRtcClient {
 
     public void createOffer(Peer peer) {
         peer.getPeerConnection().createOffer(peer, constraints);
-    }
-
-    public void createAnswer(Peer peer) {
-        peer.getPeerConnection().createAnswer(peer, constraints);
     }
 
     public static String getRandomString() {
