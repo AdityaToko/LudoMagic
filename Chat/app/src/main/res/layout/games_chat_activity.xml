@@ -91,7 +91,7 @@
         app:tabMode="fixed"
         app:tabGravity="fill"
         android:layout_below="@id/toolbar"
-        android:background="@color/dim_foreground_dark"
+        android:background="#454563"
         app:tabSelectedTextColor="@color/colorWhite" />
 
     <!-- View pager to swipe views -->
