@@ -83,6 +83,7 @@
         app:tabPaddingStart="-1dp"
         app:tabPaddingEnd="-1dp"
         app:tabIndicatorHeight="1dp"
+        app:tabIndicatorColor="@color/colorWhite"
         app:tabMaxWidth="0dp"
         app:tabMinWidth="50dp"
         app:tabMode="fixed"

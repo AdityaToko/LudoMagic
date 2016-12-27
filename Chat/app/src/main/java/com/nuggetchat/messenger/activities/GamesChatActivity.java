@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
-import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.activities.ChatFragment;
 
 import butterknife.BindView;
@@ -57,11 +56,12 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
+        gamesChatTabLayout.getTabAt(0).select();
+
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int position = tab.getPosition();
-                viewPager.setCurrentItem(tab.getPosition());
 
                 LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
                 TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);

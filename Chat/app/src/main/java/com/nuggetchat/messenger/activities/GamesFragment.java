@@ -21,9 +21,9 @@ public class GamesFragment extends Fragment {
     } ;
     int[] gamesImages = {
             R.drawable.nuggeticon,
-            R.drawable.nuggeticon,
-            R.drawable.nuggeticon,
-            R.drawable.nuggeticon,
+            R.drawable.game,
+            R.drawable.chat_icon,
+            R.drawable.game,
     };
 
     @Override
