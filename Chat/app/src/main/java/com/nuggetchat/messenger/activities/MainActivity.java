@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (AccessToken.getCurrentAccessToken() != null) {
-            Intent intent =  new Intent(MainActivity.this, ChatActivity.class);
+            Intent intent =  new Intent(MainActivity.this, GamesChatActivity.class);
             startActivity(intent);
             finish();
         }
