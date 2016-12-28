@@ -17,31 +17,32 @@
         android:layout_height="match_parent" />
 
     <HorizontalScrollView
-        android:background="@color/colorWhite"
         android:id="@+id/horizontal_scroll"
-        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorWhite">
+
         <LinearLayout
             android:id="@+id/games_list"
-            android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
         </LinearLayout>
     </HorizontalScrollView>
 
     <TextView
+        android:id="@+id/text_play_with_friends"
         android:layout_width="130dp"
         android:layout_height="30dp"
-        android:gravity="center"
-        android:layout_marginBottom="-30dp"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/colorWhite"
-        android:background="@drawable/play_with_friends"
-        android:text="play with friends"
         android:layout_above="@id/horizontal_scroll"
-        android:id="@+id/text_play_with_friends"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-30dp"
+        android:background="@drawable/play_with_friends"
+        android:gravity="center"
+        android:text="play with friends"
+        android:textColor="@color/colorWhite" />
 
     <ImageView
         android:id="@+id/start_call_button"

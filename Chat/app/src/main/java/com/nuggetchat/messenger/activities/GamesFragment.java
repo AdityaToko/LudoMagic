@@ -1,5 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,7 +17,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
-
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
 
@@ -24,10 +24,14 @@ import java.util.ArrayList;
 
 public class GamesFragment extends Fragment {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
-    GridView gridView;
-    ArrayList<String> gamesName;
-    ArrayList<String> gamesImages;
-    ArrayList<GamesItem> gamesItemList;
+    private static final String EXTRA_GAME_URL = GameWebViewActivity.class.getName() + ".game_url";
+    private GridView gridView;
+    private ArrayList<String> gamesName;
+    private ArrayList<String> gamesImages;
+    private ArrayList<String> gamesUrl;
+    private ArrayList<GamesItem> gamesItemList;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -36,14 +40,22 @@ public class GamesFragment extends Fragment {
         gamesName = new ArrayList<>();
         gamesImages = new ArrayList<>();
         gamesItemList = new ArrayList<>();
+        gamesUrl = new ArrayList<>();
+
         fetchDataForGames();
+
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
-        gridView = (GridView)view.findViewById(R.id.grid_view);
+        gridView = (GridView) view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Toast.makeText(getActivity(), "You Clicked at " + adapterView.getAdapter().getItem(position), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "You Clicked at " + gamesName.get(position),
+                        Toast.LENGTH_SHORT).show();
+                Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
+                Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
+                startActivity(gameIntent);
             }
         });
         return view;
@@ -66,15 +78,17 @@ public class GamesFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
-                   GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-                   Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
+                GamesData gamesData = dataSnapshot.getValue(GamesData.class);
+                Log.i(LOG_TAG, "the data id, " + gamesData.getTitle());
+                Log.i(LOG_TAG, "games url, " + gamesData.getUrl());
 
-                   gamesName.add(gamesDate.getTitle());
-                   gamesImages.add(gamesDate.getFeaturedImage());
-                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage());
+                gamesName.add(gamesData.getTitle());
+                gamesImages.add(gamesData.getFeaturedImage());
+                gamesUrl.add(gamesData.getUrl());
+                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
+                        gamesData.getFeaturedImage());
                 gamesItemList.add(gamesItem);
-                ((GamesChatActivity)getActivity()).setGamesNameAndImages(gamesItemList);
+                ((GamesChatActivity) getActivity()).setGamesNameAndImages(gamesItemList);
             }
 
             @Override
