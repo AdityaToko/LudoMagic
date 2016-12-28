@@ -27,6 +27,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -110,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getFirebaseIdToken(Task<AuthResult> task, final AccessToken accessToken) {
+    private void getFirebaseIdToken(final Task<AuthResult> task, final AccessToken accessToken) {
         if (!task.isSuccessful()) {
             Log.e(LOG_TAG, "Error in login.", task.getException());
             return;
@@ -119,11 +124,11 @@ public class MainActivity extends AppCompatActivity {
         task.getResult().getUser().getToken(true /* forceRefresh */)
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
-                    public void onComplete(@NonNull Task<GetTokenResult> task) {
-                        String firebaseIdToken = task.getResult().getToken();
+                    public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
+                        String firebaseIdToken = tokenTask.getResult().getToken();
                         Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
                         //getFriendsGraph(accessToken);
-                        getUserFriends(accessToken.getToken(), firebaseIdToken);
+                        getUserFriends(accessToken.getToken(), firebaseIdToken, task.getResult().getUser().getUid());
                     }
                 });
 
@@ -233,13 +238,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getUserFriends(final String accessToken, final String idToken) {
+    public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://server.nuggetchat.com:8080/getFriends";
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d(LOG_TAG, "Request success " + response.toString());
+                getFriendsFromFirebase(firebaseUid);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -256,5 +262,48 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         queue.add(sr);
+    }
+
+    private void getFriendsFromFirebase(String firebaseId) {
+        String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + firebaseId + "/friends";
+        Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
+
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
+                for (DataSnapshot dsh : dataSnapshot.getChildren()) {
+                    Log.i(LOG_TAG, "datasnapshot, " + dsh.getValue());
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }
