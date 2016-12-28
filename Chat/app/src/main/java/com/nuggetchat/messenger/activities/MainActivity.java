@@ -235,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getUserFriends(final String accessToken, final String idToken) {
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://192.168.0.118:8080/";
+        String url ="http://server.nuggetchat.com:8080/getFriends";
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
