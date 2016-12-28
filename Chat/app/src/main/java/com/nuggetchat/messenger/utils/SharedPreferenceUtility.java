@@ -10,6 +10,7 @@ public class SharedPreferenceUtility {
     private final static String LOG_TAG = SharedPreferenceUtility.class.getSimpleName();
     private static final String FACEBOOK_USER_ID = "facebook_user_id";
     private static final String FACEBOOK_USER_NAME = "facebook_username";
+    private static final String ICE_SERVERS_STRING = "ice_servers";
     private Context context;
 
     private static SharedPreferences.Editor getEditor(Context context) {
@@ -41,5 +42,15 @@ public class SharedPreferenceUtility {
 
     public static String getFacebookUserName(Context context) {
         return getPreferences(context).getString(FACEBOOK_USER_NAME,"");
+    }
+
+    public static void setIceServersUrls(String iceServers, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(ICE_SERVERS_STRING, iceServers);
+        editor.apply();
+    }
+
+    public static String getIceServersUrls(Context context) {
+        return getPreferences(context).getString(ICE_SERVERS_STRING, "");
     }
 }

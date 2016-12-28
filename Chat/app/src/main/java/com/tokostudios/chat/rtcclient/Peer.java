@@ -1,4 +1,4 @@
-package com.tokostudios.chat.webRtcClient;
+package com.tokostudios.chat.rtcclient;
 
 import android.util.Log;
 
@@ -14,6 +14,8 @@ import org.webrtc.PeerConnection;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 
+import io.socket.client.Socket;
+
 public class Peer implements PeerConnection.Observer, SdpObserver {
     private static final String LOG_TAG = Peer.class.getSimpleName();
     private PeerConnection peerConnection;
@@ -21,6 +23,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     private User user;
     private Friend friend;
     private SessionDescription localSdp;
+    private Socket socket;
 
     public Peer(WebRtcClient webRtcClient, User user, Friend friend) {
         Log.d(LOG_TAG, "Peer created ");
@@ -33,21 +36,18 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         //peerConnection.addStream(webRtcClient.localMediaStream);
         webRtcClient.rtcListener.onStatusChanged("CONNECTING");
     }
-    
-    public void setLocalStream(){
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void setLocalStream() {
         Log.e(LOG_TAG, "setLocalStream called " + webRtcClient.toString());
         peerConnection.addStream(webRtcClient.localMediaStream);
     }
+
     public PeerConnection getPeerConnection() {
         return peerConnection;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     @Override
@@ -81,15 +81,10 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             payload.put("label", iceCandidate.sdpMLineIndex);
             payload.put("id", iceCandidate.sdpMid);
             payload.put("candidate", iceCandidate.sdp);
-            //if (webRtcClient.isInitiator()) {
-                payload.put("from", webRtcClient.userId1);
-                payload.put("to", webRtcClient.userId2);
-            //} else {
-              //  payload.put("from",webRtcClient.userId2);
-              //  payload.put("to", webRtcClient.userId1);
-            //}
+            payload.put("from", webRtcClient.userId1);
+            payload.put("to", webRtcClient.userId2);
             payload.put("token", "abcd");
-            webRtcClient.socket.emit("ice_candidates", payload);
+            socket.emit("ice_candidates", payload);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -145,7 +140,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
                 if (webRtcClient.isInitiator()) {
                     if (peerConnection.getRemoteDescription() != null) {
                         Log.e(LOG_TAG, "remote desc is set. Draining candidates. Count : "
-                                +webRtcClient.queuedRemoteCandidates.size());
+                                + webRtcClient.queuedRemoteCandidates.size());
                         drainRemoteCandidates();
                     } else {
                         sendOfferLocalDescription();
@@ -178,7 +173,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             callData.put("to", webRtcClient.userId2);
             callData.put("offer", localDesc);
             callData.put("token", "abcd");
-            webRtcClient.socket.emit("request_call", callData);
+            socket.emit("request_call", callData);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -196,7 +191,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             callData.put("to", webRtcClient.userId2);
             callData.put("token", "abcd");
             callData.put("answer", localDesc);
-            webRtcClient.socket.emit("accept_call", callData);
+            socket.emit("accept_call", callData);
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package com.tokostudios.chat.webRtcClient;
+package com.tokostudios.chat.rtcclient;
 
 import org.webrtc.MediaStream;
 

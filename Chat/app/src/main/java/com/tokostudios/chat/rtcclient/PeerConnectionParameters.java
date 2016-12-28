@@ -1,4 +1,4 @@
-package com.tokostudios.chat.webRtcClient;
+package com.tokostudios.chat.rtcclient;
 
 public class PeerConnectionParameters {
     public final boolean videoCallEnabled;

@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nuggetchat.messenger">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature
@@ -16,7 +14,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".NuggetApplication"
@@ -58,8 +56,12 @@
         <activity
             android:name=".activities.GamesChatActivity"
             android:label="@string/title_activity_games_chat"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name="com.tokostudios.chat.ChatActivity"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name="com.tokostudios.chat.ChatActivity" />
+
+        <service
+            android:name="com.tokostudios.chat.ChatService"
+            android:enabled="true" />
     </application>
 
 </manifest>
