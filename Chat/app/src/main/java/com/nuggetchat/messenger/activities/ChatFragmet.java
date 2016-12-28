@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -30,7 +31,6 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
-import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.User;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
@@ -44,6 +44,10 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class ChatFragmet extends Fragment implements RtcListener {
     private static final String LOG_TAG = ChatFragmet.class.getSimpleName();
@@ -59,8 +63,15 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
+    Bundle bundle;
     ArrayList<UserDetails> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
+    @BindView(R.id.friends_add_cluster)
+    LinearLayout linearLayout;
+    @BindView(R.id.popular_friend_1)
+    ImageView popularFriend1;
+    @BindView(R.id.popular_friend_2)
+    ImageView popularFriend2;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -79,7 +90,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         // getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
         getActivity().getWindow().addFlags(
@@ -89,6 +100,9 @@ public class ChatFragmet extends Fragment implements RtcListener {
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         view = inflater.inflate(R.layout.activity_chat, container, false);
+        ButterKnife.bind(this, view);
+
+        bundle = getArguments();
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
 
@@ -111,6 +125,12 @@ public class ChatFragmet extends Fragment implements RtcListener {
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
 
+        GlideUtils.loadImage(getActivity(), popularFriend1, null,
+                "https://graph.facebook.com/1467060659971354/picture?width=200&height=150");
+
+        GlideUtils.loadImage(getActivity(), popularFriend2, null,
+                "https://graph.facebook.com/1467060659971354/picture?width=200&height=150");
+
         user1 = new User(userId, username);
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
@@ -129,7 +149,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                startCallButton.setImageResource(R.drawable.end_call_button);
+                startCallButton.setVisibility(View.INVISIBLE);
                 endCall.setVisibility(View.VISIBLE);
             }
         });
@@ -148,12 +168,27 @@ public class ChatFragmet extends Fragment implements RtcListener {
                 }
                 webRtcClient.socket.emit("end_call", payload);
                 webRtcClient.endCall();
-                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                        LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                showFriendsAddCluster();
+                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
             }
         });
 
         return view;
+    }
+
+    @OnClick(R.id.add_friends_to_chat)
+    /* package-local */ void addFriendsForCall() {
+        //showFriendsDialog();
+        Intent intent = new Intent(this.getActivity(), FriendsManagerActivity.class);
+        intent.putExtra("user_id", "dummy");
+        startActivityForResult(intent, 1234);
+    }
+
+    @OnClick({R.id.popular_friend_1, R.id.popular_friend_2})
+    /* package-local */ void callSelectedFriend() {
+        UserDetails user = (UserDetails) adapter.getItem(2);
+        startFriendCall(user);
     }
 
     private void fetchData() {
@@ -267,8 +302,8 @@ public class ChatFragmet extends Fragment implements RtcListener {
     @Override
     public void onLocalStream(MediaStream localStream) {
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
     }
 
     @Override
@@ -283,8 +318,8 @@ public class ChatFragmet extends Fragment implements RtcListener {
 
     @Override
     public void onRemoveRemoteStream() {
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
     }
 
     @Override
@@ -293,6 +328,11 @@ public class ChatFragmet extends Fragment implements RtcListener {
         rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
+        }
+        if (bundle != null) {
+            Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
+        } else {
+            Log.d(LOG_TAG, "bundle null");
         }
     }
 
@@ -322,6 +362,8 @@ public class ChatFragmet extends Fragment implements RtcListener {
         builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                endCall.setVisibility(View.INVISIBLE);
+                startCallButton.setVisibility(View.VISIBLE);
                 dialog.dismiss();
             }
         });
@@ -330,13 +372,26 @@ public class ChatFragmet extends Fragment implements RtcListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 UserDetails user = (UserDetails) adapter.getItem(which);
-                String userId = user.getUserId();
-                webRtcClient.setInitiator(true);
-                webRtcClient.addFriendForChat(userId);
-                webRtcClient.createOffer(webRtcClient.peers.get(0));
+                startFriendCall(user);
             }
         });
         builderSingle.show();
+    }
+
+    private void startFriendCall(UserDetails user) {
+        String userId = user.getUserId();
+        webRtcClient.setInitiator(true);
+        webRtcClient.addFriendForChat(userId);
+        webRtcClient.createOffer(webRtcClient.peers.get(0));
+        hideFriendsAddCluster();
+    }
+
+    private void hideFriendsAddCluster() {
+        linearLayout.setVisibility(View.INVISIBLE);
+    }
+
+    private void showFriendsAddCluster() {
+        linearLayout.setVisibility(View.VISIBLE);
     }
 
     private void getUserFriends() {
@@ -369,5 +424,15 @@ public class ChatFragmet extends Fragment implements RtcListener {
                     }
                 }
         ).executeAsync();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(LOG_TAG, "fragment onActivityResult");
+        if (requestCode == 1234) {
+            Log.d(LOG_TAG, "before toast onActivityResult");
+            Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+        }
     }
 }

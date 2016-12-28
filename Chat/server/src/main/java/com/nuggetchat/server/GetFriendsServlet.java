@@ -5,6 +5,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.internal.NonNull;
+import com.google.firebase.tasks.OnCompleteListener;
 import com.google.firebase.tasks.Task;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.lib.model.FriendInfo;
@@ -34,8 +36,8 @@ public class GetFriendsServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
-        String facebookAccessToken = req.getParameter(RequestParams.FACEBOOK_ACCESS_TOKEN);
-        String firebaseIdToken = req.getParameter(RequestParams.FIREBASE_ID_TOKEN);
+        final String facebookAccessToken = req.getParameter(RequestParams.FACEBOOK_ACCESS_TOKEN);
+        final String firebaseIdToken = req.getParameter(RequestParams.FIREBASE_ID_TOKEN);
         if (facebookAccessToken == null || facebookAccessToken.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Facebook access token required.");
             return;
@@ -45,9 +47,22 @@ public class GetFriendsServlet extends HttpServlet {
             return;
         }
 
-        Thread thread = ThreadManager.createBackgroundThread(() ->
-                FirebaseAuth.getInstance().verifyIdToken(firebaseIdToken).addOnCompleteListener(
-                        task -> writeToFirebase(task, facebookAccessToken)));
+        Thread thread = ThreadManager.createBackgroundThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        FirebaseAuth.getInstance().verifyIdToken(firebaseIdToken)
+                                .addOnCompleteListener(
+                                        new OnCompleteListener<FirebaseToken>() {
+                                            @Override
+                                            public void onComplete(
+                                                    @NonNull Task<FirebaseToken> task) {
+                                                writeToFirebase(task, facebookAccessToken);
+
+                                            }
+                                        });
+                    }
+                });
         thread.start();
 
         resp.setContentType("text/plain");
