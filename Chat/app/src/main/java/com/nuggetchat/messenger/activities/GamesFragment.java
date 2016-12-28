@@ -88,7 +88,6 @@ public class GamesFragment extends Fragment {
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
                         gamesData.getFeaturedImage());
                 gamesItemList.add(gamesItem);
-                ((GamesChatActivity) getActivity()).setGamesNameAndImages(gamesItemList);
             }
 
             @Override

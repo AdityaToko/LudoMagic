@@ -162,14 +162,6 @@ public class GamesChatActivity extends AppCompatActivity {
         gamesChatTabLayout.getTabAt(1).setCustomView(tabSecondItem);
     }
 
-    public void setGamesNameAndImages(ArrayList<GamesItem> gamesItemList) {
-       this.gamesItemList = gamesItemList;
-    }
-
-    public ArrayList<GamesItem> getGamesItemList() {
-        return gamesItemList;
-    }
-
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
