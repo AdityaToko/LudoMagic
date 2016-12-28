@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+    <servlet>
+        <servlet-name>FirebaseInit</servlet-name>
+        <servlet-class>com.nuggetchat.server.FirebaseInit</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FirebaseInit</servlet-name>
+        <url-pattern>/_ah/start</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>GetFriends</servlet-name>
+        <servlet-class>com.nuggetchat.server.GetFriendsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetFriends</servlet-name>
+        <url-pattern>/getFriends</url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+</web-app>

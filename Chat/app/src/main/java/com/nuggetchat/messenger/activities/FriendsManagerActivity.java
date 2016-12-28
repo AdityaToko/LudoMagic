@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -32,7 +33,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FriendsManagerActivity extends AppCompatActivity{
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
+public class FriendsManagerActivity extends AppCompatActivity {
     private static final String LOG_TAG = FriendsManagerActivity.class.getSimpleName();
     ArrayList<UserDetails> selectUsers;
     List<UserDetails> temp;
@@ -45,12 +49,15 @@ public class FriendsManagerActivity extends AppCompatActivity{
     ContentResolver resolver;
     UserFriendsAdapter adapter;
     CallbackManager callbackManager;
+    Intent intent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_friendsmanager);
+        ButterKnife.bind(this);
+        intent = getIntent();
         getUserFriends(SharedPreferenceUtility.getFacebookUserId(FriendsManagerActivity.this));
         callbackManager = CallbackManager.Factory.create();
 
@@ -86,6 +93,20 @@ public class FriendsManagerActivity extends AppCompatActivity{
                             }
                             adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
                             listView.setAdapter(adapter);
+                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                    Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+                                    resultIntent.putExtra("user_id", ((UserDetails) adapterView.getAdapter().getItem(i)).getUserId());
+                                    if (intent.getStringExtra("user_id") == null) {
+                                        startActivity(resultIntent);
+                                        finish();
+                                        return;
+                                    }
+                                    setResult(1234, resultIntent);
+                                    finish();
+                                }
+                            });
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -116,6 +137,15 @@ public class FriendsManagerActivity extends AppCompatActivity{
         startActivity(intent);
     }
 
+    @OnClick(R.id.skip_friends_addition)
+    /* package-local */ void skipFriendsAddition() {
+        if (intent.getStringExtra("user_id") == null) {
+            Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+            startActivity(intent);
+        }
+        finish();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -142,5 +172,19 @@ public class FriendsManagerActivity extends AppCompatActivity{
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         return true;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
     }
 }
