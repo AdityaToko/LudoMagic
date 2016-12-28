@@ -57,11 +57,24 @@
             android:name=".activities.GamesChatActivity"
             android:label="@string/title_activity_games_chat"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name="com.tokostudios.chat.ChatActivity" />
+        <activity android:name="com.tokostudios.chat.ChatActivity">
+            <intent-filter>
+            <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CAL" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name="com.tokostudios.chat.ChatService"
             android:enabled="true" />
+
+        <receiver
+            android:name=".CallRequestReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter >
+                <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

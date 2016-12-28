@@ -15,7 +15,7 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class ChatService extends Service {
-    private static final String HOST = "http://192.168.0.118:5000/";
+    private static final String HOST = "http://192.168.0.9:5000/";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     Socket socket;
     MessageHandler messageHandler;
@@ -46,6 +46,7 @@ public class ChatService extends Service {
         messageHandler = new MessageHandler(socket, this);
         socket.on(Socket.EVENT_CONNECT, messageHandler.onInit);
         socket.on("init_successful", messageHandler.onInitSuccessful);
+        socket.on("call_requested", messageHandler.onCallRequested);
         socket.connect();
         return START_STICKY;
     }
@@ -57,7 +58,6 @@ public class ChatService extends Service {
 
     private void registerForCallEvents(){
         messageHandler.setEventListener(eventListener);
-        socket.on("call_requested", messageHandler.onCallRequested);
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);

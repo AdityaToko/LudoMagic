@@ -1,6 +1,9 @@
 package com.tokostudios.chat;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,7 +27,7 @@ public class MessageHandler {
     String userId;
     String username;
 
-    public MessageHandler(Socket socket, Context context){
+    public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
         this.context = context;
         userId = SharedPreferenceUtility.getFacebookUserId(context);
@@ -76,10 +79,27 @@ public class MessageHandler {
     public Emitter.Listener onCallRequested = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Toast.makeText(context, "Call Requested", Toast.LENGTH_SHORT);
-            JSONObject requestObject = (JSONObject) args[0];
+            final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
-            try {
+            Intent intent = new Intent();
+            intent.setAction("com.nuggetchat.messenger.intent.action.INCOMING_CALL");
+            context.sendBroadcast(intent);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        Toast.makeText(context,
+                                "Receiving call from " + requestObject.getString("from"),
+                                Toast.LENGTH_SHORT).show();
+                    } catch (JSONException e) {
+                        Log.e(LOG_TAG, "JSON ERROR " + e.getMessage());
+                    }
+                }
+            });
+
+          /*  try {
                 eventListener.onCall(requestObject.getString("from"), socket);
                 Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
                 if (userId.equals(requestObject.getString("to"))
@@ -95,7 +115,7 @@ public class MessageHandler {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
     };
 
