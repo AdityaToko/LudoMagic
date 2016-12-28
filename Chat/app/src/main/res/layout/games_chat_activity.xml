@@ -8,7 +8,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/colorWhite"
         android:foreground="?android:windowContentOverlay"
         android:padding="5dp">
@@ -91,7 +91,7 @@
         app:tabMode="fixed"
         app:tabGravity="fill"
         android:layout_below="@id/toolbar"
-        android:background="#454563"
+        android:background="#F7F3E2"
         app:tabSelectedTextColor="@color/colorWhite" />
 
     <!-- View pager to swipe views -->

@@ -85,12 +85,12 @@ public class GamesChatActivity extends AppCompatActivity {
                 TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
                 if(position == 0) {
-                    imageView.setImageResource(R.drawable.game);
-                    tabView.setBackgroundColor(Color.parseColor("#454563"));
+                    imageView.setImageResource(R.drawable.games_icon);
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#1cb1be"));
                 } else {
                     imageView.setImageResource(R.drawable.chat_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#454563"));
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#F9B21B"));
                 }
             }
