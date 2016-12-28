@@ -7,6 +7,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -21,6 +27,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
+import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -29,6 +36,8 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -113,7 +122,8 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<GetTokenResult> task) {
                         String firebaseIdToken = task.getResult().getToken();
                         Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
-                        getFriendsGraph(accessToken);
+                        //getFriendsGraph(accessToken);
+                        getUserFriends(accessToken.getToken(), firebaseIdToken);
                     }
                 });
 
@@ -221,5 +231,30 @@ public class MainActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
+    }
+
+    public void getUserFriends(final String accessToken, final String idToken) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://192.168.0.118:8080/";
+        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(LOG_TAG, "Request success " + response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Error in making friends request", error);
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, accessToken);
+                params.put(RequestParams.FIREBASE_ID_TOKEN, idToken);
+                return params;
+            }
+        };
+        queue.add(sr);
     }
 }
