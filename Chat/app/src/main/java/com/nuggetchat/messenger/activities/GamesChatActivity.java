@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -38,6 +40,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private LinearLayout tabView;
     private TextView textView;
     private  ImageView imageView;
+    private ArrayList<GamesItem> gamesItemList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,6 +143,14 @@ public class GamesChatActivity extends AppCompatActivity {
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
         secondImageView.setImageResource(R.drawable.chat_icon);
         gamesChatTabLayout.getTabAt(1).setCustomView(tabSecondItem);
+    }
+
+    public void setGamesNameAndImages(ArrayList<GamesItem> gamesItemList) {
+       this.gamesItemList = gamesItemList;
+    }
+
+    public ArrayList<GamesItem> getGamesItemList() {
+        return gamesItemList;
     }
 
     @Override

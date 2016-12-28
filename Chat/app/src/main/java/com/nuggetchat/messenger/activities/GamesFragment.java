@@ -27,6 +27,7 @@ public class GamesFragment extends Fragment {
     GridView gridView;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImages;
+    ArrayList<GamesItem> gamesItemList;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -34,6 +35,7 @@ public class GamesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_games_layout, container, false);
         gamesName = new ArrayList<>();
         gamesImages = new ArrayList<>();
+        gamesItemList = new ArrayList<>();
         fetchDataForGames();
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
         gridView = (GridView)view.findViewById(R.id.grid_view);
@@ -66,8 +68,13 @@ public class GamesFragment extends Fragment {
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
                    GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
                    Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
+
                    gamesName.add(gamesDate.getTitle());
                    gamesImages.add(gamesDate.getFeaturedImage());
+                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
+                        gamesDate.getFeaturedImage());
+                gamesItemList.add(gamesItem);
+                ((GamesChatActivity)getActivity()).setGamesNameAndImages(gamesItemList);
             }
 
             @Override
