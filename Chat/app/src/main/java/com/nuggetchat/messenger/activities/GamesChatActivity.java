@@ -13,41 +13,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
-import com.tokostudios.chat.User;
-import com.tokostudios.chat.webRtcClient.WebRtcClient;
-
-import org.webrtc.VideoRenderer;
-import org.webrtc.VideoRendererGui;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class GamesChatActivity extends AppCompatActivity {
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
-
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
-    private static final int LOCAL_WIDTH = 25;
-    private static final int LOCAL_HEIGHT = 25;
-
-    private static final int REMOTE_X = 0;
-    private static final int REMOTE_Y = 0;
-    private static final int REMOTE_WIDTH = 100;
-    private static final int REMOTE_HEIGHT = 100;
-
-    private static final int LOCAL_X_CONNECTING = 0;
-    private static final int LOCAL_Y_CONNECTING = 0;
-    private static final int LOCAL_WIDTH_CONNECTING = 100;
-    private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
-
-    private WebRtcClient webRtcClient;
-    private String socketAddress;
-
-    private String targetId;
-    private User user1;
 
     @BindView(R.id.toolbar)
     /* package-local */ Toolbar toolbar;
@@ -107,18 +78,19 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView().setBackgroundColor(Color.parseColor("#FEFCFF"));
+                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView()
+                        .setBackgroundColor(Color.parseColor("#FEFCFF"));
                 int position = tab.getPosition();
                 LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
                 TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
                 if(position == 0) {
-                    imageView.setImageResource(R.drawable.game);
-                    tabView.setBackgroundColor(Color.parseColor("#454563"));
+                    imageView.setImageResource(R.drawable.games_icon);
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#1cb1be"));
                 } else {
                     imageView.setImageResource(R.drawable.chat_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#454563"));
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#F9B21B"));
                 }
             }

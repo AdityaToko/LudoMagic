@@ -28,13 +28,12 @@
     <div class="jumbotron">
         <div class="row">
             <div class="col-lg-12">
-                <h1>Hello, App Engine!</h1>
-                <p>Enter your name and press the button below to call <code>MyServlet</code>.</p>
-
-                <form action="/hello" method="POST">
+                <form action="/getFriends" method="POST">
                     <div class="input-group">
-                        <input type="text" class="form-control input-lg" placeholder="Name"
-                               name="access_token"/>
+                        <input type="text" class="form-control input-lg" placeholder="Facebook"
+                               name="facebook_access_token"/>
+                        <input type="text" class="form-control input-lg" placeholder="Firebase"
+                               name="firebase_id_token"/>
                           <span class="input-group-btn">
                              <button class="btn btn-default btn-primary btn-group btn-lg"
                                      type="submit" id="helloButton">Say "Hello";</button>
