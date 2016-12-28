@@ -31,6 +31,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.User;
 import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;

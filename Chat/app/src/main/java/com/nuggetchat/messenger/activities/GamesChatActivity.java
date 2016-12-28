@@ -51,9 +51,9 @@ public class GamesChatActivity extends AppCompatActivity {
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
-        intent = getIntent();
+       intent = getIntent();
         if (intent != null) {
-            viewPager.setCurrentItem(1);
+            viewPager.setCurrentItem(0);
         }
         setUpToolbar();
 
