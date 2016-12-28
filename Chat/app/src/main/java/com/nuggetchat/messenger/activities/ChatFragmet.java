@@ -30,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -88,6 +89,8 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private ArrayList<String> multiPlayerGamesImage;
     private LinearLayout gamesList;
     private ArrayList<GamesItem> gamesItemList;
+    ArrayList<String> gamesName;
+    ArrayList<String> gamesImage;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -106,6 +109,9 @@ public class ChatFragmet extends Fragment implements RtcListener {
         bundle = getArguments();
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
+        gamesName = new ArrayList<>();
+        gamesImage = new ArrayList<>();
+        gamesItemList = new ArrayList<>();
 
         fetchData();
 
@@ -193,10 +199,57 @@ public class ChatFragmet extends Fragment implements RtcListener {
     }
 
     private void fetchData() {
+        String firebaseUri = Conf.firebaseGamesURI();
+        Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
+
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
+                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
+                GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
+                Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
+
+                gamesName.add(gamesDate.getTitle());
+                gamesImage.add(gamesDate.getFeaturedImage());
+                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
+                        gamesDate.getFeaturedImage());
+                gamesItemList.add(gamesItem);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         String firebaseMultiPlayerGamesUri = Conf.firebaseMultiPlayerGamesUri();
         Log.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
 
-        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+        firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseMultiPlayerGamesUri);
 
         if (firebaseRef == null) {
@@ -209,7 +262,6 @@ public class ChatFragmet extends Fragment implements RtcListener {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
-                gamesItemList = ((GamesChatActivity)getActivity()).getGamesItemList();
                 for (int i = 0 ; i < gamesItemList.size(); i++) {
                     Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
                     if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {

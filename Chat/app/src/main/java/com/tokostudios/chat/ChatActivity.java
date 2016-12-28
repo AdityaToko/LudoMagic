@@ -64,8 +64,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     ArrayList<UserDetails> selectUsers = new ArrayList<>();
     List<UserDetails> temp;
     UserFriendsAdapter adapter;
-    ArrayList<String> gamesName;
-    ArrayList<String> gamesImage;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -80,6 +78,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     private ArrayList<String> multiPlayerGamesImage;
     private LinearLayout gamesList;
     private ArrayList<GamesItem> gamesItemList;
+    private ArrayList<String> gamesName;
+    private ArrayList<String> gamesImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
