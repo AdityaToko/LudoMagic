@@ -97,6 +97,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     ArrayList<String> gamesImage;
     private NuggetApplication application;
     private ChatService chatService;
+    private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -106,7 +107,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            chatService = null;
         }
     };
 
@@ -182,6 +183,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                isBound = true;
             }
         });
 
@@ -239,6 +241,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
         startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
+    }
+
+    private void undbindService(){
+        if(isBound){
+            if(chatService != null){
+                chatService.unregisterEventListener(this);
+            }
+            getActivity().unbindService(serviceConnection);
+            isBound = false;
+        }
     }
 
     private void fetchData() {
@@ -451,6 +463,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             chatService.socket.emit("end_call", payload);
             webRtcClient.endCall();
+            undbindService();
         }
     }
 
