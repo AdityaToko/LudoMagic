@@ -151,6 +151,11 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
         user1 = new User(userId, username);
 
+        if (application.isOngoingCall() || application.isInitiator()) {
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
+        }
+
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
@@ -432,6 +437,11 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
+        }
+
+        if (application.isOngoingCall() || application.isInitiator()) {
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
         }
     }
 
