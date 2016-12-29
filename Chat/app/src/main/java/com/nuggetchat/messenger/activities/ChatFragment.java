@@ -44,7 +44,6 @@ import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.ChatService;
 import com.tokostudios.chat.User;
 
@@ -143,6 +142,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         bundle = getArguments();
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
+        multiPlayerGamesUrl = new ArrayList<>();
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
