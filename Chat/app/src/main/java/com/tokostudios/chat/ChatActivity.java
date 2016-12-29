@@ -57,8 +57,6 @@ import org.webrtc.SessionDescription;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,6 +127,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
+        multiPlayerGamesUrl = new ArrayList<>();
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
