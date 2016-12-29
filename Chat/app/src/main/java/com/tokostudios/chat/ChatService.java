@@ -75,4 +75,11 @@ public class ChatService extends Service {
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
     }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Intent intent = new Intent();
+        intent.setAction("com.android.ServiceStopped");
+        sendBroadcast(intent);
+    }
 }

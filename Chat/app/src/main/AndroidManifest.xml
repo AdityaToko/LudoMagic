@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <application
         android:name=".NuggetApplication"
@@ -63,21 +63,22 @@
             android:name=".activities.GamesChatActivity"
             android:label="@string/title_activity_games_chat"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".activities.GameWebViewActivity"
             android:label="@string/title_activity_game_web_view"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name="com.tokostudios.chat.ChatActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <service
             android:name="com.tokostudios.chat.ChatService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.android.ServiceStopped" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".CallRequestReceiver"
@@ -88,12 +89,22 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name="com.tokostudios.chat.IncomingCallActivity"
+        <activity
+            android:name="com.tokostudios.chat.IncomingCallActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".RestartServiceReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.ServiceStopped" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
