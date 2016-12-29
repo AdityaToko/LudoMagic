@@ -310,7 +310,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
-        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesName.get(i));
+        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesImage.get(i));
 
         textView.setText(multiPlayerGamesName.get(i));
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
