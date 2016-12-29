@@ -127,6 +127,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                         | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
+        if (SharedPreferenceUtility.getFavFriend1(getActivity()).equals("")) {
+            popularFriend1.setVisibility(View.INVISIBLE);
+        }
+
+        if (SharedPreferenceUtility.getFavFriend2(getActivity()).equals("")) {
+            popularFriend2.setVisibility(View.INVISIBLE);
+        }
 
         bundle = getArguments();
         multiPlayerGamesName = new ArrayList<>();
@@ -153,12 +160,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-
-        GlideUtils.loadImage(getActivity(), popularFriend1, null,
-                "https://graph.facebook.com/1467060659971354/picture?width=200&height=150");
-
-        GlideUtils.loadImage(getActivity(), popularFriend2, null,
-                "https://graph.facebook.com/1467060659971354/picture?width=200&height=150");
+        String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
+        String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
+        if (!friend1.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend1, null,
+                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
+        }
+        if (!friend2.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend2, null,
+                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
+        }
 
         user1 = new User(userId, username);
         VideoRendererGui.setView(rtcView, new Runnable() {
@@ -217,10 +228,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         startActivityForResult(intent, 1234);
     }
 
-    @OnClick({R.id.popular_friend_1, R.id.popular_friend_2})
-    /* package-local */ void callSelectedFriend() {
-        FriendInfo user = (FriendInfo) adapter.getItem(2);
-        startFriendCall(user);
+    @OnClick({R.id.popular_friend_1})
+    /* package-local */ void callFavFriend1() {
+        startFriendCall(SharedPreferenceUtility.getFavFriend1(getActivity()));
+    }
+
+    @OnClick({R.id.popular_friend_2})
+    /* package-local */ void callFavFriend2() {
+        startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
     }
 
     private void fetchData() {
@@ -454,18 +469,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 FriendInfo user = (FriendInfo) adapter.getItem(which);
-                startFriendCall(user);
+                startFriendCall(user.getFacebookId());
             }
         });
         builderSingle.show();
     }
 
-    private void startFriendCall(FriendInfo user) {
-        String userId = user.getFacebookId();
+    private void startFriendCall(String facebookId) {
         webRtcClient.setInitiator(true);
-        webRtcClient.addFriendForChat(userId, chatService.socket);
+        webRtcClient.addFriendForChat(facebookId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
+        SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
     }
 
     private void hideFriendsAddCluster() {

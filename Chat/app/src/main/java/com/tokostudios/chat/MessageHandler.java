@@ -91,7 +91,7 @@ public class MessageHandler {
         public void call(Object... args) {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
-           /* Intent intent = new Intent();
+            Intent intent = new Intent();
             try {
                 String from = requestObject.getString("from");
                 String to = requestObject.getString("to");
@@ -122,9 +122,9 @@ public class MessageHandler {
                         Log.e(LOG_TAG, "JSON ERROR " + e.getMessage());
                     }
                 }
-            });*/
+            });
 
-            try {
+           /* try {
                // eventListener.onCall(requestObject.getString("from"), socket);
                 for (EventListener listener : listeners) {
                     listener.onCall(requestObject.getString("from"), socket);
@@ -145,7 +145,7 @@ public class MessageHandler {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
-            }
+            }*/
         }
     };
 

@@ -164,7 +164,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                startCallButton.setImageResource(R.drawable.end_call_button);
+                //startCallButton.setImageResource(R.drawable.end_call_button);
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.GONE);
             }
         });
 
@@ -184,6 +186,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 webRtcClient.endCall();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                         LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                startCallButton.setVisibility(View.VISIBLE);
             }
         });
 
@@ -423,6 +426,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                startCallButton.setVisibility(View.VISIBLE);
+                endCall.setVisibility(View.GONE);
             }
         });
 

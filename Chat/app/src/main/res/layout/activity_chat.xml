@@ -69,7 +69,7 @@
         android:layout_above="@id/multipayer_games_view"
         android:layout_centerHorizontal="true"
         android:src="@drawable/end_call_button"
-        android:visibility="invisible" />
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/friends_add_cluster"
