@@ -149,6 +149,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         startCallButton = (ImageView) view.findViewById(R.id.start_call_button);
         endCall = (ImageView) view.findViewById(R.id.end_call_button);
+        linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
         socketAddress = "http://192.168.0.118:5000/";
 
