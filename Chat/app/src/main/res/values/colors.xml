@@ -9,4 +9,6 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="first_tab_text_color">#F2830A</color>
     <color name="second_tab_text_color">#2290D3</color>
+    <color name="accept_btn_color">#338703</color>
+    <color name="reject_btn_color">#B90006</color>
 </resources>

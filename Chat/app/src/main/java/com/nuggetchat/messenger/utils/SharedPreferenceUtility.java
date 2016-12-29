@@ -10,6 +10,7 @@ public class SharedPreferenceUtility {
     private final static String LOG_TAG = SharedPreferenceUtility.class.getSimpleName();
     private static final String FACEBOOK_USER_ID = "facebook_user_id";
     private static final String FACEBOOK_USER_NAME = "facebook_username";
+    private static final String ICE_SERVERS_STRING = "ice_servers";
     private static final String FACEBOOK_ACCESS_TOKEN = "facebook_access_token";
     private static final String FIREBASE_ID_TOKEN = "firebase_id_token";
     private static final String FIREBASE_UID = "firebase_uid";
@@ -44,6 +45,16 @@ public class SharedPreferenceUtility {
 
     public static String getFacebookUserName(Context context) {
         return getPreferences(context).getString(FACEBOOK_USER_NAME,"");
+    }
+
+    public static void setIceServersUrls(String iceServers, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(ICE_SERVERS_STRING, iceServers);
+        editor.apply();
+    }
+
+    public static String getIceServersUrls(Context context) {
+        return getPreferences(context).getString(ICE_SERVERS_STRING, "");
     }
 
     public static void setFacebookAccessToken(String facebookAccessToken, Context context) {

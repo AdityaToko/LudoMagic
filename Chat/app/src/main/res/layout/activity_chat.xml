@@ -16,22 +16,50 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-  <ImageView
+    <HorizontalScrollView
+        android:id="@+id/horizontal_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorWhite">
+
+        <LinearLayout
+            android:id="@+id/games_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/text_play_with_friends"
+        android:layout_width="130dp"
+        android:layout_height="30dp"
+        android:layout_above="@id/horizontal_scroll"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-30dp"
+        android:background="@drawable/play_with_friends"
+        android:gravity="center"
+        android:text="play with friends"
+        android:textColor="@color/colorWhite" />
+
+    <ImageView
         android:id="@+id/start_call_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/start_call_button"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_above="@id/text_play_with_friends"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/start_call_button" />
 
-   <ImageView
+    <ImageView
         android:id="@+id/end_call_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:visibility="invisible"
-        android:src="@drawable/end_call_button"
+        android:layout_above="@id/text_play_with_friends"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" />
+        android:src="@drawable/end_call_button"
+        android:visibility="invisible" />
 
     <LinearLayout
         android:id="@+id/friends_add_cluster"

@@ -1,11 +1,13 @@
 package com.nuggetchat.messenger.activities;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,12 +42,16 @@ public class GamesChatActivity extends AppCompatActivity {
     private LinearLayout tabView;
     private TextView textView;
     private  ImageView imageView;
+    private ArrayList<GamesItem> gamesItemList;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
+
+       intent = getIntent();
 
         setUpToolbar();
 
@@ -55,6 +63,11 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
+        //to be taken after finishing
+       /* if (intent != null) {
+            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
+            tabView.setBackgroundResource(R.drawable.second_tab_background);
+        } else {*/
         tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
         tabView.setBackgroundResource(R.drawable.first_tab_background);
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -69,7 +82,7 @@ public class GamesChatActivity extends AppCompatActivity {
                     imageView.setImageResource(R.drawable.games_icon);
                     tabView.setBackgroundResource(R.drawable.first_tab_background);
                     textView.setTextColor(Color.parseColor("#F2830A"));
-                } else  {
+                } else {
                     imageView.setImageResource(R.drawable.chat_icon);
                     tabView.setBackgroundResource(R.drawable.second_tab_background);
                     textView.setTextColor(Color.parseColor("#2290D3"));
@@ -84,7 +97,7 @@ public class GamesChatActivity extends AppCompatActivity {
                 LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
                 TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);
                 ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
-                if(position == 0) {
+                if (position == 0) {
                     imageView.setImageResource(R.drawable.games_icon);
                     tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#1cb1be"));
@@ -117,7 +130,14 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpViewPager(ViewPager viewPager) {
         ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
-        viewPagerAdapter.addFrag(new ChatFragmet(), "chat");
+        ChatFragment chatFragment = new ChatFragment();
+        if (intent != null) {
+            Log.d(LOG_TAG, "bundle set");
+            Bundle bundle = new Bundle();
+            bundle.putString("user_id", intent.getStringExtra("user_id"));
+            chatFragment.setArguments(bundle);
+        }
+        viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
     }
 
@@ -152,6 +172,13 @@ public class GamesChatActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(LOG_TAG, "activity onActivityResult");
     }
 }

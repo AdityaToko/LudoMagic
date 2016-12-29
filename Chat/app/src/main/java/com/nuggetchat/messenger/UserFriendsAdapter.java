@@ -13,9 +13,7 @@ import android.widget.TextView;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.utils.GlideUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class UserFriendsAdapter extends BaseAdapter {
 
@@ -27,8 +25,6 @@ public class UserFriendsAdapter extends BaseAdapter {
     public UserFriendsAdapter(List<FriendInfo> selectUsers, Context context) {
         userDetails = selectUsers;
         this.context = context;
-        this.userDetailsList = new ArrayList<>();
-        this.userDetailsList.addAll(userDetails);
     }
 
     @Override
@@ -51,13 +47,14 @@ public class UserFriendsAdapter extends BaseAdapter {
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         View view = convertView;
         if (view == null) {
-            LayoutInflater li = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater li = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = li.inflate(R.layout.list_item, null);
         } else {
             view = convertView;
         }
 
-        viewHolder = new ViewHolder();
+        ViewHolder viewHolder = new ViewHolder();
 
         viewHolder.title = (TextView) view.findViewById(R.id.name);
         viewHolder.imageView = (ImageView) view.findViewById(R.id.profile_image);
@@ -84,23 +81,7 @@ public class UserFriendsAdapter extends BaseAdapter {
         return view;
     }
 
-    // Filter Class
-    public void filter(String charText) {
-        charText = charText.toLowerCase(Locale.getDefault());
-        userDetails.clear();
-        if (charText.length() == 0) {
-            userDetails.addAll(userDetailsList);
-        } else {
-            for (FriendInfo wp : userDetailsList) {
-                if (wp.getName().toLowerCase(Locale.getDefault())
-                        .contains(charText)) {
-                    userDetails.add(wp);
-                }
-            }
-        }
-        notifyDataSetChanged();
-    }
-    static class ViewHolder {
+    private static class ViewHolder {
         ImageView imageView;
         TextView title;
     }
