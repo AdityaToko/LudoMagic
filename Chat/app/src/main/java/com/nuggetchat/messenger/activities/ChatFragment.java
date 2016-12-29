@@ -164,16 +164,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-        String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
-        String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
-        if (!friend1.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend1, null,
-                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
-        }
-        if (!friend2.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend2, null,
-                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
-        }
+        triggerImageChanges();
 
         user1 = new User(userId, username);
         VideoRendererGui.setView(rtcView, new Runnable() {
@@ -498,6 +489,22 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
+        triggerImageChanges();
+    }
+
+    private void triggerImageChanges() {
+        String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
+        String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
+        if (!friend1.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend1, null,
+                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
+            popularFriend1.setVisibility(View.VISIBLE);
+        }
+        if (!friend2.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend2, null,
+                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
+            popularFriend2.setVisibility(View.VISIBLE);
+        }
     }
 
     private void hideFriendsAddCluster() {
