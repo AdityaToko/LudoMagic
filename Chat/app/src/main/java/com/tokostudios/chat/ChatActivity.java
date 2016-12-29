@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GamesItem;
@@ -107,6 +108,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         }
     };
     private Bundle bundle;
+    private NuggetApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +125,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
-
+        application = (NuggetApplication) getApplicationContext();
         fetchData();
 
         Intent intent = getIntent();
@@ -440,6 +442,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 String userId = user.getUserId();
                 multiplayerGamesView.setVisibility(View.VISIBLE);
                 webRtcClient.setInitiator(true);
+                application.setInitiator(true);
                 webRtcClient.addFriendForChat(userId, chatService.socket);
                 webRtcClient.createOffer(webRtcClient.peers.get(0));
             }

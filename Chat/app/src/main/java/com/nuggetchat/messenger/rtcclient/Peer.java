@@ -144,7 +144,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         new Runnable() {
             @Override
             public void run() {
-                if (webRtcClient.isInitiator()) {
+                if (webRtcClient.isInitiator() ) {
                     if (peerConnection.getRemoteDescription() != null) {
                         Log.e(LOG_TAG, "remote desc is set. Draining candidates. Count : "
                                 + webRtcClient.queuedRemoteCandidates.size());

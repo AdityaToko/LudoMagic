@@ -95,7 +95,7 @@ public class MessageHandler {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
 
-            if (application.isInitiator()) {
+            if (!application.isInitiator()) {
                 Intent intent = new Intent();
                 try {
                     String from = requestObject.getString("from");

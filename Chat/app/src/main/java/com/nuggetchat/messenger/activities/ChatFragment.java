@@ -33,6 +33,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.GamesData;
@@ -94,6 +95,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
+    private NuggetApplication application;
     private ChatService chatService;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -141,7 +143,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
-
+        application = (NuggetApplication) getActivity().getApplicationContext();
         fetchData();
 
         Intent intent = getActivity().getIntent();
@@ -478,6 +480,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void startFriendCall(String facebookId) {
         webRtcClient.setInitiator(true);
+        application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
