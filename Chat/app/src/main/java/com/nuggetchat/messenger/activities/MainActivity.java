@@ -19,14 +19,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -115,71 +114,44 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
-                        Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
-                        startActivity(intent);
-                        finish();
+                        setUserFacebookUserId();
                     }
                 });
 
+    }
+
+    private void setUserFacebookUserId() {
+        String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + SharedPreferenceUtility.getFirebaseUid(this) + "/facebookId";
+        Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
+
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+        firebaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                SharedPreferenceUtility.setFacebookUserId(dataSnapshot.getValue().toString(), MainActivity.this);
+                Log.d(LOG_TAG, SharedPreferenceUtility.getFacebookUserId(MainActivity.this));
+                Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void gotoNextActivity() {
         Intent intent = new Intent(MainActivity.this, GamesChatActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private Bundle getFacebookData(JSONObject object) {
-
-        try {
-            Bundle bundle = new Bundle();
-            String id = object.getString("id");
-            Log.e(LOG_TAG, "getFacebookData: USER ID " + id);
-            SharedPreferenceUtility.setFacebookUserId(id, MainActivity.this);
-            String name = object.getString("first_name");
-            SharedPreferenceUtility.setFacebookUserName(name, MainActivity.this);
-            URL profile_pic;
-
-            try {
-                profile_pic = new URL("https://graph.facebook.com/" + id
-                        + "/picture?width=200&height=150");
-                Log.i("profile_pic", profile_pic + "");
-                bundle.putString("profile_pic", profile_pic.toString());
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            bundle.putString("idFacebook", id);
-            if (object.has("first_name")) {
-                bundle.putString("first_name", object.getString("first_name"));
-            }
-            if (object.has("last_name")) {
-                bundle.putString("last_name", object.getString("last_name"));
-            }
-            if (object.has("email")) {
-                bundle.putString("email", object.getString("email"));
-            }
-            if (object.has("gender")) {
-                bundle.putString("gender", object.getString("gender"));
-            }
-            if (object.has("birthday")) {
-                bundle.putString("birthday", object.getString("birthday"));
-            }
-            if (object.has("location")) {
-                bundle.putString("location", object.getJSONObject("location").getString("name"));
-            }
-
-            Log.d(LOG_TAG,
-                    "First_name:" + object.getString("first_name") + object.getString("last_name")
-                            + object.getString("email") + object.getString("gender") + profile_pic);
-
-            return bundle;
-        } catch (JSONException e) {
-            Log.d(LOG_TAG, "Error parsing JSON", e);
-        }
-        return null;
     }
 
     @Override
