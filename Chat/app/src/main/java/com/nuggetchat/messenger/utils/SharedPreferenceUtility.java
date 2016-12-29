@@ -14,7 +14,8 @@ public class SharedPreferenceUtility {
     private static final String FACEBOOK_ACCESS_TOKEN = "facebook_access_token";
     private static final String FIREBASE_ID_TOKEN = "firebase_id_token";
     private static final String FIREBASE_UID = "firebase_uid";
-    private Context context;
+    private static final String FAV_FRIEND_1 = "fav_friend_1";
+    private static final String FAV_FRIEND_2 = "fav_friend_2";
 
     private static SharedPreferences.Editor getEditor(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -85,5 +86,36 @@ public class SharedPreferenceUtility {
 
     public static String getFirebaseUid(Context context) {
         return getPreferences(context).getString(FIREBASE_UID,"");
+    }
+
+    public static void setFavFriend1(String favFriend1, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FAV_FRIEND_1, favFriend1);
+        editor.apply();
+    }
+
+    public static String getFavFriend1(Context context) {
+        return getPreferences(context).getString(FAV_FRIEND_1,"");
+    }
+
+    public static void setFavFriend2(String favFriend2, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FAV_FRIEND_2, favFriend2);
+        editor.apply();
+    }
+
+    public static String getFavFriend2(Context context) {
+        return getPreferences(context).getString(FAV_FRIEND_2,"");
+    }
+
+    public static void setFavouriteFriend(Context context, String favFriend) {
+        if (getFavFriend1(context).equals("")) {
+            setFavFriend1(favFriend, context);
+        } else {
+            if (!getFavFriend1(context).equals(favFriend)) {
+                setFavFriend2(getFavFriend1(context), context);
+                setFavFriend1(favFriend, context);
+            }
+        }
     }
 }
