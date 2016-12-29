@@ -538,6 +538,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+                startFriendCall(data.getStringExtra("user_id"));
             }
         }
     }
