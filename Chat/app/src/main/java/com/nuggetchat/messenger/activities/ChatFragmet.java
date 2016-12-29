@@ -12,9 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.TextView;
 
@@ -74,6 +74,8 @@ public class ChatFragmet extends Fragment implements RtcListener {
     ImageView popularFriend1;
     @BindView(R.id.popular_friend_2)
     ImageView popularFriend2;
+    @BindView(R.id.multipayer_games_view)
+    RelativeLayout multiplayerGamesView;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -87,7 +89,6 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private View view;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
-    private LinearLayout gamesList;
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
@@ -174,7 +175,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
                     e.printStackTrace();
                 }
                 webRtcClient.socket.emit("end_call", payload);
-                webRtcClient.endCall();
+               // webRtcClient.endCall();
                 showFriendsAddCluster();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                         LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
@@ -304,7 +305,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private void setUpListView(final int i) {
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
-        gamesList = (LinearLayout) view.findViewById(R.id.games_list);
+        LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.grid_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
@@ -440,10 +441,14 @@ public class ChatFragmet extends Fragment implements RtcListener {
     }
 
     private void hideFriendsAddCluster() {
+        multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
 
     private void showFriendsAddCluster() {
+        endCall.setVisibility(View.INVISIBLE);
+        multiplayerGamesView.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.VISIBLE);
     }
 
@@ -485,6 +490,10 @@ public class ChatFragmet extends Fragment implements RtcListener {
         Log.d(LOG_TAG, "fragment onActivityResult");
         if (requestCode == 1234) {
             Log.d(LOG_TAG, "before toast onActivityResult");
+            hideFriendsAddCluster();
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
+            multiplayerGamesView.setVisibility(View.VISIBLE);
             Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
         }
     }

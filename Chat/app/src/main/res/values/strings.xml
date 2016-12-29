@@ -4,4 +4,5 @@
     <string name="fb_login_protocol_scheme">fb241400816282456</string>
     <string name="title_activity_games_chat">GamesChatActivity</string>
     <string name="title_activity_game_web_view">GameWebViewActivity</string>
+    <string name="play_with_friends">play with friends</string>
 </resources>
