@@ -98,6 +98,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     ArrayList<String> gamesImage;
     private NuggetApplication application;
     private ChatService chatService;
+    private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -107,7 +108,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            chatService = null;
         }
     };
 
@@ -164,16 +165,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
         rtcView.setKeepScreenOn(true);
-        String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
-        String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
-        if (!friend1.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend1, null,
-                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
-        }
-        if (!friend2.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend2, null,
-                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
-        }
+        triggerImageChanges();
 
         user1 = new User(userId, username);
         VideoRendererGui.setView(rtcView, new Runnable() {
@@ -183,6 +175,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                isBound = true;
             }
         });
 
@@ -240,6 +233,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
         startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
+    }
+
+    private void undbindService(){
+        if(isBound){
+            if(chatService != null){
+                chatService.unregisterEventListener(this);
+            }
+            getActivity().unbindService(serviceConnection);
+            isBound = false;
+        }
     }
 
     private void fetchData() {
@@ -459,6 +462,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             chatService.socket.emit("end_call", payload);
             webRtcClient.endCall();
+            undbindService();
         }
     }
 
@@ -493,6 +497,22 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
+        triggerImageChanges();
+    }
+
+    private void triggerImageChanges() {
+        String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
+        String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
+        if (!friend1.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend1, null,
+                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
+            popularFriend1.setVisibility(View.VISIBLE);
+        }
+        if (!friend2.equals("")) {
+            GlideUtils.loadImage(getActivity(), popularFriend2, null,
+                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
+            popularFriend2.setVisibility(View.VISIBLE);
+        }
     }
 
     private void hideFriendsAddCluster() {

@@ -101,6 +101,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ArrayList<String> gamesImage;
     private ChatService chatService;
     private RelativeLayout multiplayerGamesView;
+    private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -110,7 +111,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            chatService = null;
         }
     };
     private Bundle bundle;
@@ -159,6 +160,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 }
                 bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                isBound = true;
                 init(user1, targetId);
 
 
@@ -461,9 +463,18 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             }
             chatService.socket.emit("end_call", payload);
             webRtcClient.endCall();
+            undbindService();
         }
     }
-
+    private void undbindService(){
+        if(isBound){
+            if(chatService != null){
+                chatService.unregisterEventListener(this);
+            }
+            unbindService(serviceConnection);
+            isBound = false;
+        }
+    }
     private void showFriendsDialog() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setTitle("Choose a friend");
@@ -480,16 +491,21 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                UserDetails user = (UserDetails) adapter.getItem(which);
-                String userId = user.getUserId();
+                FriendInfo user = (FriendInfo) adapter.getItem(which);
+                startFriendCall(user.getFacebookId());
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                webRtcClient.setInitiator(true);
-                application.setInitiator(true);
-                webRtcClient.addFriendForChat(userId, chatService.socket);
-                webRtcClient.createOffer(webRtcClient.peers.get(0));
+
             }
         });
         builderSingle.show();
+    }
+
+    private void startFriendCall(String facebookId) {
+        webRtcClient.setInitiator(true);
+        application.setInitiator(true);
+        webRtcClient.addFriendForChat(facebookId, chatService.socket);
+        webRtcClient.createOffer(webRtcClient.peers.get(0));
+        SharedPreferenceUtility.setFavouriteFriend(this, facebookId);
     }
 
     private void getUserFriends() {
