@@ -8,6 +8,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -25,15 +31,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatActivity;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
-                        setUserFacebookUserId();
+                        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this), SharedPreferenceUtility.getFirebaseUid(MainActivity.this));
                     }
                 });
 
@@ -188,5 +191,31 @@ public class MainActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
+    }
+
+    public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://server.nuggetchat.com:8080/getFriends";
+        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(LOG_TAG, "Request success " + response.toString());
+                setUserFacebookUserId();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Error in making friends request", error);
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, accessToken);
+                params.put(RequestParams.FIREBASE_ID_TOKEN, idToken);
+                return params;
+            }
+        };
+        queue.add(sr);
     }
 }
