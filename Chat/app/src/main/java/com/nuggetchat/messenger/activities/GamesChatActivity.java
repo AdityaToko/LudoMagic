@@ -62,16 +62,6 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
-        //to be taken after finishing
-       /* if (intent != null) {
-            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
-            tabView.setBackgroundResource(R.drawable.second_tab_background);
-        } else {*/
-/*
-        tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
-        tabView.setBackgroundResource(R.drawable.first_tab_background);
-*/
-
         if (intent != null) {
             viewPager.setCurrentItem(1);
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
