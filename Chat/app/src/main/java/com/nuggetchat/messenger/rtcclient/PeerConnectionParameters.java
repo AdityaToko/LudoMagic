@@ -1,4 +1,4 @@
-package com.tokostudios.chat.webRtcClient;
+package com.nuggetchat.messenger.rtcclient;
 
 public class PeerConnectionParameters {
     public final boolean videoCallEnabled;
