@@ -10,17 +10,20 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.utils.GlideUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserFriendsAdapter extends BaseAdapter {
 
-    public List<UserDetails> userDetails;
-    private Context context;
+    public List<FriendInfo> userDetails;
+    private ArrayList<FriendInfo> userDetailsList;
+    Context context;
+    ViewHolder viewHolder;
 
-    public UserFriendsAdapter(List<UserDetails> selectUsers, Context context) {
+    public UserFriendsAdapter(List<FriendInfo> selectUsers, Context context) {
         userDetails = selectUsers;
         this.context = context;
     }
@@ -57,14 +60,14 @@ public class UserFriendsAdapter extends BaseAdapter {
         viewHolder.title = (TextView) view.findViewById(R.id.name);
         viewHolder.imageView = (ImageView) view.findViewById(R.id.profile_image);
 
-        final UserDetails data = userDetails.get(i);
+        final FriendInfo data = userDetails.get(i);
         viewHolder.title.setText(data.getName());
 
         // Set image if exists
         try {
             String profilePicUrl;
-            if (data.getProfilePicUrl() != null) {
-                profilePicUrl = data.getProfilePicUrl();
+            if (data.getFacebookId() != null) {
+                profilePicUrl = getProfilePicUrl(data.getFacebookId());
                 GlideUtils.loadImage(context, viewHolder.imageView, null, profilePicUrl);
             } else {
                 viewHolder.imageView.setImageResource(R.drawable.nuggeticon);
@@ -82,5 +85,9 @@ public class UserFriendsAdapter extends BaseAdapter {
     private static class ViewHolder {
         ImageView imageView;
         TextView title;
+    }
+
+    private String getProfilePicUrl(String facebookUserId) {
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
     }
 }
