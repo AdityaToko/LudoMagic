@@ -433,6 +433,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
         if (bundle != null) {
             Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
+            if (bundle.getString("user_id") == null) {
+                endCall.setVisibility(View.INVISIBLE);
+                multiplayerGamesView.setVisibility(View.INVISIBLE);
+                startCallButton.setVisibility(View.VISIBLE);
+                showFriendsAddCluster();
+            }
         } else {
             Log.d(LOG_TAG, "bundle null");
         }

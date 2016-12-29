@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void gotoNextActivity() {
-        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+        Intent intent = new Intent(MainActivity.this, GamesChatActivity.class);
         startActivity(intent);
         finish();
     }
