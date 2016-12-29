@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 
@@ -41,6 +42,9 @@ public class MessageHandler {
         application = (NuggetApplication) context.getApplicationContext();
         userId = SharedPreferenceUtility.getFacebookUserId(context);
         username = SharedPreferenceUtility.getFacebookUserName(context);
+        if(username == null || username.equals("")){
+            username = WebRtcClient.getRandomString();
+        }
         Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username);
     }
 
