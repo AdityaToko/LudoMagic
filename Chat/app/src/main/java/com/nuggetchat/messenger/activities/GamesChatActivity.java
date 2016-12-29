@@ -67,8 +67,16 @@ public class GamesChatActivity extends AppCompatActivity {
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
             tabView.setBackgroundResource(R.drawable.second_tab_background);
         } else {*/
+/*
         tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
         tabView.setBackgroundResource(R.drawable.first_tab_background);
+*/
+
+        if (intent != null) {
+            viewPager.setCurrentItem(1);
+            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
+            tabView.setBackgroundResource(R.drawable.second_tab_background);
+        }
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -155,6 +163,7 @@ public class GamesChatActivity extends AppCompatActivity {
         LinearLayout tabSecondItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView secondTextView = (TextView) tabSecondItem.findViewById(R.id.tab_item_text);
         secondTextView.setText("chat");
+        //tabSecondItem.setBackgroundResource(R.drawable.second_tab_background);
         secondTextView.setTextColor(Color.parseColor("#2290D3"));
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
         secondImageView.setImageResource(R.drawable.chat_icon);

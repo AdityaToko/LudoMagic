@@ -200,7 +200,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     e.printStackTrace();
                 }
                 chatService.socket.emit("end_call", payload);
-                webRtcClient.endCall();
+               // webRtcClient.endCall();
                 showFriendsAddCluster();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                         LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
