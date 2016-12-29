@@ -11,6 +11,8 @@ public interface EventListener {
 
     void onCallRequestOrAnswer(SessionDescription sdp);
 
+    void onGameLink(String link);
+
     void onCallEnd();
 
     void onFetchIceCandidates(IceCandidate candidate);

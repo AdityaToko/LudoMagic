@@ -31,7 +31,7 @@ public class WebRtcClient{
     private PeerConnectionParameters params;
     private User currentUser;
     private boolean initiator = false;
-    private NuggetApplication application;
+    public NuggetApplication application;
     private Context context;
     public List<Peer> peers = new ArrayList<>();
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();

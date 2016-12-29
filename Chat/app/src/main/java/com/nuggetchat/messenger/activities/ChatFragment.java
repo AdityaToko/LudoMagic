@@ -44,6 +44,7 @@ import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.ChatService;
 import com.tokostudios.chat.User;
 
@@ -264,7 +265,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage());
+                        gamesDate.getFeaturedImage(), gamesDate.getUrl());
                 gamesItemList.add(gamesItem);
             }
 
@@ -399,15 +400,22 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
-        remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-        VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-                scalingType, true);
-        VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-                scalingType, true);
+        if (remoteStream.videoTracks.size() == 1) {
+            application.setOngoingCall(true);
+            remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
+            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+                    scalingType, true);
+            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
+                    scalingType, true);
+        }
     }
 
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
+        application.setOngoingCall(false);
+        if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
+            remoteStream.videoTracks.get(0).dispose();
+        }
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
     }
@@ -558,6 +566,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
+    }
+
+    @Override
+    public void onGameLink(String link) {
+        // launch the WebView
+        Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+        gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, link);
+        startActivity(gameIntent);
     }
 
     @Override

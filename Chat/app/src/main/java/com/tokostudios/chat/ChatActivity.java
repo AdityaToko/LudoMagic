@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -35,6 +36,8 @@ import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.activities.GameWebViewActivity;
+import com.nuggetchat.messenger.activities.GamesFragment;
 import com.nuggetchat.messenger.activities.GamesItem;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
@@ -54,6 +57,8 @@ import org.webrtc.SessionDescription;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +94,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     UserFriendsAdapter adapter;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
+    private ArrayList<String> multiPlayerGamesUrl;
     private LinearLayout gamesList;
     private ArrayList<GamesItem> gamesItemList;
     private ArrayList<String> gamesName;
@@ -228,7 +234,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage());
+                        gamesDate.getFeaturedImage(), gamesDate.getUrl());
                 gamesItemList.add(gamesItem);
             }
 
@@ -277,6 +283,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                         Log.i(LOG_TAG, "games Image, " + gamesItemList.get(i).getGamesImage());
                         multiPlayerGamesName.add(gamesItemList.get(i).getGamesName());
                         multiPlayerGamesImage.add(gamesItemList.get(i).getGamesImage());
+                        multiPlayerGamesUrl.add(gamesItemList.get(i).getGamesUrl());
                         Log.i(LOG_TAG, "the size , " + multiPlayerGamesName.size());
                     }
                 }
@@ -316,13 +323,46 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
-        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesName.get(i));
+        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesImage.get(i));
 
         textView.setText(multiPlayerGamesName.get(i));
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
         Log.d("The image uri ", imageURl);
         GlideUtils.loadImage(this, imageView, null, imageURl);
 
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (application.isOngoingCall()) {
+                    String thisGameUrl = multiPlayerGamesUrl.get(i)
+                            + "?room=" + webRtcClient.userId1
+                            + "&user=" + webRtcClient.userId1;
+                    String peerGameUrl = multiPlayerGamesUrl.get(i)
+                            + "?room=" + webRtcClient.userId1
+                            + "&user=" + webRtcClient.userId2;
+
+                    // launch the WebView
+                    Intent gameIntent = new Intent(ChatActivity.this, GameWebViewActivity.class);
+                    gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, thisGameUrl);
+                    startActivity(gameIntent);
+
+                    // emit to peer
+                    JSONObject payload = new JSONObject();
+                    try {
+                        Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                        payload.put("from", webRtcClient.userId1);
+                        payload.put("to", webRtcClient.userId2);
+                        payload.put("token", "abcd");
+                        payload.put("game_link", peerGameUrl);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    chatService.socket.emit("game_link", payload);
+                } else {
+                    Toast.makeText(ChatActivity.this, "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
         gamesList.addView(view);
     }
 
@@ -366,6 +406,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
         if (remoteStream.videoTracks.size() == 1) {
+            application.setOngoingCall(true);
             remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
             VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                     scalingType, true);
@@ -376,6 +417,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
+        application.setOngoingCall(false);
         if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
             remoteStream.videoTracks.get(0).dispose();
         }
@@ -493,6 +535,14 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
+    }
+
+    @Override
+    public void onGameLink(String link) {
+        // launch the WebView
+        Intent gameIntent = new Intent(ChatActivity.this, GameWebViewActivity.class);
+        gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, link);
+        startActivity(gameIntent);
     }
 
     @Override
