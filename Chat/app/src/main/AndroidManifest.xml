@@ -76,7 +76,8 @@
 
         <service
             android:name="com.tokostudios.chat.ChatService"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="true"/>
 
         <receiver
             android:name=".CallRequestReceiver"

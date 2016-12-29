@@ -4,6 +4,7 @@ import android.content.Context;
 import android.opengl.EGLContext;
 import android.util.Log;
 
+import com.nuggetchat.messenger.NuggetApplication;
 import com.tokostudios.chat.Friend;
 import com.tokostudios.chat.User;
 
@@ -30,6 +31,8 @@ public class WebRtcClient{
     private PeerConnectionParameters params;
     private User currentUser;
     private boolean initiator = false;
+    private NuggetApplication application;
+    private Context context;
     public List<Peer> peers = new ArrayList<>();
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
@@ -42,6 +45,7 @@ public class WebRtcClient{
 
     public void endCall() {
         setInitiator(false);
+        application.setInitiator(false);
         for (Peer peer : peers) {
             peer.resetPeerConnection();
         }
@@ -69,6 +73,8 @@ public class WebRtcClient{
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
+        this.context = context;
+        application = (NuggetApplication) context.getApplicationContext();
         currentUser = user1;
         userId1 = user1.getId();
         Log.e(LOG_TAG, "User ID 1 is : " + userId1);
@@ -81,6 +87,7 @@ public class WebRtcClient{
 
     public void addIceServers(String iceServersUrl){
         Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
+        iceServersUrl = "stun:stun.services.mozilla.com,stun:stun.l.google.com:19302,";
         if(iceServersUrl != null || !iceServersUrl.equals("")){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
