@@ -159,6 +159,20 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 getFriendsFromFirebase(firebaseUid);
                 adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
                 listView.setAdapter(adapter);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+                        resultIntent.putExtra("user_id", ((FriendInfo) adapterView.getAdapter().getItem(i)).getFacebookId());
+                        if (intent.getStringExtra("user_id") == null) {
+                            startActivity(resultIntent);
+                            finish();
+                            return;
+                        }
+                        setResult(1234, resultIntent);
+                        finish();
+                    }
+                });
             }
         }, new Response.ErrorListener() {
             @Override

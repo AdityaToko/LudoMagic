@@ -72,9 +72,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    ArrayList<UserDetails> selectUsers = new ArrayList<>();
-    List<UserDetails> temp;
-    UserFriendsAdapter adapter;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.utils.GlideUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserFriendsAdapter extends BaseAdapter {
