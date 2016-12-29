@@ -403,7 +403,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     @Override
-    public void onRemoveRemoteStream() {
+    public void onRemoveRemoteStream(MediaStream remoteStream) {
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
     }
@@ -436,7 +436,17 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onDestroy() {
         super.onDestroy();
         if (webRtcClient != null) {
-            webRtcClient.onDestroy();
+            JSONObject payload = new JSONObject();
+            try {
+                Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                payload.put("from", webRtcClient.userId1);
+                payload.put("to", webRtcClient.userId2);
+                payload.put("token", "abcd");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            chatService.socket.emit("end_call", payload);
+            webRtcClient.endCall();
         }
     }
 
