@@ -50,6 +50,8 @@ public class WebRtcClient{
             factory.dispose();
             factory = null;
         }
+
+        rtcListener.onRemoveRemoteStream(null);
     }
 
     public Peer addPeer(User user, Friend friend, Socket socket) {
@@ -100,10 +102,6 @@ public class WebRtcClient{
 
     public void onResume() {
         if (videoSource != null) videoSource.restart();
-    }
-
-    public void onDestroy() {
-        endCall();
     }
 
     private void setCamera() {

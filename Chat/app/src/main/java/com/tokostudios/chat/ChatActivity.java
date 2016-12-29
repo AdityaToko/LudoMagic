@@ -36,13 +36,13 @@ import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GamesItem;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
-import com.nuggetchat.messenger.utils.GlideUtils;
-import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
 import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.GlideUtils;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -351,7 +351,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
-        if (remoteStream.videoTracks.size() == 1) {
+        if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
             remoteStream.videoTracks.get(0).dispose();
         }
         // resize anyway as the event has fired
@@ -383,7 +383,17 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     protected void onDestroy() {
         super.onDestroy();
         if (webRtcClient != null) {
-            webRtcClient.onDestroy();
+            JSONObject payload = new JSONObject();
+            try {
+                Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                payload.put("from", webRtcClient.userId1);
+                payload.put("to", webRtcClient.userId2);
+                payload.put("token", "abcd");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            chatService.socket.emit("end_call", payload);
+            webRtcClient.endCall();
         }
     }
 

@@ -19,8 +19,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -421,7 +421,17 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onDestroy() {
         super.onDestroy();
         if (webRtcClient != null) {
-            webRtcClient.onDestroy();
+            JSONObject payload = new JSONObject();
+            try {
+                Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                payload.put("from", webRtcClient.userId1);
+                payload.put("to", webRtcClient.userId2);
+                payload.put("token", "abcd");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            chatService.socket.emit("end_call", payload);
+            webRtcClient.endCall();
         }
     }
 
