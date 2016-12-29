@@ -19,6 +19,7 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
@@ -69,7 +70,7 @@ public class ChatFragmet extends Fragment implements RtcListener  {
     private ImageView endCall;
     private String targetId;
     private User user1;
-    ArrayList<UserDetails> selectUsers = new ArrayList<>();
+    ArrayList<FriendInfo> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
 
     @BindView(R.id.friends_add_cluster) LinearLayout linearLayout;
@@ -310,8 +311,8 @@ public class ChatFragmet extends Fragment implements RtcListener  {
                                 Log.d(LOG_TAG, dataObject.toString());
                                 String name = dataObject.getString("name");
                                 String userId = dataObject.getString("id");
-                                UserDetails userData = new UserDetails();
-                                userData.setUserId(userId);
+                                FriendInfo userData = new FriendInfo();
+                                userData.setFacebookId(userId);
                                 userData.setName(name);
                                 selectUsers.add(userData);
                                 Log.d(LOG_TAG, "Values " + name + "  " + userId);
