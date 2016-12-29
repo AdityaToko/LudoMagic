@@ -93,6 +93,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private View view;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
+    private ArrayList<String> multiPlayerGamesUrl;
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
@@ -317,6 +318,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                         Log.i(LOG_TAG, "games Image, " + gamesItemList.get(i).getGamesImage());
                         multiPlayerGamesName.add(gamesItemList.get(i).getGamesName());
                         multiPlayerGamesImage.add(gamesItemList.get(i).getGamesImage());
+                        multiPlayerGamesUrl.add(gamesItemList.get(i).getGamesUrl());
                         Log.i(LOG_TAG, "the size , " + multiPlayerGamesName.size());
                     }
                 }
@@ -362,6 +364,40 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
         Log.d("The image uri " , imageURl);
         GlideUtils.loadImage(getActivity(), imageView, null, imageURl);
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (application.isOngoingCall()) {
+                    String thisGameUrl = multiPlayerGamesUrl.get(i)
+                            + "?room=" + webRtcClient.userId1
+                            + "&user=" + webRtcClient.userId1;
+                    String peerGameUrl = multiPlayerGamesUrl.get(i)
+                            + "?room=" + webRtcClient.userId1
+                            + "&user=" + webRtcClient.userId2;
+
+                    // launch the WebView
+                    Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                    gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, thisGameUrl);
+                    startActivity(gameIntent);
+
+                    // emit to peer
+                    JSONObject payload = new JSONObject();
+                    try {
+                        Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                        payload.put("from", webRtcClient.userId1);
+                        payload.put("to", webRtcClient.userId2);
+                        payload.put("token", "abcd");
+                        payload.put("game_link", peerGameUrl);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    chatService.socket.emit("game_link", payload);
+                } else {
+                    Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
         gamesList.addView(view);
     }

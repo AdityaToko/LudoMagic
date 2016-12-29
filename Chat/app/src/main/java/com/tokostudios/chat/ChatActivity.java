@@ -162,8 +162,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                         Context.BIND_AUTO_CREATE);
                 isBound = true;
                 init(user1, targetId);
-
-
             }
         });
 
@@ -209,7 +207,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         SessionDescription sessionDescription = new SessionDescription(
                 SessionDescription.Type.fromCanonicalForm(type),sdp
         );
-        webRtcClient.addFriendForChat(bundle.getString("from"),chatService.socket);
+        webRtcClient.addFriendForChat(bundle.getString("from"), chatService.socket);
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
     }
