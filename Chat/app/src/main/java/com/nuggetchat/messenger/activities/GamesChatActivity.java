@@ -130,14 +130,14 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpViewPager(ViewPager viewPager) {
         ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
-        ChatFragmet chatFragmet = new ChatFragmet();
+        ChatFragment chatFragment = new ChatFragment();
         if (intent != null) {
             Log.d(LOG_TAG, "bundle set");
             Bundle bundle = new Bundle();
             bundle.putString("user_id", intent.getStringExtra("user_id"));
-            chatFragmet.setArguments(bundle);
+            chatFragment.setArguments(bundle);
         }
-        viewPagerAdapter.addFrag(chatFragmet, "chat");
+        viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
     }
 

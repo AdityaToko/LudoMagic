@@ -1,10 +1,14 @@
 package com.tokostudios.chat;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,20 +37,26 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
-import com.tokostudios.chat.webRtcClient.RtcListener;
-import com.tokostudios.chat.webRtcClient.WebRtcClient;
+import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.Peer;
+import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
+import com.nuggetchat.messenger.rtcclient.RtcListener;
+import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.SessionDescription;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatActivity extends AppCompatActivity implements RtcListener {
+import io.socket.client.Socket;
+
+public class ChatActivity extends AppCompatActivity implements RtcListener, EventListener {
 
     private static final String LOG_TAG = ChatActivity.class.getSimpleName();
     private static final int LOCAL_X = 72;
@@ -80,6 +90,19 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
     private ArrayList<GamesItem> gamesItemList;
     private ArrayList<String> gamesName;
     private ArrayList<String> gamesImage;
+    private ChatService chatService;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            chatService = ((ChatService.ChatBinder)iBinder).getService();
+            chatService.registerEventListener(ChatActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +128,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         startCallButton = (ImageView) findViewById(R.id.start_call_button);
         endCall = (ImageView) findViewById(R.id.end_call_button);
         getUserFriends();
-        socketAddress = "http://192.168.0.118:5000/";
 
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
@@ -119,6 +141,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
             @Override
             public void run() {
                 init(user1, targetId);
+                startService(new Intent(ChatActivity.this, ChatService.class));
+                bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
+                        Context.BIND_AUTO_CREATE);
             }
         });
 
@@ -148,7 +173,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                webRtcClient.socket.emit("end_call", payload);
+                chatService.socket.emit("end_call", payload);
                 webRtcClient.endCall();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                         LOCAL_HEIGHT_CONNECTING, scalingType, true);
@@ -290,20 +315,13 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
-
-        webRtcClient = new WebRtcClient(this, socketAddress, params,
-                VideoRendererGui.getEGLContext(), user1, this);
-        //startCall();
-    }
-
-    public void startCam() {
-        // Camera settings
-        webRtcClient.start("Aman");
+        String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
+        webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
+                iceServersString, this);
     }
 
     @Override
     public void onCallReady(String callId) {
-        startCam();
     }
 
     @Override
@@ -378,7 +396,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
                 UserDetails user = (UserDetails) adapter.getItem(which);
                 String userId = user.getUserId();
                 webRtcClient.setInitiator(true);
-                webRtcClient.addFriendForChat(userId);
+                webRtcClient.addFriendForChat(userId, chatService.socket);
                 webRtcClient.createOffer(webRtcClient.peers.get(0));
             }
         });
@@ -415,5 +433,44 @@ public class ChatActivity extends AppCompatActivity implements RtcListener {
                     }
                 }
         ).executeAsync();
+    }
+
+    @Override
+    public void onCall(String userId, Socket socket) {
+        if (!webRtcClient.isInitiator()) {
+            webRtcClient.addFriendForChat(userId, socket);
+        }
+    }
+
+    @Override
+    public void onCallRequestOrAnswer(SessionDescription sdp) {
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sdp);
+    }
+
+    @Override
+    public void onCallEnd() {
+        webRtcClient.endCall();
+    }
+
+    @Override
+    public void onFetchIceCandidates(IceCandidate candidate) {
+        Peer peer = webRtcClient.peers.get(0);
+        if (webRtcClient.queuedRemoteCandidates != null) {
+            if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {
+                Log.e(LOG_TAG, "local desc before queueing peers :" +
+                        peer.getPeerConnection().getLocalDescription());
+                Log.e(LOG_TAG, "remote desc before queueing peers :" +
+                        peer.getPeerConnection().getRemoteDescription());
+                webRtcClient.queuedRemoteCandidates.add(candidate);
+            }
+
+        } else {
+            Log.e(LOG_TAG, "local desc before adding peers :" +
+                    peer.getPeerConnection().getLocalDescription());
+            Log.e(LOG_TAG, "remote desc before adding peers :" +
+                    peer.getPeerConnection().getRemoteDescription());
+            peer.getPeerConnection().addIceCandidate(candidate);
+        }
     }
 }
