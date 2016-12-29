@@ -390,7 +390,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     @Override
-    public void onRemoveRemoteStream() {
+    public void onRemoveRemoteStream(MediaStream remoteStream) {
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
     }

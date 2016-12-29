@@ -50,6 +50,13 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         return peerConnection;
     }
 
+    public void resetPeerConnection() {
+        if (peerConnection != null) {
+            peerConnection.dispose();
+            peerConnection = null;
+        }
+    }
+
     @Override
     public void onSignalingChange(PeerConnection.SignalingState signalingState) {
 
@@ -101,7 +108,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     public void onRemoveStream(MediaStream mediaStream) {
         Log.d(LOG_TAG, "onRemoveStream: " + mediaStream.label());
         peerConnection.close();
-        webRtcClient.rtcListener.onRemoveRemoteStream();
+        webRtcClient.rtcListener.onRemoveRemoteStream(mediaStream);
     }
 
     @Override

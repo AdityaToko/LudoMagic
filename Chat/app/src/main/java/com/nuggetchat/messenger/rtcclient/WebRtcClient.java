@@ -43,10 +43,14 @@ public class WebRtcClient{
     public void endCall() {
         setInitiator(false);
         for (Peer peer : peers) {
-            peer.getPeerConnection().dispose();
+            peer.resetPeerConnection();
         }
-        videoSource.dispose();
-        factory.dispose();
+
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
+
         rtcListener.onRemoveRemoteStream();
     }
 
@@ -101,11 +105,7 @@ public class WebRtcClient{
     }
 
     public void onDestroy() {
-        for (Peer peer : peers) {
-            peer.getPeerConnection().dispose();
-        }
-        videoSource.dispose();
-        factory.dispose();
+        endCall();
     }
 
     private void setCamera() {

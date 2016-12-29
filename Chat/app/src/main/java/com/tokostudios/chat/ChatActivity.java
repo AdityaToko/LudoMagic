@@ -339,17 +339,24 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
-        remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-        VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-                scalingType, true);
-        VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-                scalingType, true);
+        if (remoteStream.videoTracks.size() == 1) {
+            remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
+            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+                    scalingType, true);
+            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
+                    scalingType, true);
+        }
     }
 
     @Override
-    public void onRemoveRemoteStream() {
+    public void onRemoveRemoteStream(MediaStream remoteStream) {
+        if (remoteStream.videoTracks.size() == 1) {
+            remoteStream.videoTracks.get(0).dispose();
+        }
+        // resize anyway as the event has fired
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                 LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        VideoRendererGui.update(remoteRender, 0, 0, 0, 0, scalingType, false);
     }
 
     @Override

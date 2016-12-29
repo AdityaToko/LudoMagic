@@ -176,4 +176,14 @@ public class MessageHandler {
             eventListener.onCallEnd();
         }
     };
+
+    public Emitter.Listener onDisconnect = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
+        }
+    };
 }

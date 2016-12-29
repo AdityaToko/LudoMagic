@@ -11,5 +11,5 @@ public interface RtcListener {
 
         void onAddRemoteStream(MediaStream remoteStream);
 
-        void onRemoveRemoteStream();
+        void onRemoveRemoteStream(MediaStream remoteStream);
     }
