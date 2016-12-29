@@ -183,17 +183,18 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.e(LOG_TAG, "sendAnswerLocalDescription: sending answer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
-
         try {
+            Log.e(LOG_TAG, "sendAnswerLocalDescription: inside try");
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
             callData.put("from", webRtcClient.userId1);
             callData.put("to", webRtcClient.userId2);
             callData.put("token", "abcd");
             callData.put("answer", localDesc);
+            Log.e(LOG_TAG, "sendAnswerLocalDescription: " + callData.toString() );
             socket.emit("accept_call", callData);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, e.getMessage());
         }
     }
 

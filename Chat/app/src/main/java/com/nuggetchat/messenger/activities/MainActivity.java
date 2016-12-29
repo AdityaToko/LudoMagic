@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;

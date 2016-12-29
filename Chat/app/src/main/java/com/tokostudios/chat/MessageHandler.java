@@ -2,6 +2,7 @@ package com.tokostudios.chat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -29,9 +30,11 @@ public class MessageHandler {
 
     public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
+        Log.e(LOG_TAG, "MessageHandler: " + socket + " " + "context " + context.getPackageCodePath());
         this.context = context;
         userId = SharedPreferenceUtility.getFacebookUserId(context);
         username = SharedPreferenceUtility.getFacebookUserName(context);
+        Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username );
     }
 
     public void setEventListener(EventListener eventListener) {
@@ -50,7 +53,6 @@ public class MessageHandler {
                 e.printStackTrace();
             }
             socket.emit("init", user);
-            socket.emit("message", user.toString());
         }
     };
 
@@ -82,6 +84,21 @@ public class MessageHandler {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
             Intent intent = new Intent();
+            try {
+                String from = requestObject.getString("from");
+                String to = requestObject.getString("to");
+                JSONObject offerObj = requestObject.getJSONObject("offer");
+                String type = offerObj.getString("type");
+                String sdp = offerObj.getString("sdp");
+                Bundle bundle =new Bundle();
+                bundle.putString("from", from);
+                bundle.putString("to", to);
+                bundle.putString("type", type);
+                bundle.putString("sdp", sdp);
+                intent.putExtras(bundle);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             intent.setAction("com.nuggetchat.messenger.intent.action.INCOMING_CALL");
             context.sendBroadcast(intent);
             Handler handler = new Handler(Looper.getMainLooper());

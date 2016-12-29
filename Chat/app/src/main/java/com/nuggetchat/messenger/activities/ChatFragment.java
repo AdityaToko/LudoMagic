@@ -35,6 +35,7 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.ChatActivity;
@@ -509,21 +510,40 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCall(String userId, Socket socket) {
-
+        if (!webRtcClient.isInitiator()) {
+            webRtcClient.addFriendForChat(userId, socket);
+        }
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
-
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sdp);
     }
 
     @Override
     public void onCallEnd() {
-
+        webRtcClient.endCall();
     }
 
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
+        Peer peer = webRtcClient.peers.get(0);
+        if (webRtcClient.queuedRemoteCandidates != null) {
+            if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {
+                Log.e(LOG_TAG, "local desc before queueing peers :" +
+                        peer.getPeerConnection().getLocalDescription());
+                Log.e(LOG_TAG, "remote desc before queueing peers :" +
+                        peer.getPeerConnection().getRemoteDescription());
+                webRtcClient.queuedRemoteCandidates.add(candidate);
+            }
 
+        } else {
+            Log.e(LOG_TAG, "local desc before adding peers :" +
+                    peer.getPeerConnection().getLocalDescription());
+            Log.e(LOG_TAG, "remote desc before adding peers :" +
+                    peer.getPeerConnection().getRemoteDescription());
+            peer.getPeerConnection().addIceCandidate(candidate);
+        }
     }
 }

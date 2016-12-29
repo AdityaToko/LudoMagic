@@ -103,6 +103,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         }
     };
+    private Bundle bundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +125,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         Intent intent = getIntent();
         targetId = intent.getStringExtra("userId");
+        bundle = intent.getExtras();
         setContentView(R.layout.activity_chat);
         startCallButton = (ImageView) findViewById(R.id.start_call_button);
         endCall = (ImageView) findViewById(R.id.end_call_button);
@@ -140,10 +142,14 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                init(user1, targetId);
-                startService(new Intent(ChatActivity.this, ChatService.class));
+                if(bundle == null){
+                    startService(new Intent(ChatActivity.this, ChatService.class));
+                }
                 bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                init(user1, targetId);
+
+
             }
         });
 
@@ -181,7 +187,18 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         });
 
     }
-
+    private void setSDP(){
+        String type = bundle.getString("type");
+        String sdp = bundle.getString("sdp");
+        SessionDescription sessionDescription = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type),sdp
+        );
+        Friend friend = new Friend(user1, new User(bundle.getString("from"),"abc"), "abcd");
+        //Peer peer = new Peer(webRtcClient,user1, friend);
+        webRtcClient.addFriendForChat(bundle.getString("from"),chatService.socket);
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
+    }
     private void fetchData() {
         String firebaseUri = Conf.firebaseGamesURI();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
@@ -318,6 +335,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
         webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
                 iceServersString, this);
+        setSDP();
     }
 
     @Override

@@ -77,6 +77,7 @@ public class WebRtcClient{
 
     public void addIceServers(String iceServersUrl){
         Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
+        iceServersUrl = "stun:stun.services.mozilla.com,stun:stun.l.google.com:19302,";
         if(iceServersUrl != null || !iceServersUrl.equals("")){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
