@@ -1,4 +1,4 @@
-package com.tokostudios.chat.rtcclient;
+package com.nuggetchat.messenger.rtcclient;
 
 import android.util.Log;
 

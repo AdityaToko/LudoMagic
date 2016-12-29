@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
 
     <application
         android:name=".NuggetApplication"
@@ -66,13 +67,11 @@
         <activity
             android:name=".activities.GameWebViewActivity"
             android:label="@string/title_activity_game_web_view"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name="com.tokostudios.chat.ChatActivity"
+
+        <activity
+            android:name="com.tokostudios.chat.ChatActivity"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-            <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CAL" />
-            </intent-filter>
         </activity>
 
         <service
@@ -83,10 +82,17 @@
             android:name=".CallRequestReceiver"
             android:enabled="true"
             android:exported="true">
-            <intent-filter >
+            <intent-filter>
                 <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
             </intent-filter>
         </receiver>
+
+        <activity android:name="com.tokostudios.chat.IncomingCallActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

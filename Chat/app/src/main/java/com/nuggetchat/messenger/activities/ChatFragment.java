@@ -1,10 +1,14 @@
 package com.nuggetchat.messenger.activities;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -12,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -34,14 +37,19 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
+import com.tokostudios.chat.ChatService;
 import com.tokostudios.chat.User;
-import com.tokostudios.chat.webRtcClient.PeerConnectionParameters;
-import com.tokostudios.chat.webRtcClient.RtcListener;
-import com.tokostudios.chat.webRtcClient.WebRtcClient;
+import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.RtcListener;
+import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
+import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.SessionDescription;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
@@ -50,9 +58,10 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.socket.client.Socket;
 
-public class ChatFragmet extends Fragment implements RtcListener {
-    private static final String LOG_TAG = ChatFragmet.class.getSimpleName();
+public class ChatFragment extends Fragment implements RtcListener, EventListener {
+    private static final String LOG_TAG = ChatFragment.class.getSimpleName();
     private static final int LOCAL_X = 72;
     private static final int LOCAL_Y = 72;
     private static final int LOCAL_WIDTH = 25;
@@ -91,7 +100,19 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
+    private ChatService chatService;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            chatService = ((ChatService.ChatBinder)iBinder).getService();
+            chatService.registerEventListener(ChatFragment.this);
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -143,6 +164,9 @@ public class ChatFragmet extends Fragment implements RtcListener {
             @Override
             public void run() {
                 init(user1, targetId);
+                getActivity().startService(new Intent(getActivity(), ChatService.class));
+                getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
+                        Context.BIND_AUTO_CREATE);
             }
         });
 
@@ -173,7 +197,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                webRtcClient.socket.emit("end_call", payload);
+                chatService.socket.emit("end_call", payload);
                 webRtcClient.endCall();
                 showFriendsAddCluster();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
@@ -330,17 +354,11 @@ public class ChatFragmet extends Fragment implements RtcListener {
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
-
-        webRtcClient = new WebRtcClient(this, socketAddress, params,
-                VideoRendererGui.getEGLContext(), user1, getActivity());
-        //startCall();
+        String iceServersString = SharedPreferenceUtility.getIceServersUrls(getActivity());
+        webRtcClient = new WebRtcClient(this, params,
+                VideoRendererGui.getEGLContext(), user1, iceServersString,
+                getActivity());
     }
-
-    public void startCam() {
-        // Camera settings
-        webRtcClient.start("Aman");
-    }
-
 
     @Override
     public void onCallReady(String callId) {
@@ -434,7 +452,7 @@ public class ChatFragmet extends Fragment implements RtcListener {
     private void startFriendCall(UserDetails user) {
         String userId = user.getUserId();
         webRtcClient.setInitiator(true);
-        webRtcClient.addFriendForChat(userId);
+        webRtcClient.addFriendForChat(userId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
     }
@@ -487,5 +505,25 @@ public class ChatFragmet extends Fragment implements RtcListener {
             Log.d(LOG_TAG, "before toast onActivityResult");
             Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onCall(String userId, Socket socket) {
+
+    }
+
+    @Override
+    public void onCallRequestOrAnswer(SessionDescription sdp) {
+
+    }
+
+    @Override
+    public void onCallEnd() {
+
+    }
+
+    @Override
+    public void onFetchIceCandidates(IceCandidate candidate) {
+
     }
 }

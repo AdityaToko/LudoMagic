@@ -8,7 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;

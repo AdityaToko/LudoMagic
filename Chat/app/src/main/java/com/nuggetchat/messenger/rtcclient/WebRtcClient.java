@@ -1,35 +1,28 @@
-package com.tokostudios.chat.rtcclient;
+package com.nuggetchat.messenger.rtcclient;
 
+import android.content.Context;
 import android.opengl.EGLContext;
 import android.util.Log;
 
-import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.tokostudios.chat.Friend;
 import com.tokostudios.chat.User;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.webrtc.AudioSource;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
-import org.webrtc.SessionDescription;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import io.socket.client.IO;
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
 
 public class WebRtcClient{
     private static final String LOG_TAG = WebRtcClient.class.getCanonicalName();
@@ -66,10 +59,10 @@ public class WebRtcClient{
     }
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params,
-                        EGLContext mEGLcontext, User user1, String iceServerUrls) {
+                        EGLContext mEGLcontext, User user1, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
-        PeerConnectionFactory.initializeAndroidGlobals(listener, true /* initializedAudio */,
+        PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration, mEGLcontext);
         factory = new PeerConnectionFactory();
         currentUser = user1;

@@ -6,8 +6,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.tokostudios.chat.rtcclient.EventListener;
-import com.tokostudios.chat.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import java.net.URISyntaxException;
 
@@ -17,12 +16,12 @@ import io.socket.client.Socket;
 public class ChatService extends Service {
     private static final String HOST = "http://192.168.0.9:5000/";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
-    Socket socket;
+    public Socket socket;
     MessageHandler messageHandler;
     EventListener eventListener;
 
     public class ChatBinder extends Binder {
-        ChatService getService() {
+       public ChatService getService() {
             return ChatService.this;
         }
     }
@@ -61,6 +60,5 @@ public class ChatService extends Service {
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
-        //socket.connect();
     }
 }

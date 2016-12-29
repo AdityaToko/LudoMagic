@@ -37,11 +37,11 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.rtcclient.EventListener;
-import com.tokostudios.chat.rtcclient.Peer;
-import com.tokostudios.chat.rtcclient.PeerConnectionParameters;
-import com.tokostudios.chat.rtcclient.RtcListener;
-import com.tokostudios.chat.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.Peer;
+import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
+import com.nuggetchat.messenger.rtcclient.RtcListener;
+import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,6 +84,12 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ImageView endCall;
     private String targetId;
     private User user1;
+    private ArrayList<String> multiPlayerGamesName;
+    private ArrayList<String> multiPlayerGamesImage;
+    private LinearLayout gamesList;
+    private ArrayList<GamesItem> gamesItemList;
+    private ArrayList<String> gamesName;
+    private ArrayList<String> gamesImage;
     private ChatService chatService;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -97,12 +103,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         }
     };
-    private ArrayList<String> multiPlayerGamesName;
-    private ArrayList<String> multiPlayerGamesImage;
-    private LinearLayout gamesList;
-    private ArrayList<GamesItem> gamesItemList;
-    private ArrayList<String> gamesName;
-    private ArrayList<String> gamesImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -316,7 +316,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
-        webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1, iceServersString);
+        webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
+                iceServersString, this);
     }
 
     @Override
