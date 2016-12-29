@@ -74,6 +74,7 @@ public class ChatService extends Service {
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
+        socket.on("game_link", messageHandler.onGameLink);
     }
 
     @Override

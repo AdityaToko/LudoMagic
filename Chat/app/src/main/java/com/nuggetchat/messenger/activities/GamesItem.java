@@ -4,6 +4,14 @@ public class GamesItem {
     private String gameKey;
     private String gamesName;
     private String gamesImage;
+    private String gamesUrl;
+
+    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl) {
+        this.gameKey = gameKey;
+        this.gamesName = gamesName;
+        this.gamesImage = gamesImage;
+        this.gamesUrl = gamesUrl;
+    }
 
     public String getGameKey() {
         return gameKey;
@@ -29,10 +37,11 @@ public class GamesItem {
         this.gamesImage = gamesImage;
     }
 
-    public GamesItem(String gameKey, String gamesName, String gamesImage) {
-        this.gameKey = gameKey;
-        this.gamesName = gamesName;
-        this.gamesImage = gamesImage;
+    public String getGamesUrl() {
+        return gamesUrl;
     }
 
+    public void setGamesUrl(String gamesUrl) {
+        this.gamesUrl = gamesUrl;
+    }
 }

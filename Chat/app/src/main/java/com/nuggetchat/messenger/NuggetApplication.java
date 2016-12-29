@@ -11,7 +11,7 @@ import com.google.firebase.database.FirebaseDatabase;
 public class NuggetApplication extends Application {
     private static boolean initialized = false;
     private boolean isInitiator = false;
-    private boolean isInCall = false;
+    private boolean isOngoingCall = false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -37,11 +37,11 @@ public class NuggetApplication extends Application {
         isInitiator = initiator;
     }
 
-    public boolean isInCall() {
-        return isInCall;
+    public boolean isOngoingCall() {
+        return isOngoingCall;
     }
 
-    public void setInCall(boolean inCall) {
-        isInCall = inCall;
+    public void setOngoingCall(boolean ongoingCall) {
+        isOngoingCall = ongoingCall;
     }
 }

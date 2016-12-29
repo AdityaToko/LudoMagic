@@ -2,6 +2,7 @@ package com.nuggetchat.messenger.rtcclient;
 
 import android.util.Log;
 
+import com.nuggetchat.messenger.NuggetApplication;
 import com.tokostudios.chat.Friend;
 import com.tokostudios.chat.User;
 

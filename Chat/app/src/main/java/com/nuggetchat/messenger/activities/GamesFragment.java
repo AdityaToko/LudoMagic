@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public class GamesFragment extends Fragment {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
-    private static final String EXTRA_GAME_URL = GameWebViewActivity.class.getName() + ".game_url";
+    public static final String EXTRA_GAME_URL = GameWebViewActivity.class.getName() + ".game_url";
     private GridView gridView;
     private ArrayList<String> gamesName;
     private ArrayList<String> gamesImages;
@@ -86,7 +86,7 @@ public class GamesFragment extends Fragment {
                 gamesImages.add(gamesData.getFeaturedImage());
                 gamesUrl.add(gamesData.getUrl());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                        gamesData.getFeaturedImage());
+                        gamesData.getFeaturedImage(), gamesData.getUrl());
                 gamesItemList.add(gamesItem);
             }
 

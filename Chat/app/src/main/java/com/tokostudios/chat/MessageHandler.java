@@ -220,6 +220,28 @@ public class MessageHandler {
         }
     };
 
+    public Emitter.Listener onGameLink = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d(LOG_TAG, "Game link received from host");
+
+            JSONObject gameLinkObject = (JSONObject) args[0];
+
+            try {
+                for (EventListener listener : listeners) {
+                    listener.onCall(gameLinkObject.getString("from"), socket);
+                }
+                if (userId.equals(gameLinkObject.getString("to"))
+                        && gameLinkObject.getString("game_link") != null) {
+                    for (EventListener listener : listeners) {
+                        listener.onGameLink(gameLinkObject.getString("game_link"));
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     public Emitter.Listener onCallEnded = new Emitter.Listener() {
         @Override
