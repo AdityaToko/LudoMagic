@@ -139,7 +139,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         bundle = intent.getExtras();
         setContentView(R.layout.activity_chat);
         startCallButton = (ImageView) findViewById(R.id.start_call_button);
+        startCallButton.setVisibility(View.GONE);
         endCall = (ImageView) findViewById(R.id.end_call_button);
+        endCall.setVisibility(View.VISIBLE);
         multiplayerGamesView = (RelativeLayout)findViewById(R.id.multipayer_games_view);
         getUserFriends();
 
