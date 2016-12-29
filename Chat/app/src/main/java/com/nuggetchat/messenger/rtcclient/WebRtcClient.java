@@ -50,8 +50,6 @@ public class WebRtcClient{
             factory.dispose();
             factory = null;
         }
-
-        rtcListener.onRemoveRemoteStream();
     }
 
     public Peer addPeer(User user, Friend friend, Socket socket) {
