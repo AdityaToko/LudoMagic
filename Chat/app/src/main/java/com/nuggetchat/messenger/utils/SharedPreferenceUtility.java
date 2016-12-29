@@ -11,6 +11,9 @@ public class SharedPreferenceUtility {
     private static final String FACEBOOK_USER_ID = "facebook_user_id";
     private static final String FACEBOOK_USER_NAME = "facebook_username";
     private static final String ICE_SERVERS_STRING = "ice_servers";
+    private static final String FACEBOOK_ACCESS_TOKEN = "facebook_access_token";
+    private static final String FIREBASE_ID_TOKEN = "firebase_id_token";
+    private static final String FIREBASE_UID = "firebase_uid";
     private Context context;
 
     private static SharedPreferences.Editor getEditor(Context context) {
@@ -52,5 +55,35 @@ public class SharedPreferenceUtility {
 
     public static String getIceServersUrls(Context context) {
         return getPreferences(context).getString(ICE_SERVERS_STRING, "");
+    }
+
+    public static void setFacebookAccessToken(String facebookAccessToken, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FACEBOOK_ACCESS_TOKEN, facebookAccessToken);
+        editor.apply();
+    }
+
+    public static String getFacebookAccessToken(Context context) {
+        return getPreferences(context).getString(FACEBOOK_ACCESS_TOKEN,"");
+    }
+
+    public static void setFirebaseIdToken(String firebaseIdToken, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FIREBASE_ID_TOKEN, firebaseIdToken);
+        editor.apply();
+    }
+
+    public static String getFirebaseIdToken(Context context) {
+        return getPreferences(context).getString(FIREBASE_ID_TOKEN,"");
+    }
+
+    public static void setFirebaseUid(String firebaseUid, Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putString(FIREBASE_UID, firebaseUid);
+        editor.apply();
+    }
+
+    public static String getFirebaseUid(Context context) {
+        return getPreferences(context).getString(FIREBASE_UID,"");
     }
 }

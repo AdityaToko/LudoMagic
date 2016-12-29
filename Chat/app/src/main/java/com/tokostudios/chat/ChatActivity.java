@@ -30,6 +30,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GamesItem;
@@ -71,9 +72,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    ArrayList<UserDetails> selectUsers = new ArrayList<>();
-    List<UserDetails> temp;
-    UserFriendsAdapter adapter;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -84,6 +82,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ImageView endCall;
     private String targetId;
     private User user1;
+    ArrayList<FriendInfo> selectUsers = new ArrayList<>();
+    List<UserDetails> temp;
+    UserFriendsAdapter adapter;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
     private LinearLayout gamesList;
@@ -426,8 +427,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                                 Log.d(LOG_TAG, dataObject.toString());
                                 String name = dataObject.getString("name");
                                 String userId = dataObject.getString("id");
-                                UserDetails userData = new UserDetails();
-                                userData.setUserId(userId);
+                                FriendInfo userData = new FriendInfo();
+                                userData.setFacebookId(userId);
                                 userData.setName(name);
                                 selectUsers.add(userData);
                                 Log.d(LOG_TAG, "Values " + name + "  " + userId);

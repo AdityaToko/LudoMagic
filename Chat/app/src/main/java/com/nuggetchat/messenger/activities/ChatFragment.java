@@ -32,19 +32,18 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.GamesData;
-import com.nuggetchat.messenger.datamodel.UserDetails;
+import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
+import com.nuggetchat.messenger.rtcclient.RtcListener;
+import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatActivity;
 import com.tokostudios.chat.ChatService;
 import com.tokostudios.chat.User;
-import com.nuggetchat.messenger.rtcclient.EventListener;
-import com.nuggetchat.messenger.rtcclient.RtcListener;
-import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
-import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,16 +75,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
     Bundle bundle;
-    ArrayList<UserDetails> selectUsers = new ArrayList<>();
+    ArrayList<FriendInfo> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
-    @BindView(R.id.friends_add_cluster)
-    LinearLayout linearLayout;
-    @BindView(R.id.popular_friend_1)
-    ImageView popularFriend1;
-    @BindView(R.id.popular_friend_2)
-    ImageView popularFriend2;
-    @BindView(R.id.multipayer_games_view)
-    RelativeLayout multiplayerGamesView;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -115,6 +106,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         }
     };
+
+    @BindView(R.id.friends_add_cluster) LinearLayout linearLayout;
+    @BindView(R.id.popular_friend_1) ImageView popularFriend1;
+    @BindView(R.id.popular_friend_2) ImageView popularFriend2;
+    @BindView(R.id.multipayer_games_view)
+    RelativeLayout multiplayerGamesView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -220,7 +218,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick({R.id.popular_friend_1, R.id.popular_friend_2})
     /* package-local */ void callSelectedFriend() {
-        UserDetails user = (UserDetails) adapter.getItem(2);
+        FriendInfo user = (FriendInfo) adapter.getItem(2);
         startFriendCall(user);
     }
 
@@ -335,7 +333,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
-        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesName.get(i));
+        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesImage.get(i));
 
         textView.setText(multiPlayerGamesName.get(i));
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
@@ -444,15 +442,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                UserDetails user = (UserDetails) adapter.getItem(which);
+                FriendInfo user = (FriendInfo) adapter.getItem(which);
                 startFriendCall(user);
             }
         });
         builderSingle.show();
     }
 
-    private void startFriendCall(UserDetails user) {
-        String userId = user.getUserId();
+    private void startFriendCall(FriendInfo user) {
+        String userId = user.getFacebookId();
         webRtcClient.setInitiator(true);
         webRtcClient.addFriendForChat(userId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
@@ -487,8 +485,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                                 Log.d(LOG_TAG, dataObject.toString());
                                 String name = dataObject.getString("name");
                                 String userId = dataObject.getString("id");
-                                UserDetails userData = new UserDetails();
-                                userData.setUserId(userId);
+                                FriendInfo userData = new FriendInfo();
+                                userData.setFacebookId(userId);
                                 userData.setName(name);
                                 selectUsers.add(userData);
                                 Log.d(LOG_TAG, "Values " + name + "  " + userId);
@@ -513,7 +511,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             endCall.setVisibility(View.VISIBLE);
             startCallButton.setVisibility(View.INVISIBLE);
             multiplayerGamesView.setVisibility(View.VISIBLE);
-            Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+            if (data != null) {
+                Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+            }
         }
     }
 

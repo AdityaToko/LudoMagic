@@ -11,8 +11,6 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getFirebaseIdToken(Task<AuthResult> task, final AccessToken accessToken) {
+    private void getFirebaseIdToken(final Task<AuthResult> task, final AccessToken accessToken) {
         if (!task.isSuccessful()) {
             Log.e(LOG_TAG, "Error in login.", task.getException());
             return;
@@ -110,38 +108,19 @@ public class MainActivity extends AppCompatActivity {
         task.getResult().getUser().getToken(true /* forceRefresh */)
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
-                    public void onComplete(@NonNull Task<GetTokenResult> task) {
-                        String firebaseIdToken = task.getResult().getToken();
+                    public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
+                        String firebaseIdToken = tokenTask.getResult().getToken();
                         Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
-                        getFriendsGraph(accessToken);
-                    }
-                });
-
-    }
-
-    private void getFriendsGraph(AccessToken accessToken) {
-        GraphRequest request = GraphRequest.newMeRequest(accessToken,
-                new GraphRequest.GraphJSONObjectCallback() {
-
-                    @Override
-                    public void onCompleted(JSONObject object, GraphResponse response) {
-                        Log.i("LoginActivity", response.toString());
-                        // Get facebook data from login
-                        Bundle bFacebookData = getFacebookData(object);
-
-                        //Intent intent =  new Intent(MainActivity.this, FriendsManagerActivity
-                        // .class);
+                        //getFriendsGraph(accessToken);
+                        SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
+                        SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
+                        SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
                         Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                         startActivity(intent);
                         finish();
                     }
                 });
-        Bundle parameters = new Bundle();
-        parameters.putString("fields",
-                "id, first_name, last_name, email,gender, birthday, location"); // Parámetros que
-        // pedimos a facebook
-        request.setParameters(parameters);
-        request.executeAsync();
+
     }
 
     private void gotoNextActivity() {
