@@ -169,6 +169,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         triggerImageChanges();
 
         user1 = new User(userId, username);
+
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
@@ -465,6 +466,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
+        }
+        if (application.isOngoingCall() || application.isInitiator()) {
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
         }
         if (bundle != null) {
             Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
