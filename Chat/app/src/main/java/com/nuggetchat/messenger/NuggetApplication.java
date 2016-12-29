@@ -10,7 +10,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class NuggetApplication extends Application {
     private static boolean initialized = false;
-
+    private boolean isInitiator = false;
+    private boolean isInCall = false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -26,5 +27,21 @@ public class NuggetApplication extends Application {
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         AppEventsLogger.activateApp(this);
+    }
+
+    public boolean isInitiator() {
+        return isInitiator;
+    }
+
+    public void setInitiator(boolean initiator) {
+        isInitiator = initiator;
+    }
+
+    public boolean isInCall() {
+        return isInCall;
+    }
+
+    public void setInCall(boolean inCall) {
+        isInCall = inCall;
     }
 }

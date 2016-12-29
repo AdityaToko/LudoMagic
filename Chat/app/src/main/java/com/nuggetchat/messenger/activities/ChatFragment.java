@@ -33,10 +33,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
 import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
@@ -93,7 +95,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
+    private NuggetApplication application;
     private ChatService chatService;
+    private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -103,7 +107,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            chatService = null;
         }
     };
 
@@ -140,7 +144,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
-
+        application = (NuggetApplication) getActivity().getApplicationContext();
         fetchData();
 
         Intent intent = getActivity().getIntent();
@@ -179,6 +183,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                isBound = true;
             }
         });
 
@@ -236,6 +241,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
         startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
+    }
+
+    private void undbindService(){
+        if(isBound){
+            if(chatService != null){
+                chatService.unregisterEventListener(this);
+            }
+            getActivity().unbindService(serviceConnection);
+            isBound = false;
+        }
     }
 
     private void fetchData() {
@@ -448,6 +463,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             chatService.socket.emit("end_call", payload);
             webRtcClient.endCall();
+            undbindService();
         }
     }
 
@@ -477,6 +493,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void startFriendCall(String facebookId) {
         webRtcClient.setInitiator(true);
+        application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         hideFriendsAddCluster();
@@ -545,21 +562,40 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCall(String userId, Socket socket) {
-
+        if (!webRtcClient.isInitiator()) {
+            webRtcClient.addFriendForChat(userId, socket);
+        }
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
-
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sdp);
     }
 
     @Override
     public void onCallEnd() {
-
+        webRtcClient.endCall();
     }
 
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
+        Peer peer = webRtcClient.peers.get(0);
+        if (webRtcClient.queuedRemoteCandidates != null) {
+            if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {
+                Log.e(LOG_TAG, "local desc before queueing peers :" +
+                        peer.getPeerConnection().getLocalDescription());
+                Log.e(LOG_TAG, "remote desc before queueing peers :" +
+                        peer.getPeerConnection().getRemoteDescription());
+                webRtcClient.queuedRemoteCandidates.add(candidate);
+            }
 
+        } else {
+            Log.e(LOG_TAG, "local desc before adding peers :" +
+                    peer.getPeerConnection().getLocalDescription());
+            Log.e(LOG_TAG, "remote desc before adding peers :" +
+                    peer.getPeerConnection().getRemoteDescription());
+            peer.getPeerConnection().addIceCandidate(candidate);
+        }
     }
 }

@@ -27,6 +27,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.tokostudios.chat.ChatActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

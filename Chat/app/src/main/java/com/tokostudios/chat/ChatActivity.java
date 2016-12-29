@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GamesItem;
@@ -94,6 +95,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ArrayList<String> gamesImage;
     private ChatService chatService;
     private RelativeLayout multiplayerGamesView;
+    private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -103,9 +105,11 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            chatService = null;
         }
     };
+    private Bundle bundle;
+    private NuggetApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,11 +126,12 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
-
+        application = (NuggetApplication) getApplicationContext();
         fetchData();
 
         Intent intent = getIntent();
         targetId = intent.getStringExtra("userId");
+        bundle = intent.getExtras();
         setContentView(R.layout.activity_chat);
         startCallButton = (ImageView) findViewById(R.id.start_call_button);
         endCall = (ImageView) findViewById(R.id.end_call_button);
@@ -144,10 +149,15 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                init(user1, targetId);
-                startService(new Intent(ChatActivity.this, ChatService.class));
+                if(bundle == null){
+                    startService(new Intent(ChatActivity.this, ChatService.class));
+                }
                 bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                isBound = true;
+                init(user1, targetId);
+
+
             }
         });
 
@@ -178,16 +188,25 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                startCallButton.setVisibility(View.VISIBLE);
                 chatService.socket.emit("end_call", payload);
-               // webRtcClient.endCall();
+                webRtcClient.endCall();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                         LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                startCallButton.setVisibility(View.VISIBLE);
             }
         });
 
     }
-
+    private void setSDP(){
+        String type = bundle.getString("type");
+        String sdp = bundle.getString("sdp");
+        SessionDescription sessionDescription = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type),sdp
+        );
+        webRtcClient.addFriendForChat(bundle.getString("from"),chatService.socket);
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
+    }
     private void fetchData() {
         String firebaseUri = Conf.firebaseGamesURI();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
@@ -324,6 +343,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
         webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
                 iceServersString, this);
+        if(bundle!=null){
+            setSDP();
+        }
     }
 
     @Override
@@ -399,9 +421,18 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             }
             chatService.socket.emit("end_call", payload);
             webRtcClient.endCall();
+            undbindService();
         }
     }
-
+    private void undbindService(){
+        if(isBound){
+            if(chatService != null){
+                chatService.unregisterEventListener(this);
+            }
+            unbindService(serviceConnection);
+            isBound = false;
+        }
+    }
     private void showFriendsDialog() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setTitle("Choose a friend");
@@ -418,15 +449,21 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                UserDetails user = (UserDetails) adapter.getItem(which);
-                String userId = user.getUserId();
+                FriendInfo user = (FriendInfo) adapter.getItem(which);
+                startFriendCall(user.getFacebookId());
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                webRtcClient.setInitiator(true);
-                webRtcClient.addFriendForChat(userId, chatService.socket);
-                webRtcClient.createOffer(webRtcClient.peers.get(0));
+
             }
         });
         builderSingle.show();
+    }
+
+    private void startFriendCall(String facebookId) {
+        webRtcClient.setInitiator(true);
+        application.setInitiator(true);
+        webRtcClient.addFriendForChat(facebookId, chatService.socket);
+        webRtcClient.createOffer(webRtcClient.peers.get(0));
+        SharedPreferenceUtility.setFavouriteFriend(this, facebookId);
     }
 
     private void getUserFriends() {
