@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -92,6 +93,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ArrayList<String> gamesName;
     private ArrayList<String> gamesImage;
     private ChatService chatService;
+    private RelativeLayout multiplayerGamesView;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -130,6 +132,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         setContentView(R.layout.activity_chat);
         startCallButton = (ImageView) findViewById(R.id.start_call_button);
         endCall = (ImageView) findViewById(R.id.end_call_button);
+        multiplayerGamesView = (RelativeLayout)findViewById(R.id.multipayer_games_view);
         getUserFriends();
 
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
@@ -164,9 +167,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                //startCallButton.setImageResource(R.drawable.end_call_button);
+                startCallButton.setVisibility(View.INVISIBLE);
                 endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.GONE);
             }
         });
 
@@ -426,8 +428,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                endCall.setVisibility(View.INVISIBLE);
                 startCallButton.setVisibility(View.VISIBLE);
-                endCall.setVisibility(View.GONE);
             }
         });
 
@@ -436,6 +438,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             public void onClick(DialogInterface dialog, int which) {
                 UserDetails user = (UserDetails) adapter.getItem(which);
                 String userId = user.getUserId();
+                multiplayerGamesView.setVisibility(View.VISIBLE);
                 webRtcClient.setInitiator(true);
                 webRtcClient.addFriendForChat(userId, chatService.socket);
                 webRtcClient.createOffer(webRtcClient.peers.get(0));
