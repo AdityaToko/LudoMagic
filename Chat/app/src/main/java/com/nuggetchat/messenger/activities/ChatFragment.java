@@ -84,7 +84,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private GLSurfaceView rtcView;
     private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private String socketAddress;
     private ImageView startCallButton;
     private ImageView endCall;
     private String targetId;
@@ -156,7 +155,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         endCall = (ImageView) view.findViewById(R.id.end_call_button);
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
-        socketAddress = "http://192.168.0.118:5000/";
 
         String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
         String username = SharedPreferenceUtility.getFacebookUserName(getActivity());

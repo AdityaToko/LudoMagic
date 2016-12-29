@@ -82,7 +82,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private GLSurfaceView rtcView;
     private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private String socketAddress;
     private ImageView startCallButton;
     private ImageView endCall;
     private String targetId;
