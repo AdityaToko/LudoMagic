@@ -194,8 +194,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         SessionDescription sessionDescription = new SessionDescription(
                 SessionDescription.Type.fromCanonicalForm(type),sdp
         );
-        Friend friend = new Friend(user1, new User(bundle.getString("from"),"abc"), "abcd");
-        //Peer peer = new Peer(webRtcClient,user1, friend);
         webRtcClient.addFriendForChat(bundle.getString("from"),chatService.socket);
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
@@ -336,7 +334,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
         webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
                 iceServersString, this);
-        setSDP();
+        if(bundle!=null){
+            setSDP();
+        }
     }
 
     @Override

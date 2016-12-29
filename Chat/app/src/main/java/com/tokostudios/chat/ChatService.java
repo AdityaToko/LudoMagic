@@ -9,6 +9,8 @@ import android.util.Log;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -19,6 +21,7 @@ public class ChatService extends Service {
     public Socket socket;
     MessageHandler messageHandler;
     EventListener eventListener;
+    List<EventListener> listeners = new ArrayList<>();
 
     public class ChatBinder extends Binder {
        public ChatService getService() {
@@ -57,11 +60,17 @@ public class ChatService extends Service {
 
     public void registerEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
+        listeners.add(eventListener);
         registerForCallEvents();
+    }
+
+    public void unregisterEventListener(EventListener eventListener){
+        listeners.remove(eventListener);
     }
 
     private void registerForCallEvents(){
         messageHandler.setEventListener(eventListener);
+        messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);

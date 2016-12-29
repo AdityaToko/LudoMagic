@@ -17,6 +17,9 @@ import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -25,6 +28,7 @@ public class MessageHandler {
     private Socket socket;
     private Context context;
     private EventListener eventListener;
+    private List<EventListener> listeners = new ArrayList<>();
     String userId;
     String username;
 
@@ -34,11 +38,15 @@ public class MessageHandler {
         this.context = context;
         userId = SharedPreferenceUtility.getFacebookUserId(context);
         username = SharedPreferenceUtility.getFacebookUserName(context);
-        Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username );
+        Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username);
     }
 
     public void setEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    public void addEventListener(EventListener eventListener) {
+        listeners.add(eventListener);
     }
 
     public Emitter.Listener onInit = new Emitter.Listener() {
@@ -83,7 +91,7 @@ public class MessageHandler {
         public void call(Object... args) {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
-            Intent intent = new Intent();
+           /* Intent intent = new Intent();
             try {
                 String from = requestObject.getString("from");
                 String to = requestObject.getString("to");
@@ -114,10 +122,13 @@ public class MessageHandler {
                         Log.e(LOG_TAG, "JSON ERROR " + e.getMessage());
                     }
                 }
-            });
+            });*/
 
-          /*  try {
-                eventListener.onCall(requestObject.getString("from"), socket);
+            try {
+               // eventListener.onCall(requestObject.getString("from"), socket);
+                for (EventListener listener : listeners) {
+                    listener.onCall(requestObject.getString("from"), socket);
+                }
                 Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
                 if (userId.equals(requestObject.getString("to"))
                         && requestObject.getJSONObject("offer") != null) {
@@ -128,11 +139,13 @@ public class MessageHandler {
                             offerObj.getString("sdp")
                     );
                     Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
-                    eventListener.onCallRequestOrAnswer(sdp);
+                    for (EventListener listener : listeners) {
+                        listener.onCallRequestOrAnswer(sdp);
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
-            }*/
+            }
         }
     };
 
@@ -143,6 +156,9 @@ public class MessageHandler {
             JSONObject acceptObject = (JSONObject) args[0];
             try {
                 eventListener.onCall(acceptObject.getString("from"), socket);
+                for (EventListener listener : listeners) {
+                    listener.onCall(acceptObject.getString("from"), socket);
+                }
                 if (userId.equals(acceptObject.getString("to"))
                         && acceptObject.get("answer") != null) {
                     JSONObject answerObj = acceptObject.getJSONObject("answer");
@@ -150,6 +166,9 @@ public class MessageHandler {
                             SessionDescription.Type.fromCanonicalForm(answerObj.getString("type")),
                             answerObj.getString("sdp")
                     );
+                    for (EventListener listener : listeners) {
+                        listener.onCallRequestOrAnswer(sdp);
+                    }
                     eventListener.onCallRequestOrAnswer(sdp);
                     Log.e(LOG_TAG, "Setting remote desc after onCallAccepted for " + acceptObject.getString("to"));
                 }
@@ -167,12 +186,18 @@ public class MessageHandler {
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
                 eventListener.onCall(iceCandidateObj.getString("from"), socket);
+                for (EventListener listener : listeners) {
+                    listener.onCall(iceCandidateObj.getString("from"), socket);
+                }
                 if (userId.equals(iceCandidateObj.getString("to"))
                         && iceCandidateObj.get("candidate") != null) {
                     Log.e(LOG_TAG, "inside onIceCandidates if ");
                     IceCandidate candidate = new IceCandidate(iceCandidateObj.getString("id"),
                             iceCandidateObj.getInt("label"),
                             iceCandidateObj.getString("candidate"));
+                    for (EventListener listener : listeners) {
+                        listener.onFetchIceCandidates(candidate);
+                    }
                     eventListener.onFetchIceCandidates(candidate);
                     Log.e(LOG_TAG, "setting ice candidates successfully for :" + iceCandidateObj.getString("to"));
                 } else {
@@ -190,6 +215,9 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             Log.d(LOG_TAG, "inside onCallEnded");
+            for (EventListener listener : listeners) {
+                listener.onCallEnd();
+            }
             eventListener.onCallEnd();
         }
     };
