@@ -18,8 +18,9 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
@@ -89,7 +90,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private View view;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
-    private LinearLayout gamesList;
     private ArrayList<GamesItem> gamesItemList;
     ArrayList<String> gamesName;
     ArrayList<String> gamesImage;
@@ -110,6 +110,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.friends_add_cluster) LinearLayout linearLayout;
     @BindView(R.id.popular_friend_1) ImageView popularFriend1;
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
+    @BindView(R.id.multipayer_games_view)
+    RelativeLayout multiplayerGamesView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -326,7 +328,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private void setUpListView(final int i) {
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
-        gamesList = (LinearLayout) view.findViewById(R.id.games_list);
+        LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.grid_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
@@ -456,10 +458,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void hideFriendsAddCluster() {
+        multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
 
     private void showFriendsAddCluster() {
+        endCall.setVisibility(View.INVISIBLE);
+        multiplayerGamesView.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.VISIBLE);
     }
 
@@ -501,6 +507,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.d(LOG_TAG, "fragment onActivityResult");
         if (requestCode == 1234) {
             Log.d(LOG_TAG, "before toast onActivityResult");
+            hideFriendsAddCluster();
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
+            multiplayerGamesView.setVisibility(View.VISIBLE);
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
             }
