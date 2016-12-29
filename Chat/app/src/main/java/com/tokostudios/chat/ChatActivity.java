@@ -143,6 +143,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         endCall = (ImageView) findViewById(R.id.end_call_button);
         endCall.setVisibility(View.VISIBLE);
         multiplayerGamesView = (RelativeLayout)findViewById(R.id.multipayer_games_view);
+        multiplayerGamesView.setVisibility(View.VISIBLE);
         getUserFriends();
 
         rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
