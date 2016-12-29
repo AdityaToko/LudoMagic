@@ -42,7 +42,6 @@ public class GamesChatActivity extends AppCompatActivity {
     private LinearLayout tabView;
     private TextView textView;
     private  ImageView imageView;
-    private ArrayList<GamesItem> gamesItemList;
     private Intent intent;
 
     @Override

@@ -30,18 +30,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GamesItem;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
-import com.nuggetchat.messenger.utils.GlideUtils;
-import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
 import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.GlideUtils;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,9 +72,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    ArrayList<UserDetails> selectUsers = new ArrayList<>();
-    List<UserDetails> temp;
-    UserFriendsAdapter adapter;
     private VideoRenderer.Callbacks localRender;
     private VideoRenderer.Callbacks remoteRender;
     private GLSurfaceView rtcView;
@@ -84,6 +82,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ImageView endCall;
     private String targetId;
     private User user1;
+    ArrayList<FriendInfo> selectUsers = new ArrayList<>();
+    List<UserDetails> temp;
+    UserFriendsAdapter adapter;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
     private LinearLayout gamesList;
@@ -357,17 +358,24 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
-        remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-        VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-                scalingType, true);
-        VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-                scalingType, true);
+        if (remoteStream.videoTracks.size() == 1) {
+            remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
+            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+                    scalingType, true);
+            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
+                    scalingType, true);
+        }
     }
 
     @Override
-    public void onRemoveRemoteStream() {
+    public void onRemoveRemoteStream(MediaStream remoteStream) {
+        if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
+            remoteStream.videoTracks.get(0).dispose();
+        }
+        // resize anyway as the event has fired
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                 LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        VideoRendererGui.update(remoteRender, 0, 0, 0, 0, scalingType, false);
     }
 
     @Override
@@ -393,7 +401,17 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     protected void onDestroy() {
         super.onDestroy();
         if (webRtcClient != null) {
-            webRtcClient.onDestroy();
+            JSONObject payload = new JSONObject();
+            try {
+                Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+                payload.put("from", webRtcClient.userId1);
+                payload.put("to", webRtcClient.userId2);
+                payload.put("token", "abcd");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            chatService.socket.emit("end_call", payload);
+            webRtcClient.endCall();
         }
     }
 
@@ -437,8 +455,8 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                                 Log.d(LOG_TAG, dataObject.toString());
                                 String name = dataObject.getString("name");
                                 String userId = dataObject.getString("id");
-                                UserDetails userData = new UserDetails();
-                                userData.setUserId(userId);
+                                FriendInfo userData = new FriendInfo();
+                                userData.setFacebookId(userId);
                                 userData.setName(name);
                                 selectUsers.add(userData);
                                 Log.d(LOG_TAG, "Values " + name + "  " + userId);

@@ -49,6 +49,7 @@ public class ChatService extends Service {
         socket.on(Socket.EVENT_CONNECT, messageHandler.onInit);
         socket.on("init_successful", messageHandler.onInitSuccessful);
         socket.on("call_requested", messageHandler.onCallRequested);
+        socket.on(Socket.EVENT_DISCONNECT, messageHandler.onDisconnect);
         socket.connect();
         Log.e(LOG_TAG, "onStartCommand: after socket connect" );
         return START_STICKY;

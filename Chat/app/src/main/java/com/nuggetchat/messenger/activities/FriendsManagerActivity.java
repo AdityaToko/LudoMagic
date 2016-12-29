@@ -15,30 +15,38 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.facebook.AccessToken;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.facebook.CallbackManager;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.share.model.ShareLinkContent;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.nuggetchat.lib.common.RequestParams;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class FriendsManagerActivity extends AppCompatActivity {
     private static final String LOG_TAG = FriendsManagerActivity.class.getSimpleName();
-    ArrayList<UserDetails> selectUsers;
+    ArrayList<FriendInfo> selectUsers;
     List<UserDetails> temp;
     // Contact List
     ListView listView;
@@ -58,7 +66,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friendsmanager);
         ButterKnife.bind(this);
         intent = getIntent();
-        getUserFriends(SharedPreferenceUtility.getFacebookUserId(FriendsManagerActivity.this));
+        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(this), SharedPreferenceUtility.getFirebaseIdToken(this), SharedPreferenceUtility.getFirebaseUid(this));
         callbackManager = CallbackManager.Factory.create();
 
         selectUsers = new ArrayList<>();
@@ -68,53 +76,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 .setContentTitle("....")
                 .build();
     }
-
-    private void getUserFriends(String id) {
-        new GraphRequest(
-                AccessToken.getCurrentAccessToken(),
-                "/me/friends",
-                null,
-                HttpMethod.GET,
-                new GraphRequest.Callback() {
-                    public void onCompleted(GraphResponse response) {
-                        Log.d(LOG_TAG, response.toString());
-                        JSONObject object = response.getJSONObject();
-                        try {
-                            for (int i = 0; i < object.getJSONArray("data").length(); i++) {
-                                JSONObject dataObject = (object.getJSONArray("data")).getJSONObject(i);
-                                Log.d(LOG_TAG, dataObject.toString());
-                                String name = dataObject.getString("name");
-                                String userId = dataObject.getString("id");
-                                UserDetails userData = new UserDetails();
-                                userData.setUserId(userId);
-                                userData.setName(name);
-                                selectUsers.add(userData);
-                                Log.d(LOG_TAG, "Values " + name + "  " + userId);
-                            }
-                            adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
-                            listView.setAdapter(adapter);
-                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                    Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
-                                    resultIntent.putExtra("user_id", ((UserDetails) adapterView.getAdapter().getItem(i)).getUserId());
-                                    if (intent.getStringExtra("user_id") == null) {
-                                        startActivity(resultIntent);
-                                        finish();
-                                        return;
-                                    }
-                                    setResult(1234, resultIntent);
-                                    finish();
-                                }
-                            });
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-        ).executeAsync();
-    }
-
 
     public void sendMessagetoFriends(View v) {
         Log.d(LOG_TAG, "Message to friends called");
@@ -186,5 +147,81 @@ public class FriendsManagerActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_FULLSCREEN
                             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
+    }
+
+    public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://server.nuggetchat.com:8080/getFriends";
+        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(LOG_TAG, "Request success " + response.toString());
+                getFriendsFromFirebase(firebaseUid);
+                adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
+                listView.setAdapter(adapter);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+                        resultIntent.putExtra("user_id", ((FriendInfo) adapterView.getAdapter().getItem(i)).getFacebookId());
+                        if (intent.getStringExtra("user_id") == null) {
+                            startActivity(resultIntent);
+                            finish();
+                            return;
+                        }
+                        setResult(1234, resultIntent);
+                        finish();
+                    }
+                });
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Error in making friends request", error);
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, accessToken);
+                params.put(RequestParams.FIREBASE_ID_TOKEN, idToken);
+                return params;
+            }
+        };
+        queue.add(sr);
+    }
+
+    private void getFriendsFromFirebase(String firebaseId) {
+        String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + firebaseId + "/friends";
+        Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
+
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                FriendInfo friendInfo = dataSnapshot.getValue(FriendInfo.class);
+                selectUsers.add(friendInfo);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {}
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
     }
 }
