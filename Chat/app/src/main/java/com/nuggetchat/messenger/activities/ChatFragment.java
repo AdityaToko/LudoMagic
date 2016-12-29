@@ -483,6 +483,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void hideFriendsAddCluster() {
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
         multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
@@ -533,9 +535,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (requestCode == 1234) {
             Log.d(LOG_TAG, "before toast onActivityResult");
             hideFriendsAddCluster();
-            endCall.setVisibility(View.VISIBLE);
-            startCallButton.setVisibility(View.INVISIBLE);
-            multiplayerGamesView.setVisibility(View.VISIBLE);
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
             }

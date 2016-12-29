@@ -76,6 +76,10 @@ public class GamesChatActivity extends AppCompatActivity {
             viewPager.setCurrentItem(1);
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
             tabView.setBackgroundResource(R.drawable.second_tab_background);
+        } else {
+            viewPager.setCurrentItem(0);
+            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
+            tabView.setBackgroundResource(R.drawable.first_tab_background);
         }
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
