@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -58,6 +60,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
     UserFriendsAdapter adapter;
     CallbackManager callbackManager;
     Intent intent;
+
+    @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -150,6 +154,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
+        friendsManagerProgressBar.setVisibility(View.VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://server.nuggetchat.com:8080/getFriends";
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -209,6 +214,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 FriendInfo friendInfo = dataSnapshot.getValue(FriendInfo.class);
                 selectUsers.add(friendInfo);
                 adapter.notifyDataSetChanged();
+                friendsManagerProgressBar.setVisibility(View.INVISIBLE);
             }
 
             @Override
