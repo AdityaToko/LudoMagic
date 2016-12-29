@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -27,10 +28,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     LoginButton loginButton;
     CallbackManager callbackManager;
+
+    @BindView(R.id.login_progress_bar) /* package-local */ ProgressBar loginProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("public_profile", "email", "user_friends");
@@ -83,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loginToFirebase(final LoginResult loginResult) {
+        loginProgressBar.setVisibility(View.VISIBLE);
         // App code
         System.out.println("onSuccess");
         final String accessToken = loginResult.getAccessToken().getToken();
@@ -138,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, SharedPreferenceUtility.getFacebookUserId(MainActivity.this));
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
+                loginProgressBar.setVisibility(View.INVISIBLE);
                 finish();
             }
 
