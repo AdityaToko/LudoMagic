@@ -84,8 +84,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private GLSurfaceView rtcView;
     private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private ImageView startCallButton;
-    private ImageView endCall;
     private String targetId;
     private User user1;
     private View view;
@@ -116,6 +114,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
+    @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
+    @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -150,9 +150,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         Intent intent = getActivity().getIntent();
         targetId = intent.getStringExtra("userId");
-
-        startCallButton = (ImageView) view.findViewById(R.id.start_call_button);
-        endCall = (ImageView) view.findViewById(R.id.end_call_button);
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
@@ -189,8 +186,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                startCallButton.setVisibility(View.INVISIBLE);
-                endCall.setVisibility(View.VISIBLE);
             }
         });
 
@@ -515,8 +510,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
                 dialog.dismiss();
             }
         });
@@ -640,6 +633,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
+        endCall.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);
     }
 
     @Override
