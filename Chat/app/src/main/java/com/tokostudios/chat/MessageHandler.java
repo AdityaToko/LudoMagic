@@ -134,7 +134,7 @@ public class MessageHandler {
                 });
             } else {
                 try {
-                    // eventListener.onCall(requestObject.getString("from"), socket);
+                     eventListener.onCall(requestObject.getString("from"), socket);
                     for (EventListener listener : listeners) {
                         listener.onCall(requestObject.getString("from"), socket);
                     }
@@ -148,6 +148,7 @@ public class MessageHandler {
                                 offerObj.getString("sdp")
                         );
                         Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
+                        eventListener.onCallRequestOrAnswer(sdp);
                         for (EventListener listener : listeners) {
                             listener.onCallRequestOrAnswer(sdp);
                         }
