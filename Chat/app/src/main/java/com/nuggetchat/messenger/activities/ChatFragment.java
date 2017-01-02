@@ -561,6 +561,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         startCallButton.setVisibility(View.INVISIBLE);
         multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void showFriendsAddCluster() {
@@ -568,6 +570,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         multiplayerGamesView.setVisibility(View.INVISIBLE);
         startCallButton.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.VISIBLE);
+        endCall.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);
     }
 
     private void getUserFriends() {
@@ -621,12 +625,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!webRtcClient.isInitiator()) {
             webRtcClient.addFriendForChat(userId, socket);
         }
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
