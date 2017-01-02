@@ -14,6 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.utils.GlideUtils;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -114,8 +117,11 @@ public class GamesChatActivity extends AppCompatActivity {
     }
 
     private void setUpToolbar() {
-        kidNameText.setText("Vartika Sharma");
-        kidImage.setImageResource(R.drawable.nuggeticon);
+        String userName = SharedPreferenceUtility.getFacebookUserName(this);
+        Log.i(LOG_TAG, "the username, " + userName);
+        String profilePicUrl = getProfilePicUrl(SharedPreferenceUtility.getFacebookUserId(this));
+        GlideUtils.loadImage(this, kidImage, null, profilePicUrl);
+        kidNameText.setText(userName);
         setSupportActionBar(toolbar);
     }
 
@@ -174,5 +180,9 @@ public class GamesChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(LOG_TAG, "activity onActivityResult");
+    }
+
+    private String getProfilePicUrl(String facebookUserId) {
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
     }
 }

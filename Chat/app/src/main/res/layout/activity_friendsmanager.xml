@@ -57,6 +57,15 @@
         android:layout_below="@id/quick_play_underline"
         android:layout_marginBottom="50dp"/>
 
+    <TextView
+        android:id="@+id/invite_friends_text"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:textSize="18dp"
+        android:text="No friends yet. Invite friends "
+        android:visibility="gone"/>
+
     <LinearLayout
         android:id="@+id/invite_buttons_layout"
         android:layout_width="match_parent"
