@@ -268,7 +268,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage(), gamesDate.getUrl());
+                        gamesDate.getFeaturedImage(), gamesDate.getUrl(), gamesDate.getPortrait());
                 gamesItemList.add(gamesItem);
             }
 

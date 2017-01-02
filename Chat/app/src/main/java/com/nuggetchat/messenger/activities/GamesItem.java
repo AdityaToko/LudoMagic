@@ -5,12 +5,14 @@ public class GamesItem {
     private String gamesName;
     private String gamesImage;
     private String gamesUrl;
+    private Boolean portrait;
 
-    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl) {
+    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl, Boolean portrait) {
         this.gameKey = gameKey;
         this.gamesName = gamesName;
         this.gamesImage = gamesImage;
         this.gamesUrl = gamesUrl;
+        this.portrait = portrait;
     }
 
     public String getGameKey() {
@@ -44,4 +46,13 @@ public class GamesItem {
     public void setGamesUrl(String gamesUrl) {
         this.gamesUrl = gamesUrl;
     }
+
+    public Boolean getPortrait() {
+        return portrait;
+    }
+
+    public void setPortrait(Boolean portrait) {
+        this.portrait = portrait;
+    }
+
 }

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 
 public class GamesFragment extends Fragment {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
-    public static final String EXTRA_GAME_URL = GameWebViewActivity.class.getName() + ".game_url";
-    private GridView gridView;
+    public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
+    public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
     private ArrayList<String> gamesName;
     private ArrayList<String> gamesImages;
     private ArrayList<String> gamesUrl;
@@ -45,7 +45,7 @@ public class GamesFragment extends Fragment {
         fetchDataForGames();
 
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
-        gridView = (GridView) view.findViewById(R.id.grid_view);
+        GridView gridView = (GridView) view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -55,6 +55,8 @@ public class GamesFragment extends Fragment {
                 Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
                 Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
                 gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
+                Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
+                gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
                 startActivity(gameIntent);
             }
         });
@@ -86,8 +88,9 @@ public class GamesFragment extends Fragment {
                 gamesImages.add(gamesData.getFeaturedImage());
                 gamesUrl.add(gamesData.getUrl());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                        gamesData.getFeaturedImage(), gamesData.getUrl());
+                        gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait());
                 gamesItemList.add(gamesItem);
+                Log.i(LOG_TAG, "Game item image, " + gamesData.getPortrait());
             }
 
             @Override
