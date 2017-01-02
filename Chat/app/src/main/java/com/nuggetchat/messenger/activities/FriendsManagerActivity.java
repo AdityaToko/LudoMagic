@@ -36,6 +36,7 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,13 +147,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            ViewUtils.setWindowImmersive(getWindow());
         }
     }
 
@@ -163,7 +158,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(LOG_TAG, "Request success " + response.toString());
+                Log.d(LOG_TAG, "Request success " + response);
                 getFriendsFromFirebase(firebaseUid);
                 adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
                 listView.setAdapter(adapter);
