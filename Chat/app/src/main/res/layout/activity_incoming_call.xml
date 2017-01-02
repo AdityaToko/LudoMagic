@@ -4,7 +4,7 @@
     android:id="@+id/activity_incoming_call"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tokostudios.chat.IncomingCallActivity">
+    tools:context=".chat.IncomingCallActivity">
 
     <Button
         android:id="@+id/reject_btn"
