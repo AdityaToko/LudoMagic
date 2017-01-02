@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.nuggetchat.messenger.chat;
 
 import android.app.Service;
 import android.content.Intent;
@@ -17,10 +17,10 @@ import io.socket.client.Socket;
 
 public class ChatService extends Service {
     private static final String HOST = "http://chat.nuggetkids.com/";
+    //private static final String HOST = "http://192.168.0.118:5000";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     public Socket socket;
     MessageHandler messageHandler;
-    EventListener eventListener;
     List<EventListener> listeners = new ArrayList<>();
 
     public class ChatBinder extends Binder {
@@ -59,17 +59,15 @@ public class ChatService extends Service {
     }
 
     public void registerEventListener(EventListener eventListener) {
-        this.eventListener = eventListener;
         listeners.add(eventListener);
-        registerForCallEvents();
+        registerForCallEvents(eventListener);
     }
 
     public void unregisterEventListener(EventListener eventListener){
         listeners.remove(eventListener);
     }
 
-    private void registerForCallEvents(){
-        messageHandler.setEventListener(eventListener);
+    private void registerForCallEvents(EventListener eventListener){
         messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("ice_candidates", messageHandler.onIceCandidates);

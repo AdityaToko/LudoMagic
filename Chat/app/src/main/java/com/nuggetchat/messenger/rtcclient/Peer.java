@@ -2,9 +2,8 @@ package com.nuggetchat.messenger.rtcclient;
 
 import android.util.Log;
 
-import com.nuggetchat.messenger.NuggetApplication;
-import com.tokostudios.chat.Friend;
-import com.tokostudios.chat.User;
+import com.nuggetchat.messenger.chat.Friend;
+import com.nuggetchat.messenger.chat.User;
 
 import org.json.JSONException;
 import org.json.JSONObject;

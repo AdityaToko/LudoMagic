@@ -2,6 +2,7 @@ package com.nuggetchat.messenger.activities;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.nuggetchat.messenger.R;
+
+import static com.nuggetchat.messenger.activities.GamesFragment.EXTRA_GAME_ORIENTATION;
 
 
 public class GameWebViewActivity extends AppCompatActivity {
@@ -25,7 +28,10 @@ public class GameWebViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         String gameUrl = bundle.getString(EXTRA_GAME_URL);
-
+        Boolean portrait = null;
+        if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
+            portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
+        }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         gameWebView.getSettings().setJavaScriptEnabled(true);
         gameWebView.getSettings().setDomStorageEnabled(true);
@@ -47,6 +53,15 @@ public class GameWebViewActivity extends AppCompatActivity {
             }
         });
         gameWebView.loadUrl(gameUrl);
+        if (portrait == null) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        } else {
+            if (portrait) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        }
     }
 
     @Override

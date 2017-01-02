@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.nuggetchat.messenger.chat;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -240,7 +240,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage(), gamesDate.getUrl());
+                        gamesDate.getFeaturedImage(), gamesDate.getUrl(), gamesDate.getPortrait());
                 gamesItemList.add(gamesItem);
             }
 
