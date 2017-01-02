@@ -46,6 +46,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 public class FriendsManagerActivity extends AppCompatActivity {
     private static final String LOG_TAG = FriendsManagerActivity.class.getSimpleName();
     ArrayList<FriendInfo> selectUsers;
@@ -154,7 +157,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
-        friendsManagerProgressBar.setVisibility(View.VISIBLE);
+        friendsManagerProgressBar.setVisibility(VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://server.nuggetchat.com:8080/getFriends";
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
@@ -183,6 +186,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d(LOG_TAG, "Error in making friends request", error);
+                friendsManagerProgressBar.setVisibility(INVISIBLE);
             }
         }){
             @Override
@@ -202,7 +206,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
 
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
-
+        friendsManagerProgressBar.setVisibility(INVISIBLE);
         if (firebaseRef == null) {
             Log.e(LOG_TAG, "Unable to get database reference.");
             return;
@@ -214,7 +218,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 FriendInfo friendInfo = dataSnapshot.getValue(FriendInfo.class);
                 selectUsers.add(friendInfo);
                 adapter.notifyDataSetChanged();
-                friendsManagerProgressBar.setVisibility(View.INVISIBLE);
+                friendsManagerProgressBar.setVisibility(INVISIBLE);
             }
 
             @Override
