@@ -1,6 +1,6 @@
 package com.nuggetchat.messenger;
 
-import android.app.Application;
+import android.support.multidex.MultiDexApplication;
 
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
@@ -8,7 +8,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class NuggetApplication extends Application {
+public class NuggetApplication extends MultiDexApplication {
     private static boolean initialized = false;
     private boolean isInitiator = false;
     private boolean isOngoingCall = false;
