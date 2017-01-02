@@ -78,7 +78,6 @@ public class GamesFragment extends Fragment {
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 GamesData gamesData = dataSnapshot.getValue(GamesData.class);
                 gamesName.add(gamesData.getTitle());
                 gamesImages.add(gamesData.getFeaturedImage());
@@ -86,7 +85,7 @@ public class GamesFragment extends Fragment {
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
                         gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait());
                 gamesItemList.add(gamesItem);
-                Log.i(LOG_TAG, "Game item image, " + gamesData.getPortrait());
+                Log.i(LOG_TAG, "Game " + gamesData.getDataId() + " isPortrait " + gamesData.getPortrait());
             }
 
             @Override

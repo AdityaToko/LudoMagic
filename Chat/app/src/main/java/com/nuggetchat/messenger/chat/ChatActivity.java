@@ -472,6 +472,10 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             }
             if (chatService != null && chatService.socket != null) {
                 chatService.socket.emit("end_call", payload);
+            } else {
+                String errStr = "Chat service or socket null";
+                Log.e(LOG_TAG, errStr);
+                throw new IllegalStateException(errStr);
             }
             webRtcClient.endCall();
             undbindService();
