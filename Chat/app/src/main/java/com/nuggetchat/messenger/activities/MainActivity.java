@@ -102,9 +102,9 @@ public class MainActivity extends AppCompatActivity {
     private void loginToFirebase(final LoginResult loginResult) {
         loginProgressBar.setVisibility(View.VISIBLE);
         // App code
-        System.out.println("onSuccess");
         final String accessToken = loginResult.getAccessToken().getToken();
-        Log.i("accessToken", accessToken);
+        Log.i(LOG_TAG, "Trying Login");
+//      Log.i(LOG_TAG, "firebase token " + accessToken);
         FirebaseAuth.getInstance()
                 .signInWithCredential(FacebookAuthProvider.getCredential(accessToken))
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
                         String firebaseIdToken = tokenTask.getResult().getToken();
-                        Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
+//                        Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
                         //getFriendsGraph(accessToken);
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
@@ -199,7 +199,8 @@ public class MainActivity extends AppCompatActivity {
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(LOG_TAG, "Request success " + response.toString());
+                Log.i(LOG_TAG, "Facebook login success ");
+//                Log.i(LOG_TAG, "Facebook response " + response);
                 setUserFacebookUserId();
             }
         }, new Response.ErrorListener() {

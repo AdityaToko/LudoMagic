@@ -260,11 +260,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
-                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
                 GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-                Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
-
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),

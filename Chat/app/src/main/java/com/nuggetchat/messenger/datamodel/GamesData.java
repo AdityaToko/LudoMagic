@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.datamodel;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class GamesData {
     private int ageBestMax;
@@ -24,9 +25,9 @@ public class GamesData {
     private HashMap<String, Boolean> indexHash;
 
     public GamesData() {
-        genderBiasPercent = new HashMap<String, Integer>();
-        categories = new HashMap<String, Boolean>();
-        indexHash = new HashMap<String, Boolean>();
+        genderBiasPercent = new HashMap<>();
+        categories = new HashMap<>();
+        indexHash = new HashMap<>();
     }
 
 
@@ -78,11 +79,11 @@ public class GamesData {
         this.emotion = emotion;
     }
 
-    public boolean isFun() {
+    public boolean getIsFun() {
         return isFun;
     }
 
-    public void setFun(boolean fun) {
+    public void setIsFun(boolean fun) {
         isFun = fun;
     }
 
@@ -158,27 +159,27 @@ public class GamesData {
         this.modifiedTime = modifiedTime;
     }
 
-    public HashMap<String, Integer> getGenderBiasPercent() {
+    public Map<String, Integer> getGenderBiasPercent() {
         return genderBiasPercent;
     }
 
-    public void setGenderBiasPercent(HashMap<String, Integer> genderBiasPercent) {
-        this.genderBiasPercent = genderBiasPercent;
+    public void setGenderBiasPercent(Map<String, Integer> genderBiasPercent) {
+        this.genderBiasPercent = (HashMap<String, Integer>) genderBiasPercent;
     }
 
-    public HashMap<String, Boolean> getCategories() {
+    public Map<String, Boolean> getCategories() {
         return categories;
     }
 
-    public void setCategories(HashMap<String, Boolean> categories) {
-        this.categories = categories;
+    public void setCategories(Map<String, Boolean> categories) {
+        this.categories = (HashMap<String, Boolean>) categories;
     }
 
-    public HashMap<String, Boolean> getIndexHash() {
+    public Map<String, Boolean> getTagIndex() {
         return indexHash;
     }
 
-    public void setIndexHash(HashMap<String, Boolean> indexHash) {
-        this.indexHash = indexHash;
+    public void setTagIndex(Map<String, Boolean> indexHash) {
+        this.indexHash = (HashMap<String, Boolean>) indexHash;
     }
 }

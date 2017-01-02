@@ -470,7 +470,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            chatService.socket.emit("end_call", payload);
+            if (chatService != null && chatService.socket != null) {
+                chatService.socket.emit("end_call", payload);
+            }
             webRtcClient.endCall();
             undbindService();
         }
