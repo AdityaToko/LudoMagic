@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -65,6 +66,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     Intent intent;
 
     @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
+    @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -207,6 +209,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
         friendsManagerProgressBar.setVisibility(INVISIBLE);
+        inviteFriendsText.setVisibility(VISIBLE);
         if (firebaseRef == null) {
             Log.e(LOG_TAG, "Unable to get database reference.");
             return;
@@ -219,6 +222,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 selectUsers.add(friendInfo);
                 adapter.notifyDataSetChanged();
                 friendsManagerProgressBar.setVisibility(INVISIBLE);
+                inviteFriendsText.setVisibility(INVISIBLE);
             }
 
             @Override
