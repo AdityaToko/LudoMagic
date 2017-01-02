@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
@@ -184,6 +185,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);
 
+        AudioManager audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        // TODO: figure out how to do this right and remove the suppression.
+        @SuppressWarnings("deprecation")
+        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+        audioManager.setMode(isWiredHeadsetOn ?
+                AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
+        audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
+
         startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -206,10 +215,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     e.printStackTrace();
                 }
                 chatService.socket.emit("end_call", payload);
-               // webRtcClient.endCall();
+                webRtcClient.endCall();
                 showFriendsAddCluster();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                         LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                startCallButton.setVisibility(View.VISIBLE);
             }
         });
 
