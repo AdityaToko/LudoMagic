@@ -373,7 +373,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
                     // launch the WebView
                     Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                    gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, thisGameUrl);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
                     startActivity(gameIntent);
 
                     // emit to peer
@@ -633,7 +633,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onGameLink(String link) {
         // launch the WebView
         Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-        gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, link);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
         startActivity(gameIntent);
     }
 

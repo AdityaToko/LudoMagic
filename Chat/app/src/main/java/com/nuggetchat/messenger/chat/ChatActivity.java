@@ -349,7 +349,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
                     // launch the WebView
                     Intent gameIntent = new Intent(ChatActivity.this, GameWebViewActivity.class);
-                    gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, thisGameUrl);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
                     startActivity(gameIntent);
 
                     // emit to peer
@@ -572,7 +572,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     public void onGameLink(String link) {
         // launch the WebView
         Intent gameIntent = new Intent(ChatActivity.this, GameWebViewActivity.class);
-        gameIntent.putExtra(GamesFragment.EXTRA_GAME_URL, link);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
         startActivity(gameIntent);
     }
 
