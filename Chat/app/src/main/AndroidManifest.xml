@@ -68,11 +68,11 @@
             android:label="@string/title_activity_game_web_view"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.tokostudios.chat.ChatActivity"
+            android:name=".chat.ChatActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <service
-            android:name="com.tokostudios.chat.ChatService"
+            android:name=".chat.ChatService"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
@@ -90,7 +90,7 @@
         </receiver>
 
         <activity
-            android:name="com.tokostudios.chat.IncomingCallActivity"
+            android:name=".chat.IncomingCallActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />

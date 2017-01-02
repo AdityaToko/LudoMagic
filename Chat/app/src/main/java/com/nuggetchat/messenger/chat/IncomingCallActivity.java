@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.nuggetchat.messenger.chat;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +16,10 @@ import butterknife.OnClick;
 public class IncomingCallActivity extends AppCompatActivity {
     private static final String LOG_TAG = IncomingCallActivity.class.getSimpleName();
     @BindView(R.id.accept_btn)
-    Button acceptButton;
+    public Button acceptButton;
 
     @BindView(R.id.reject_btn)
-    Button rejectButton;
+    public Button rejectButton;
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
 
     @OnClick(R.id.accept_btn)
-    void acceptButtonClick(){
+    public void acceptButtonClick(){
         Intent startChatIntent = new Intent(this, ChatActivity.class);
         startChatIntent.putExtras(bundle);
         startActivity(startChatIntent);
@@ -47,7 +47,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.reject_btn)
-    void rejectButtonClick(){
+    public void rejectButtonClick(){
         finishAffinity();
     }
 }
