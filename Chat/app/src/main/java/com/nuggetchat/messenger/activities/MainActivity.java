@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
+                        SharedPreferenceUtility.setFacebookUserName(task.getResult().getUser().getDisplayName(), MainActivity.this);
                         getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
                     }
                 });
