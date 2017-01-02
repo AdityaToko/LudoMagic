@@ -8,14 +8,15 @@ import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -36,6 +37,8 @@ import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.chat.User;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.Peer;
@@ -44,8 +47,7 @@ import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.nuggetchat.messenger.chat.ChatService;
-import com.nuggetchat.messenger.chat.User;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,6 +99,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     ArrayList<String> gamesImage;
     private NuggetApplication application;
     private ChatService chatService;
+    private Handler mainHandler;
+
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -120,14 +124,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        // getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getActivity().getWindow().addFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        mainHandler = new Handler(Looper.getMainLooper());
+        // Enabled once connected.
+        // ViewUtils.setWindowImmersive(getActivity().getWindow());
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
         if (SharedPreferenceUtility.getFavFriend1(getActivity()).equals("")) {
@@ -434,6 +433,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
+        ViewUtils.setWindowImmersive(getActivity().getWindow(), mainHandler);
         if (remoteStream.videoTracks.size() == 1) {
             application.setOngoingCall(true);
             remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
@@ -446,6 +446,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
+        ViewUtils.showWindowNavigation(getActivity().getWindow(), mainHandler);
         application.setOngoingCall(false);
         if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
             remoteStream.videoTracks.get(0).dispose();
@@ -501,7 +502,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            chatService.socket.emit("end_call", payload);
+            if (chatService != null && chatService.socket != null) {
+                chatService.socket.emit("end_call", payload);
+            } else {
+                String errStr = "Chat service or socket null";
+                Log.e(LOG_TAG, errStr);
+                throw new IllegalStateException(errStr);
+            }
             webRtcClient.endCall();
             undbindService();
         }

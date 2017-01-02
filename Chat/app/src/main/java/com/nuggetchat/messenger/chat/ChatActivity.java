@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -37,7 +36,6 @@ import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GameWebViewActivity;
-import com.nuggetchat.messenger.activities.GamesFragment;
 import com.nuggetchat.messenger.activities.GamesItem;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.datamodel.UserDetails;
@@ -48,6 +46,7 @@ import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -118,12 +117,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        ViewUtils.setWindowImmersive(getWindow());
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
         multiPlayerGamesUrl = new ArrayList<>();
@@ -232,10 +226,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
                 GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-                Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
+//              Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
 
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());
@@ -279,8 +272,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
-                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
+//              Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 for (int i = 0; i < gamesItemList.size(); i++) {
                     Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
                     if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {
