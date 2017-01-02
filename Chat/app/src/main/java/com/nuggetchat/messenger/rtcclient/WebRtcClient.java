@@ -26,7 +26,7 @@ import java.util.Random;
 import io.socket.client.Socket;
 
 public class WebRtcClient{
-    private static final String LOG_TAG = WebRtcClient.class.getCanonicalName();
+    private static final String LOG_TAG = WebRtcClient.class.getSimpleName();
     private VideoSource videoSource;
     private PeerConnectionParameters params;
     private User currentUser;
