@@ -12,11 +12,11 @@ import android.webkit.WebViewClient;
 
 import com.nuggetchat.messenger.R;
 
-import static com.nuggetchat.messenger.activities.GamesFragment.EXTRA_GAME_ORIENTATION;
-
 
 public class GameWebViewActivity extends AppCompatActivity {
-    private static final String EXTRA_GAME_URL = GameWebViewActivity.class.getName() + ".game_url";
+    public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
+    public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
+    private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
 
 
@@ -33,6 +33,7 @@ public class GameWebViewActivity extends AppCompatActivity {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
+        gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null); /*Disabling hardware acceleration*/
         gameWebView.getSettings().setJavaScriptEnabled(true);
         gameWebView.getSettings().setDomStorageEnabled(true);
         gameWebView.getSettings().setAllowFileAccessFromFileURLs(true);
