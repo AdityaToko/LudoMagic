@@ -75,7 +75,9 @@ public class FriendsManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friendsmanager);
         ButterKnife.bind(this);
         intent = getIntent();
-        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(this), SharedPreferenceUtility.getFirebaseIdToken(this), SharedPreferenceUtility.getFirebaseUid(this));
+        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(this),
+                SharedPreferenceUtility.getFirebaseIdToken(this),
+                SharedPreferenceUtility.getFirebaseUid(this));
         callbackManager = CallbackManager.Factory.create();
 
         selectUsers = new ArrayList<>();
