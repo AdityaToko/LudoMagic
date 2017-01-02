@@ -29,7 +29,6 @@ public class MessageHandler {
     private static final String LOG_TAG = MessageHandler.class.getSimpleName();
     private Socket socket;
     private Context context;
-    private EventListener eventListener;
     private List<EventListener> listeners = new ArrayList<>();
     private NuggetApplication application;
     String userId;
@@ -46,10 +45,6 @@ public class MessageHandler {
             username = WebRtcClient.getRandomString();
         }
         Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username);
-    }
-
-    public void setEventListener(EventListener eventListener) {
-        this.eventListener = eventListener;
     }
 
     public void addEventListener(EventListener eventListener) {
@@ -134,7 +129,6 @@ public class MessageHandler {
                 });
             } else {
                 try {
-                     eventListener.onCall(requestObject.getString("from"), socket);
                     for (EventListener listener : listeners) {
                         listener.onCall(requestObject.getString("from"), socket);
                     }
@@ -148,7 +142,6 @@ public class MessageHandler {
                                 offerObj.getString("sdp")
                         );
                         Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
-                        eventListener.onCallRequestOrAnswer(sdp);
                         for (EventListener listener : listeners) {
                             listener.onCallRequestOrAnswer(sdp);
                         }
@@ -166,7 +159,6 @@ public class MessageHandler {
             Log.d(LOG_TAG, "inside onCallAccepted ");
             JSONObject acceptObject = (JSONObject) args[0];
             try {
-                eventListener.onCall(acceptObject.getString("from"), socket);
                 for (EventListener listener : listeners) {
                     listener.onCall(acceptObject.getString("from"), socket);
                 }
@@ -180,7 +172,6 @@ public class MessageHandler {
                     for (EventListener listener : listeners) {
                         listener.onCallRequestOrAnswer(sdp);
                     }
-                    eventListener.onCallRequestOrAnswer(sdp);
                     Log.e(LOG_TAG, "Setting remote desc after onCallAccepted for " + acceptObject.getString("to"));
                 }
             } catch (JSONException e) {
@@ -196,7 +187,6 @@ public class MessageHandler {
 
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
-                eventListener.onCall(iceCandidateObj.getString("from"), socket);
                 for (EventListener listener : listeners) {
                     listener.onCall(iceCandidateObj.getString("from"), socket);
                 }
@@ -209,7 +199,6 @@ public class MessageHandler {
                     for (EventListener listener : listeners) {
                         listener.onFetchIceCandidates(candidate);
                     }
-                    eventListener.onFetchIceCandidates(candidate);
                     Log.e(LOG_TAG, "setting ice candidates successfully for :" + iceCandidateObj.getString("to"));
                 } else {
                     Log.e(LOG_TAG, "candidate is null or " + userId
@@ -251,7 +240,6 @@ public class MessageHandler {
             for (EventListener listener : listeners) {
                 listener.onCallEnd();
             }
-            eventListener.onCallEnd();
         }
     };
 
