@@ -22,10 +22,11 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 
 import java.util.ArrayList;
 
+import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
+import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
+
 public class GamesFragment extends Fragment {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
-    public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
-    public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
     private ArrayList<String> gamesName;
     private ArrayList<String> gamesImages;
     private ArrayList<String> gamesUrl;
