@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -170,6 +171,14 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
 
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);
+
+        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        // TODO: figure out how to do this right and remove the suppression.
+        @SuppressWarnings("deprecation")
+        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+        audioManager.setMode(isWiredHeadsetOn ?
+                AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
+        audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
 
         startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
