@@ -4,7 +4,7 @@
     android:id="@+id/activity_chat"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tokostudios.chat.ChatActivity">
+    tools:context=".chat.ChatActivity">
 
     <android.opengl.GLSurfaceView
         android:id="@+id/glview_call"

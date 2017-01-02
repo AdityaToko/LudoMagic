@@ -1,4 +1,4 @@
-package com.tokostudios.chat;
+package com.nuggetchat.messenger.chat;
 
 import android.app.Service;
 import android.content.Intent;

@@ -44,8 +44,8 @@ import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.tokostudios.chat.ChatService;
-import com.tokostudios.chat.User;
+import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.chat.User;
 
 import org.json.JSONException;
 import org.json.JSONObject;

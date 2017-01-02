@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
-import com.tokostudios.chat.IncomingCallActivity;
+import com.nuggetchat.messenger.chat.IncomingCallActivity;
 
 public class CallRequestReceiver extends WakefulBroadcastReceiver {
     public CallRequestReceiver() {
