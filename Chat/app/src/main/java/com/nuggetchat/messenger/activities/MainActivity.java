@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
-                        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this), SharedPreferenceUtility.getFirebaseUid(MainActivity.this));
+                        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
                     }
                 });
 
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getUserFriends(final String accessToken, final String idToken, final String firebaseUid) {
+    public void getUserFriends(final String accessToken, final String idToken) {
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://server.nuggetchat.com:8080/getFriends";
         StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
