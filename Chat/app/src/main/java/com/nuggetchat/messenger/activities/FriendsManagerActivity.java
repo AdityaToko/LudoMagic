@@ -90,7 +90,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play YO!");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget!");
         try {
             startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
