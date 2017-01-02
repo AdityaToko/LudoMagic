@@ -51,7 +51,7 @@ public class GamesFragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Toast.makeText(getActivity(), "You Clicked at " + gamesName.get(position),
+                Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
                         Toast.LENGTH_SHORT).show();
                 Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
                 Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
