@@ -26,13 +26,13 @@
                 android:src="@mipmap/game" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="180dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerHorizontal="true"
-                android:layout_marginLeft="40dp"
-                android:layout_marginStart="40dp">
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp">
 
                 <TextView
                     android:id="@+id/kid_name_text"
@@ -50,20 +50,13 @@
                     android:id="@+id/kid_image"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_gravity="right"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_gravity="end"
                     android:src="@drawable/nuggeticon"
                     app:civ_border_color="#FF000000"
                     app:civ_border_width="2dp" />
 
-                <!--
-                                <ImageView
-                                android:id="@+id/kid_image"
-                                android:layout_width="40dp"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginStart="5dp"
-                                android:layout_gravity="right"
-                                android:src="@drawable/nuggeticon"
-                                android:layout_height="40dp" />-->
             </LinearLayout>
 
         </RelativeLayout>
