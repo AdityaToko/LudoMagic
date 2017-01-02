@@ -24,7 +24,7 @@
         android:id="@+id/nugget_icon"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:src="@drawable/nuggeticon"
+        android:src="@drawable/game"
         android:layout_above="@id/login_button"
         android:layout_centerHorizontal="true"
         />
