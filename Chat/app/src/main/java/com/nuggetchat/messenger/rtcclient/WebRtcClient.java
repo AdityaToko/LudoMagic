@@ -47,18 +47,22 @@ public class WebRtcClient{
     /* package-local */ RtcListener rtcListener;
 
     public void endCall() {
-        setInitiator(false);
-        application.setInitiator(false);
-        for (Peer peer : peers) {
-            peer.resetPeerConnection();
-        }
+        try {
+            setInitiator(false);
+            application.setInitiator(false);
+            for (Peer peer : peers) {
+                peer.resetPeerConnection();
+            }
 
-        if (factory != null) {
-            factory.dispose();
-            factory = null;
-        }
+            if (factory != null) {
+                factory.dispose();
+                factory = null;
+            }
 
-        rtcListener.onRemoveRemoteStream(null);
+            rtcListener.onRemoveRemoteStream(null);
+        } catch (Error e) {
+            Log.i(LOG_TAG, "End call - Error " + e.getMessage());
+        }
     }
 
     public Peer addPeer(User user, Friend friend, Socket socket) {
@@ -108,18 +112,22 @@ public class WebRtcClient{
     }
 
     public void onPause() {
-        //if (videoSource != null) videoSource.stop();
-        if(videoSource!=null){
-            videoSource.dispose();
+        if (videoSource != null) {
+            videoSource.stop();
         }
+//        if(videoSource!=null){
+//            videoSource.dispose();
+//        }
     }
 
     public void onResume() {
-       // if (videoSource != null) videoSource.restart();
-        VideoCapturer videoCapturer = getVideoCapturer();
-        if(videoCapturer != null){
-            videoCapturer.startCapture(params.videoWidth, params.videoHeight, params.videoFps);
+        if (videoSource != null) {
+            videoSource.restart();
         }
+//        VideoCapturer videoCapturer = getVideoCapturer();
+//        if(videoCapturer != null){
+//            videoCapturer.startCapture(params.videoWidth, params.videoHeight, params.videoFps);
+//        }
     }
 
     private void setCamera() {
@@ -132,8 +140,8 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
 
-           // videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            videoSource = factory.createVideoSource(getVideoCapturer());
+            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            //videoSource = factory.createVideoSource(getVideoCapturer());
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
@@ -143,31 +151,26 @@ public class WebRtcClient{
         rtcListener.onLocalStream(localMediaStream);
     }
 
+    // Cycle through likely device names for the camera and return the first
+    // capturer that works, or crash if none do.
     private VideoCapturer getVideoCapturer() {
-        /*String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
-        return VideoCapturerAndroid.create(frontCameraDeviceName);*/
-        return createCameraCapturer(new Camera2Enumerator(context));
-    }
-
-    private VideoCapturer createCameraCapturer(CameraEnumerator enumerator) {
-        String[] deviceNames = enumerator.getDeviceNames();
-        for (String deviceName : deviceNames) {
-            if (enumerator.isFrontFacing(deviceName)) {
-                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
-                if (videoCapturer != null) {
-                    return videoCapturer;
+        String[] cameraFacing = { "front", "back" };
+        int[] cameraIndex = { 0, 1 };
+        int[] cameraOrientation = { 0, 90, 180, 270 };
+        for (String facing : cameraFacing) {
+            for (int index : cameraIndex) {
+                for (int orientation : cameraOrientation) {
+                    String name = "Camera " + index + ", Facing " + facing +
+                            ", Orientation " + orientation;
+                    VideoCapturer capturer = VideoCapturer.create(name);
+                    if (capturer != null) {
+                        Log.i(LOG_TAG, "Using camera: " + name);
+                        return capturer;
+                    }
                 }
             }
         }
-        for (String deviceName : deviceNames) {
-            if (!enumerator.isFrontFacing(deviceName)) {
-                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
-                if (videoCapturer != null) {
-                    return videoCapturer;
-                }
-            }
-        }
-        return null;
+        throw new RuntimeException("Failed to open capturer");
     }
 
     public boolean isInitiator() {

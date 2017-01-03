@@ -205,8 +205,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         remoteRender.init(eglBase.getEglBaseContext(), null);
 
         localRender.setZOrderMediaOverlay(true);
-        localRender.setEnableHardwareScaler(true);
-        remoteRender.setEnableHardwareScaler(true);
+        //        FIXME commented since compile error
+//        localRender.setEnableHardwareScaler(true);
+//        remoteRender.setEnableHardwareScaler(true);
         updateVideoViews();
 
         init(user1, targetId);
@@ -247,8 +248,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 chatService.socket.emit("end_call", payload);
                 webRtcClient.endCall();
                 showFriendsAddCluster();
-                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+//                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+//                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                updateVideoViews();
                 startCallButton.setVisibility(View.VISIBLE);
             }
         });
@@ -484,8 +486,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onLocalStream(MediaStream localStream) {
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+//        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+//                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        updateVideoViews();
     }
 
     @Override
@@ -495,10 +498,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (remoteStream.videoTracks.size() == 1) {
             application.setOngoingCall(true);
             remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-                    scalingType, true);
-            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-                    scalingType, true);
+//            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+//                    scalingType, true);
+//            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
+//                    scalingType, true);
+            updateVideoViews();
         }
     }
 
@@ -509,8 +513,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
             remoteStream.videoTracks.get(0).dispose();
         }
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+//        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
+//                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        updateVideoViews();
     }
 
     @Override

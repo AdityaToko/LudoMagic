@@ -77,12 +77,12 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.android.support:design:25.1.0'
     compile 'com.android.support:support-v4:25.1.0'
-    //compile 'io.pristine:libjingle:9944@aar'
+    compile 'io.pristine:libjingle:11139@aar'
     compile ('io.socket:socket.io-client:0.8.3') {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'
     }
-    compile files('libs/libjingle_peerconnection.jar')
+//    compile files('libs/libjingle_peerconnection.jar')
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     compile project(path: ':lib')

@@ -187,8 +187,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         remoteRender.init(eglBase.getEglBaseContext(), null);
 
         localRender.setZOrderMediaOverlay(true);
-        localRender.setEnableHardwareScaler(true);
-        remoteRender.setEnableHardwareScaler(true);
+//        FIXME commented since compile error
+//        localRender.setEnableHardwareScaler(true);
+//        remoteRender.setEnableHardwareScaler(true);
         updateVideoViews();
 
         if (bundle == null) {
