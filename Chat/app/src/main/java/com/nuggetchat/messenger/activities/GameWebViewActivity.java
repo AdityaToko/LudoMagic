@@ -34,7 +34,7 @@ public class GameWebViewActivity extends AppCompatActivity {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
-        gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null); /*Disabling hardware acceleration*/
+      //  gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null); /*Disabling hardware acceleration*/
         gameWebView.getSettings().setJavaScriptEnabled(true);
         gameWebView.getSettings().setDomStorageEnabled(true);
         gameWebView.getSettings().setAllowFileAccessFromFileURLs(true);
