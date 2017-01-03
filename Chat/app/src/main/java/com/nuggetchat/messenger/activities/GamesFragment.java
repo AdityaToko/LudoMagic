@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
@@ -22,6 +23,9 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
 
@@ -32,12 +36,15 @@ public class GamesFragment extends Fragment {
     private ArrayList<String> gamesUrl;
     private ArrayList<GamesItem> gamesItemList;
 
+    @BindView(R.id.loading_icon)
+    ProgressBar loadingIcon;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_games_layout, container, false);
+        ButterKnife.bind(this, view);
         gamesName = new ArrayList<>();
         gamesImages = new ArrayList<>();
         gamesItemList = new ArrayList<>();
@@ -79,6 +86,7 @@ public class GamesFragment extends Fragment {
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                loadingIcon.setVisibility(View.INVISIBLE);
                 GamesData gamesData = dataSnapshot.getValue(GamesData.class);
                 gamesName.add(gamesData.getTitle());
                 gamesImages.add(gamesData.getFeaturedImage());
