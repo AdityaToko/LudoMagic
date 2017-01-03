@@ -194,6 +194,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -214,6 +216,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 showFriendsAddCluster();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                         LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+                endCall.setVisibility(View.INVISIBLE);
                 startCallButton.setVisibility(View.VISIBLE);
             }
         });
@@ -474,11 +477,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (bundle != null) {
             Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
             if (bundle.getString("user_id") == null) {
-                //endCall.setVisibility(View.INVISIBLE);
-                multiplayerGamesView.setVisibility(View.INVISIBLE);
                 Log.d(LOG_TAG, "START CALL OnRESUME");
-                //startCallButton.setVisibility(View.VISIBLE);
-                //showFriendsAddCluster();
             }
         } else {
             Log.d(LOG_TAG, "bundle null");

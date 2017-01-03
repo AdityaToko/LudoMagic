@@ -205,7 +205,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 webRtcClient.endCall();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                         LOCAL_HEIGHT_CONNECTING, scalingType, true);
-                startCallButton.setVisibility(View.VISIBLE);
+                finish();
             }
         });
 
