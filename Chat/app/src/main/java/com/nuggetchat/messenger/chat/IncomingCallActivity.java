@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -15,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.utils.GlideUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,9 +27,13 @@ public class IncomingCallActivity extends AppCompatActivity {
     private static final String LOG_TAG = IncomingCallActivity.class.getSimpleName();
     @BindView(R.id.accept_btn)
     public Button acceptButton;
-
     @BindView(R.id.reject_btn)
     public Button rejectButton;
+    @BindView(R.id.caller_name_txt)
+    public TextView callerName;
+    @BindView(R.id.caller_image)
+    public ImageView callerImage;
+
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +53,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
 
-    private void fetchFriendNameAndPic(String from) {
+    private void fetchFriendNameAndPic(final String from) {
         String firebaseUri = Conf.firebaseUsersURI();
         Log.i(LOG_TAG, "firebaseURI, " + firebaseUri);
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
@@ -62,7 +69,12 @@ public class IncomingCallActivity extends AppCompatActivity {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
                 UserInfo  userInfo = dataSnapshot.getValue(UserInfo.class);
-               // if()
+               if (userInfo.getFacebookId().equals(from)) {
+                   String userName = userInfo.getName();
+                   callerName.setText(userName);
+                   String callerPic = getPicForCaller(userInfo.getFacebookId());
+                   GlideUtils.loadImage(getApplicationContext(),callerImage , null, callerPic);
+               }
 
             }
 
@@ -86,6 +98,10 @@ public class IncomingCallActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private String getPicForCaller(String facebookUserId) {
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
     }
 
 
