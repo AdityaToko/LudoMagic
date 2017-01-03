@@ -69,8 +69,8 @@ import io.socket.client.Socket;
 public class ChatActivity extends AppCompatActivity implements RtcListener, EventListener {
 
     private static final String LOG_TAG = ChatActivity.class.getSimpleName();
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
+    private static final int LOCAL_X = 3;
+    private static final int LOCAL_Y = 3;
     private static final int LOCAL_WIDTH = 25;
     private static final int LOCAL_HEIGHT = 25;
     private static final int REMOTE_X = 0;
@@ -239,7 +239,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 webRtcClient.endCall();
                 VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                         LOCAL_HEIGHT_CONNECTING, scalingType, true);
-                startCallButton.setVisibility(View.VISIBLE);
+                finish();
             }
         });
 

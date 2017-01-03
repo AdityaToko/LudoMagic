@@ -71,8 +71,8 @@ import io.socket.client.Socket;
 
 public class ChatFragment extends Fragment implements RtcListener, EventListener {
     private static final String LOG_TAG = ChatFragment.class.getSimpleName();
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
+    private static final int LOCAL_X = 3;
+    private static final int LOCAL_Y = 3;
     private static final int LOCAL_WIDTH = 25;
     private static final int LOCAL_HEIGHT = 25;
     private static final int REMOTE_X = 0;
@@ -97,8 +97,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private EglBase eglBase;
     private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private ImageView startCallButton;
-    private ImageView endCall;
     private String targetId;
     private User user1;
     private View view;
@@ -131,6 +129,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
+    @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
+    @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -160,9 +160,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         Intent intent = getActivity().getIntent();
         targetId = intent.getStringExtra("userId");
-
-        startCallButton = (ImageView) view.findViewById(R.id.start_call_button);
-        endCall = (ImageView) view.findViewById(R.id.end_call_button);
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
@@ -228,8 +225,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                startCallButton.setVisibility(View.INVISIBLE);
                 endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -251,6 +248,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 //                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
 //                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
                 updateVideoViews();
+                endCall.setVisibility(View.INVISIBLE);
                 startCallButton.setVisibility(View.VISIBLE);
             }
         });
@@ -532,10 +530,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (bundle != null) {
             Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
             if (bundle.getString("user_id") == null) {
-                endCall.setVisibility(View.INVISIBLE);
-                multiplayerGamesView.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
-                showFriendsAddCluster();
+                Log.d(LOG_TAG, "START CALL OnRESUME");
             }
         } else {
             Log.d(LOG_TAG, "bundle null");
@@ -585,8 +580,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
                 dialog.dismiss();
             }
         });
@@ -636,6 +629,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private void showFriendsAddCluster() {
         endCall.setVisibility(View.INVISIBLE);
         multiplayerGamesView.setVisibility(View.INVISIBLE);
+        Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
         startCallButton.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.VISIBLE);
     }
@@ -681,6 +675,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
                 startFriendCall(data.getStringExtra("user_id"));
             }
         }
@@ -691,12 +687,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!webRtcClient.isInitiator()) {
             webRtcClient.addFriendForChat(userId, socket);
         }
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -710,6 +710,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
+        endCall.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);
     }
 
     @Override
