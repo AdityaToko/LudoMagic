@@ -36,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.chat.ChatService;
@@ -52,9 +53,12 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
+import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
@@ -82,10 +86,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     Bundle bundle;
     ArrayList<FriendInfo> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
-    private GLSurfaceView rtcView;
-    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
+//    private VideoRenderer.Callbacks localRender;
+//    private VideoRenderer.Callbacks remoteRender;
+//    private GLSurfaceView rtcView;
+//    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
+    private PercentFrameLayout localRenderLayout;
+    private PercentFrameLayout remoteRenderLayout;
+    private SurfaceViewRenderer localRender;
+    private SurfaceViewRenderer remoteRender;
+    private EglBase eglBase;
+    private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
     private ImageView startCallButton;
     private ImageView endCall;
@@ -156,19 +166,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
+
+        localRenderLayout = (PercentFrameLayout) view.findViewById(R.id.local_layout);
+        remoteRenderLayout = (PercentFrameLayout) view.findViewById(R.id.remote_layout);
+        localRender = (SurfaceViewRenderer) view.findViewById(R.id.local_video_view);
+        remoteRender = (SurfaceViewRenderer) view.findViewById(R.id.remote_video_view);
+
         String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
         String username = SharedPreferenceUtility.getFacebookUserName(getActivity());
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
         user1 = new User(userId, username);
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
-        rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
+        /*rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
         rtcView.setPreserveEGLContextOnPause(true);
-        rtcView.setKeepScreenOn(true);
+        rtcView.setKeepScreenOn(true);*/
         triggerImageChanges();
 
         user1 = new User(userId, username);
 
-        VideoRendererGui.setView(rtcView, new Runnable() {
+        /*VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
                 init(user1, targetId);
@@ -177,13 +193,27 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                         Context.BIND_AUTO_CREATE);
                 isBound = true;
             }
-        });
+        });*/
 
-        remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+       /* remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, false);
 
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
-                false);
+                false);*/
+        eglBase = EglBase.create();
+        localRender.init(eglBase.getEglBaseContext(), null);
+        remoteRender.init(eglBase.getEglBaseContext(), null);
+
+        localRender.setZOrderMediaOverlay(true);
+        localRender.setEnableHardwareScaler(true);
+        remoteRender.setEnableHardwareScaler(true);
+        updateVideoViews();
+
+        init(user1, targetId);
+        getActivity().startService(new Intent(getActivity(), ChatService.class));
+        getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
+                Context.BIND_AUTO_CREATE);
+        isBound = true;
 
         AudioManager audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         // TODO: figure out how to do this right and remove the suppression.
@@ -224,6 +254,24 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         });
 
         return view;
+    }
+
+    private void updateVideoViews() {
+        remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
+        remoteRender.setScalingType(scalingType);
+        remoteRender.setMirror(true);
+        //FIXME: set Condition for showing remote screen
+        if (application.isOngoingCall()) {
+            localRenderLayout.setPosition(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT);
+            localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+        } else {
+            localRenderLayout.setPosition(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                    LOCAL_HEIGHT_CONNECTING);
+            localRender.setScalingType(scalingType);
+        }
+        localRender.setMirror(true);
+        localRender.requestLayout();
+        remoteRender.requestLayout();
     }
 
     @OnClick(R.id.add_friends_to_chat)
@@ -419,7 +467,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(getActivity());
         webRtcClient = new WebRtcClient(this, params,
-                VideoRendererGui.getEGLContext(), user1, iceServersString,
+                eglBase.getEglBaseContext(), user1, iceServersString,
                 getActivity());
     }
 
@@ -468,7 +516,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
-        rtcView.onResume();
+       // rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -492,7 +540,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onPause() {
         super.onPause();
-        rtcView.onPause();
+        //rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }

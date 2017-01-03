@@ -9,6 +9,9 @@ import com.nuggetchat.messenger.chat.Friend;
 import com.nuggetchat.messenger.chat.User;
 
 import org.webrtc.AudioSource;
+import org.webrtc.Camera2Enumerator;
+import org.webrtc.CameraEnumerator;
+import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
@@ -66,13 +69,14 @@ public class WebRtcClient{
         return peer;
     }
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params,
-                        EGLContext mEGLcontext, User user1, String iceServerUrls, Context context) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params,  EglBase.Context mEGLcontext
+                        /*EGLContext mEGLcontext*/, User user1, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
-                true /* initializedVideo */, params.videoCodecHwAcceleration, mEGLcontext);
+                true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
+        factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
         this.context = context;
         application = (NuggetApplication) context.getApplicationContext();
         currentUser = user1;
@@ -104,11 +108,18 @@ public class WebRtcClient{
     }
 
     public void onPause() {
-        if (videoSource != null) videoSource.stop();
+        //if (videoSource != null) videoSource.stop();
+        if(videoSource!=null){
+            videoSource.dispose();
+        }
     }
 
     public void onResume() {
-        if (videoSource != null) videoSource.restart();
+       // if (videoSource != null) videoSource.restart();
+        VideoCapturer videoCapturer = getVideoCapturer();
+        if(videoCapturer != null){
+            videoCapturer.startCapture(params.videoWidth, params.videoHeight, params.videoFps);
+        }
     }
 
     private void setCamera() {
@@ -121,7 +132,8 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
 
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+           // videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            videoSource = factory.createVideoSource(getVideoCapturer());
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
@@ -132,8 +144,30 @@ public class WebRtcClient{
     }
 
     private VideoCapturer getVideoCapturer() {
-        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
-        return VideoCapturerAndroid.create(frontCameraDeviceName);
+        /*String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
+        return VideoCapturerAndroid.create(frontCameraDeviceName);*/
+        return createCameraCapturer(new Camera2Enumerator(context));
+    }
+
+    private VideoCapturer createCameraCapturer(CameraEnumerator enumerator) {
+        String[] deviceNames = enumerator.getDeviceNames();
+        for (String deviceName : deviceNames) {
+            if (enumerator.isFrontFacing(deviceName)) {
+                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
+                if (videoCapturer != null) {
+                    return videoCapturer;
+                }
+            }
+        }
+        for (String deviceName : deviceNames) {
+            if (!enumerator.isFrontFacing(deviceName)) {
+                VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
+                if (videoCapturer != null) {
+                    return videoCapturer;
+                }
+            }
+        }
+        return null;
     }
 
     public boolean isInitiator() {

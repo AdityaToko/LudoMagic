@@ -99,6 +99,11 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     @Override
+    public void onIceCandidatesRemoved(IceCandidate[] iceCandidates) {
+        Log.e(LOG_TAG, "inside onIceCandidatesRemoved");
+    }
+
+    @Override
     public void onAddStream(MediaStream mediaStream) {
         Log.d(LOG_TAG, "onAddStream: " + mediaStream.label());
         webRtcClient.rtcListener.onAddRemoteStream(mediaStream);

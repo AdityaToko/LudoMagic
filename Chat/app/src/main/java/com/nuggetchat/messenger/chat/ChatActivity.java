@@ -34,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.activities.GameWebViewActivity;
@@ -51,9 +52,12 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
+import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 
@@ -77,10 +81,16 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
-    private GLSurfaceView rtcView;
-    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
+    //private VideoRenderer.Callbacks localRender;
+    //private VideoRenderer.Callbacks remoteRender;
+    //private GLSurfaceView rtcView;
+    //private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
+    private PercentFrameLayout localRenderLayout;
+    private PercentFrameLayout remoteRenderLayout;
+    private SurfaceViewRenderer localRender;
+    private SurfaceViewRenderer remoteRender;
+    private EglBase eglBase;
+    private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
     private ImageView startCallButton;
     private ImageView endCall;
@@ -102,7 +112,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            chatService = ((ChatService.ChatBinder)iBinder).getService();
+            chatService = ((ChatService.ChatBinder) iBinder).getService();
             chatService.registerEventListener(ChatActivity.this);
         }
 
@@ -136,13 +146,18 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         startCallButton.setVisibility(View.GONE);
         endCall = (ImageView) findViewById(R.id.end_call_button);
         endCall.setVisibility(View.VISIBLE);
-        multiplayerGamesView = (RelativeLayout)findViewById(R.id.multipayer_games_view);
+        multiplayerGamesView = (RelativeLayout) findViewById(R.id.multipayer_games_view);
         multiplayerGamesView.setVisibility(View.VISIBLE);
         getUserFriends();
 
-        rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
-        rtcView.setPreserveEGLContextOnPause(true);
-        rtcView.setKeepScreenOn(true);
+        localRenderLayout = (PercentFrameLayout) findViewById(R.id.local_layout);
+        remoteRenderLayout = (PercentFrameLayout) findViewById(R.id.remote_layout);
+        localRender = (SurfaceViewRenderer) findViewById(R.id.local_video_view);
+        remoteRender = (SurfaceViewRenderer) findViewById(R.id.remote_video_view);
+
+        //rtcView = (GLSurfaceView) findViewById(R.id.glview_call);
+        //rtcView.setPreserveEGLContextOnPause(true);
+        //rtcView.setKeepScreenOn(true);
         String userId = SharedPreferenceUtility.getFacebookUserId(ChatActivity.this);
         String username = SharedPreferenceUtility.getFacebookUserName(ChatActivity.this);
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
@@ -153,10 +168,10 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             startCallButton.setVisibility(View.INVISIBLE);
         }
 
-        VideoRendererGui.setView(rtcView, new Runnable() {
+        /*VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                if(bundle == null){
+                if (bundle == null) {
                     startService(new Intent(ChatActivity.this, ChatService.class));
                 }
                 bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
@@ -164,13 +179,31 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 isBound = true;
                 init(user1, targetId);
             }
-        });
+        });*/
 
-        remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+        //Create Video Renderers
+        eglBase = EglBase.create();
+        localRender.init(eglBase.getEglBaseContext(), null);
+        remoteRender.init(eglBase.getEglBaseContext(), null);
+
+        localRender.setZOrderMediaOverlay(true);
+        localRender.setEnableHardwareScaler(true);
+        remoteRender.setEnableHardwareScaler(true);
+        updateVideoViews();
+
+        if (bundle == null) {
+            startService(new Intent(ChatActivity.this, ChatService.class));
+        }
+        bindService(new Intent(ChatActivity.this, ChatService.class), serviceConnection,
+                Context.BIND_AUTO_CREATE);
+        isBound = true;
+        init(user1, targetId);
+
+        /*remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, false);
 
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
-                false);
+                false);*/
 
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         // TODO: figure out how to do this right and remove the suppression.
@@ -210,16 +243,36 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         });
 
     }
-    private void setSDP(){
+
+    private void updateVideoViews() {
+        remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
+        remoteRender.setScalingType(scalingType);
+        remoteRender.setMirror(true);
+        //FIXME: set Condition for showing remote screen
+        if (application.isOngoingCall()) {
+            localRenderLayout.setPosition(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT);
+            localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+        } else {
+            localRenderLayout.setPosition(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                    LOCAL_HEIGHT_CONNECTING);
+            localRender.setScalingType(scalingType);
+        }
+        localRender.setMirror(true);
+        localRender.requestLayout();
+        remoteRender.requestLayout();
+    }
+
+    private void setSDP() {
         String type = bundle.getString("type");
         String sdp = bundle.getString("sdp");
         SessionDescription sessionDescription = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type),sdp
+                SessionDescription.Type.fromCanonicalForm(type), sdp
         );
         webRtcClient.addFriendForChat(bundle.getString("from"), chatService.socket);
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
     }
+
     private void fetchData() {
         String firebaseUri = Conf.firebaseGamesURI();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
@@ -386,9 +439,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(ChatActivity.this);
-        webRtcClient = new WebRtcClient(this, params, VideoRendererGui.getEGLContext(), user1,
-                iceServersString, this);
-        if(bundle!=null){
+        webRtcClient = new WebRtcClient(this, params, /*VideoRendererGui.getEGLContext()*/eglBase.getEglBaseContext(),
+                user1, iceServersString, this);
+        if (bundle != null) {
             setSDP();
         }
     }
@@ -405,8 +458,9 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     @Override
     public void onLocalStream(MediaStream localStream) {
         localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                LOCAL_HEIGHT_CONNECTING, scalingType, true);
+       /* VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                LOCAL_HEIGHT_CONNECTING, scalingType, true);*/
+        updateVideoViews();
     }
 
     @Override
@@ -415,10 +469,11 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         if (remoteStream.videoTracks.size() == 1) {
             application.setOngoingCall(true);
             remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+           /* VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                     scalingType, true);
             VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-                    scalingType, true);
+                    scalingType, true);*/
+            updateVideoViews();
         }
     }
 
@@ -429,15 +484,16 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             remoteStream.videoTracks.get(0).dispose();
         }
         // resize anyway as the event has fired
-        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+       /* VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
                 LOCAL_HEIGHT_CONNECTING, scalingType, true);
-        VideoRendererGui.update(remoteRender, 0, 0, 0, 0, scalingType, false);
+        VideoRendererGui.update(remoteRender, 0, 0, 0, 0, scalingType, false);*/
+        updateVideoViews();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        rtcView.onResume();
+        //rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -451,7 +507,7 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
     @Override
     protected void onPause() {
         super.onPause();
-        rtcView.onPause();
+        //rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
@@ -479,18 +535,21 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
                 throw new IllegalStateException(errStr);
             }
             webRtcClient.endCall();
+            eglBase.release();
             undbindService();
         }
     }
-    private void undbindService(){
-        if(isBound){
-            if(chatService != null){
+
+    private void undbindService() {
+        if (isBound) {
+            if (chatService != null) {
                 chatService.unregisterEventListener(this);
             }
             unbindService(serviceConnection);
             isBound = false;
         }
     }
+
     private void showFriendsDialog() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setTitle("Choose a friend");
