@@ -47,6 +47,7 @@ public class WebRtcClient{
     /* package-local */ RtcListener rtcListener;
 
     public void endCall() {
+        Log.i(LOG_TAG, "End call - Incoming");
         try {
             setInitiator(false);
             application.setInitiator(false);

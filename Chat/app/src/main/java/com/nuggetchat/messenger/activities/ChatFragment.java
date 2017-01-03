@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,7 +59,6 @@ import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
-import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
 
@@ -225,8 +223,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(View view) {
                 showFriendsDialog();
-                endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                showEndCallBtn();
             }
         });
 
@@ -248,8 +245,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 //                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
 //                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
                 updateVideoViews();
-                endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
+                showStartCallBtn();
             }
         });
 
@@ -524,8 +520,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.onResume();
         }
         if (application.isOngoingCall() || application.isInitiator()) {
-            endCall.setVisibility(View.VISIBLE);
-            startCallButton.setVisibility(View.INVISIBLE);
+            showEndCallBtn();
         }
         if (bundle != null) {
             Log.d(LOG_TAG, "bundle not null " + bundle.getString("user_id"));
@@ -620,8 +615,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void hideFriendsAddCluster() {
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        showEndCallBtn();
         multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
@@ -675,8 +669,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
-                endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                showEndCallBtn();
                 startFriendCall(data.getStringExtra("user_id"));
             }
         }
@@ -687,16 +680,24 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!webRtcClient.isInitiator()) {
             webRtcClient.addFriendForChat(userId, socket);
         }
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        showEndCallBtn();
+    }
+
+    private void showEndCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        showEndCallBtn();
     }
 
     @Override
@@ -710,8 +711,17 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
-        endCall.setVisibility(View.INVISIBLE);
-        startCallButton.setVisibility(View.VISIBLE);
+        showStartCallBtn();
+    }
+
+    private void showStartCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.INVISIBLE);
+                startCallButton.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
