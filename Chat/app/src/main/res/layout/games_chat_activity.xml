@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -26,34 +26,37 @@
                 android:src="@mipmap/game" />
 
             <LinearLayout
-                android:layout_marginLeft="50dp"
-                android:layout_marginStart="50dp"
-                android:layout_centerHorizontal="true"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/kid_name_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:layout_marginStart="15dp"
-                android:layout_marginTop="10dp"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:gravity="end"
-                android:text="Vartika Sharma \n40000XP"
-                android:textSize="13sp" />
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp">
 
-            <ImageView
-                android:id="@+id/kid_image"
-                android:layout_width="40dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_gravity="right"
-                android:src="@drawable/nuggeticon"
-                android:layout_height="40dp" />
+                <TextView
+                    android:id="@+id/kid_name_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Vartika Sharma \n40000XP"
+                    android:textAllCaps="true"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/kid_image"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_gravity="end"
+                    android:src="@drawable/nuggeticon"
+                    app:civ_border_color="#FF000000"
+                    app:civ_border_width="2dp" />
+
             </LinearLayout>
 
         </RelativeLayout>
@@ -78,29 +81,29 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_marginTop="2dp"
+        android:layout_below="@id/toolbar"
         android:layout_marginLeft="-10dp"
         android:layout_marginRight="-10dp"
+        android:layout_marginTop="2dp"
+        android:background="#F7F3E2"
         android:clipToPadding="false"
-        app:tabPaddingStart="-1dp"
-        app:tabPaddingEnd="-1dp"
-        app:tabIndicatorHeight="1dp"
+        app:tabGravity="fill"
         app:tabIndicatorColor="@color/colorWhite"
+        app:tabIndicatorHeight="1dp"
         app:tabMaxWidth="0dp"
         app:tabMinWidth="50dp"
         app:tabMode="fixed"
-        app:tabGravity="fill"
-        android:layout_below="@id/toolbar"
-        android:background="#F7F3E2"
+        app:tabPaddingEnd="-1dp"
+        app:tabPaddingStart="-1dp"
         app:tabSelectedTextColor="@color/colorWhite" />
 
     <!-- View pager to swipe views -->
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
-        android:background="@color/colorWhite"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_below="@id/tabLayout" />
+        android:layout_below="@id/tabLayout"
+        android:background="@color/colorWhite"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </RelativeLayout>
