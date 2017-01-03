@@ -2,11 +2,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
+        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorWhite"
@@ -21,27 +21,23 @@
 
             <ImageView
                 android:id="@+id/logo_image"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@mipmap/game" />
 
             <LinearLayout
-                android:layout_width="180dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginLeft="10dp"
-                android:layout_marginStart="10dp">
+                android:layout_alignParentRight="true">
 
                 <TextView
                     android:id="@+id/kid_name_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
-                    android:text="Vartika Sharma \n40000XP"
                     android:textAllCaps="true"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -51,11 +47,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginLeft="15dp"
-                    android:layout_marginStart="15dp"
-                    android:layout_gravity="end"
-                    android:src="@drawable/nuggeticon"
-                    app:civ_border_color="#FF000000"
-                    app:civ_border_width="2dp" />
+                    android:layout_marginStart="15dp" />
 
             </LinearLayout>
 
