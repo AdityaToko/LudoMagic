@@ -67,8 +67,8 @@ import io.socket.client.Socket;
 
 public class ChatFragment extends Fragment implements RtcListener, EventListener {
     private static final String LOG_TAG = ChatFragment.class.getSimpleName();
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
+    private static final int LOCAL_X = 3;
+    private static final int LOCAL_Y = 3;
     private static final int LOCAL_WIDTH = 25;
     private static final int LOCAL_HEIGHT = 25;
     private static final int REMOTE_X = 0;
