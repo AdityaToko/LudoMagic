@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -113,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
                         getFirebaseIdToken(task, loginResult.getAccessToken());
                     }
                 });
-
     }
 
     private void getFirebaseIdToken(final Task<AuthResult> task, final AccessToken accessToken) {
@@ -127,16 +127,45 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
                         String firebaseIdToken = tokenTask.getResult().getToken();
-//                        Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
-                        //getFriendsGraph(accessToken);
+                        String firebaseUid = task.getResult().getUser().getUid();
+
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
-                        SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
+                        SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
                         SharedPreferenceUtility.setFacebookUserName(task.getResult().getUser().getDisplayName(), MainActivity.this);
                         getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
+
+                        String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+                        saveDeviceRegistrationToken(firebaseUid, deviceRegistrationToken);
                     }
                 });
 
+    }
+
+    private void saveDeviceRegistrationToken(String firebaseUid, String deviceRegistrationToken) {
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        if (firebaseDatabase == null) {
+            return;
+        }
+
+        String userDeviceIDUrl = "https://nuggetplay-ceaaf.firebaseio.com/devices/" + firebaseUid + "/";
+        Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
+
+        firebaseDatabase.getReferenceFromUrl(userDeviceIDUrl)
+                .setValue(deviceRegistrationToken)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(LOG_TAG, "Firebase Device Id stored successfully!");
+                        } else {
+                            Exception exception = task.getException();
+                            if (exception != null) {
+                                Log.e(LOG_TAG, "Unable to update friends." + exception);
+                            }
+                        }
+                    }
+                });
     }
 
     private void setUserFacebookUserId() {
