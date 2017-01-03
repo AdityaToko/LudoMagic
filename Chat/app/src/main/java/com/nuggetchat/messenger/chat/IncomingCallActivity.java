@@ -7,6 +7,13 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 
 import butterknife.BindView;
@@ -27,6 +34,8 @@ public class IncomingCallActivity extends AppCompatActivity {
         Intent intent = getIntent();
         bundle = intent.getExtras();
         String from = bundle.getString("from");
+        Log.i(LOG_TAG, "facebook id of friend, " + from);
+        fetchFriendNameAndPic(from);
         String to = bundle.getString("to");
         String type = bundle.getString("type");
         String sdp = bundle.getString("sdp");
@@ -35,6 +44,48 @@ public class IncomingCallActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+    }
+
+    private void fetchFriendNameAndPic(String from) {
+        String firebaseUri = Conf.firebaseUsersURI();
+        Log.i(LOG_TAG, "firebaseURI, " + firebaseUri);
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
+                UserInfo  userInfo = dataSnapshot.getValue(UserInfo.class);
+               // if()
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
