@@ -50,12 +50,20 @@
         android:layout_marginTop="5dp"
         android:background="#c0c0c0"/>
 
-    <ListView
-        android:id="@+id/contacts_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <android.support.v4.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipeContainer"
         android:layout_below="@id/quick_play_underline"
-        android:layout_marginBottom="50dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/contacts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <TextView
         android:id="@+id/invite_friends_text"
