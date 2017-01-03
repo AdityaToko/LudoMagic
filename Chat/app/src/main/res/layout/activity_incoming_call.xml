@@ -6,52 +6,59 @@
     android:layout_height="match_parent"
     tools:context=".chat.IncomingCallActivity">
 
+    <LinearLayout
+        android:id="@+id/accept_reject_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
     <Button
         android:id="@+id/reject_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reject"
         android:textColor="@color/colorWhite"
-        android:background="@color/reject_btn_color"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp" />
+        android:background="@color/reject_btn_color" />
 
     <Button
         android:id="@+id/accept_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Accept"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:textColor="@color/colorWhite"
-        android:background="@color/accept_btn_color"
-        android:layout_above="@+id/reject_btn"
-        android:layout_alignLeft="@+id/reject_btn"
-        android:layout_alignStart="@+id/reject_btn"
-        android:layout_marginBottom="40dp" />
+        android:background="@color/accept_btn_color" />
+    </LinearLayout>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/caller_image"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="50dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
 
     <TextView
         android:id="@+id/caller_name_txt"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/caller_image"
         tools:text="Caller Name"
         android:gravity="center"
         android:textSize="40sp"
         android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="120dp" />
+        android:layout_marginTop="30dp" />
 
     <TextView
         android:id="@+id/calling_txt"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/calling"
+        android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textSize="25sp"
         android:layout_marginTop="30dp"
-        android:layout_below="@+id/caller_name_txt"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        />
+        android:layout_below="@id/caller_name_txt" />
 </RelativeLayout>
