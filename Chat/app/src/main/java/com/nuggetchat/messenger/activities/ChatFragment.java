@@ -136,6 +136,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     private VideoRenderer remoteVideoRender;
+    private String myUserId;
+    private String targetUserId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -167,8 +169,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         initVideoViews();
 
-        String currentUserId = SharedPreferenceUtility.getFacebookUserId(getActivity());
-        Log.e(LOG_TAG, "User is : " + currentUserId);
+        myUserId = SharedPreferenceUtility.getFacebookUserId(getActivity());
+        Log.e(LOG_TAG, "User is : " + myUserId);
         triggerImageChanges();
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
@@ -178,7 +180,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "onCreate - call update View");
         updateVideoViews();
 
-        initWebRtc(currentUserId);
+        initWebRtc(myUserId);
         bindChatService();
         return view;
     }
@@ -226,9 +228,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "end call Button clicked");
         JSONObject payload = new JSONObject();
         try {
-            Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
-            payload.put("from", webRtcClient.userId1);
-            payload.put("to", webRtcClient.userId2);
+            Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
+            payload.put("from", myUserId);
+            payload.put("to", targetUserId);
             payload.put("token", "abcd");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -427,6 +429,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 SessionDescription.Type.fromCanonicalForm(type), sdp
         );
         webRtcClient.addFriendForChat(from, chatService.socket);
+        targetUserId = from;
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
     }
@@ -451,11 +454,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             public void onClick(View view) {
                 if (application.isOngoingCall()) {
                     String thisGameUrl = multiPlayerGamesUrl.get(i)
-                            + "?room=" + webRtcClient.userId1
-                            + "&user=" + webRtcClient.userId1;
+                            + "?room=" + myUserId
+                            + "&user=" + myUserId;
                     String peerGameUrl = multiPlayerGamesUrl.get(i)
-                            + "?room=" + webRtcClient.userId1
-                            + "&user=" + webRtcClient.userId2;
+                            + "?room=" + myUserId
+                            + "&user=" + targetUserId;
 
                     // launch the WebView
                     Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
@@ -465,9 +468,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     // emit to peer
                     JSONObject payload = new JSONObject();
                     try {
-                        Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
-                        payload.put("from", webRtcClient.userId1);
-                        payload.put("to", webRtcClient.userId2);
+                        Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
+                        payload.put("from", myUserId);
+                        payload.put("to", targetUserId);
                         payload.put("token", "abcd");
                         payload.put("game_link", peerGameUrl);
                     } catch (JSONException e) {
@@ -483,7 +486,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
-    private void initWebRtc(String currentUserId) {
+    private void initWebRtc(String myUserId) {
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
@@ -491,7 +494,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(getActivity());
         webRtcClient = new WebRtcClient(this, params,
-                eglBase.getEglBaseContext(), currentUserId, iceServersString,
+                eglBase.getEglBaseContext(), myUserId, iceServersString,
                 getActivity());
     }
 
@@ -588,9 +591,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (webRtcClient != null) {
             JSONObject payload = new JSONObject();
             try {
-                Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
-                payload.put("from", webRtcClient.userId1);
-                payload.put("to", webRtcClient.userId2);
+                Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
+                payload.put("from", myUserId);
+                payload.put("to", targetUserId);
                 payload.put("token", "abcd");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -613,6 +616,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient.setInitiator(true);
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
+        targetUserId = facebookId;
         webRtcClient.createOffer(webRtcClient.peers.get(0));
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
@@ -714,6 +718,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 //        if (!webRtcClient.isInitiator()) {
 //            webRtcClient.addFriendForChat(userId, socket);
 //        }
+//        targetUserId = userId;
         showEndCallBtn();
     }
 

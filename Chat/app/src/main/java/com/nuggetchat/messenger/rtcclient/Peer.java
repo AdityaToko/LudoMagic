@@ -79,8 +79,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             payload.put("label", iceCandidate.sdpMLineIndex);
             payload.put("id", iceCandidate.sdpMid);
             payload.put("candidate", iceCandidate.sdp);
-            payload.put("from", webRtcClient.userId1);
-            payload.put("to", webRtcClient.userId2);
+            payload.put("from", webRtcClient.getUserId1());
+            payload.put("to", webRtcClient.getUserId2());
             payload.put("token", "abcd");
             socket.emit("ice_candidates", payload);
         } catch (JSONException e) {
@@ -163,12 +163,12 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.e(LOG_TAG, "sendOfferLocalDescription: sending Offer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
-        Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+        Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.getUserId1() + " " + webRtcClient.getUserId2());
         try {
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
-            callData.put("from", webRtcClient.userId1);
-            callData.put("to", webRtcClient.userId2);
+            callData.put("from", webRtcClient.getUserId1());
+            callData.put("to", webRtcClient.getUserId2());
             callData.put("offer", localDesc);
             callData.put("token", "abcd");
             socket.emit("request_call", callData);
@@ -185,8 +185,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             Log.e(LOG_TAG, "sendAnswerLocalDescription: inside try");
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
-            callData.put("from", webRtcClient.userId1);
-            callData.put("to", webRtcClient.userId2);
+            callData.put("from", webRtcClient.getUserId1());
+            callData.put("to", webRtcClient.getUserId2());
             callData.put("token", "abcd");
             callData.put("answer", localDesc);
             Log.e(LOG_TAG, "sendAnswerLocalDescription: " + callData.toString() );

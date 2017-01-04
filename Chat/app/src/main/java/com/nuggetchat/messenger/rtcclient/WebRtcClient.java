@@ -33,8 +33,8 @@ public class WebRtcClient{
     public List<Peer> peers = new ArrayList<>();
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
-    public String userId1;
-    public String userId2;
+    private String userId1;
+    private String userId2;
     /* package-local */ PeerConnectionFactory factory;
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
@@ -51,7 +51,6 @@ public class WebRtcClient{
         this.context = context;
         application = (NuggetApplication) context.getApplicationContext();
         this.currentUserId = currentUserId;
-        Log.e(LOG_TAG, "User ID 1 is : " + userId1);
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
@@ -102,6 +101,14 @@ public class WebRtcClient{
         userId1 = currentUserId;
         userId2 = userId;
         addPeer(socket);
+    }
+
+    public String getUserId1() {
+        return userId1;
+    }
+
+    public String getUserId2() {
+        return userId2;
     }
 
     public void onPause() {
