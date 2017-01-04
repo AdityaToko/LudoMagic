@@ -55,13 +55,13 @@
         android:id="@+id/swipeContainer"
         android:layout_below="@id/quick_play_underline"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="75dp">
 
         <ListView
             android:id="@+id/contacts_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="50dp"/>
+            android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

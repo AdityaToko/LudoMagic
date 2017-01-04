@@ -159,7 +159,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            ViewUtils.setWindowImmersive(getWindow());
+            ViewUtils.showWindowNavigation(getWindow());
         }
     }
 
