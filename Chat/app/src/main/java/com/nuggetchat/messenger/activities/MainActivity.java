@@ -33,6 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.nuggetchat.lib.common.RequestParams;
+import com.nuggetchat.messenger.AppConf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -225,8 +226,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void getUserFriends(final String accessToken, final String idToken) {
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://server.nuggetchat.com:8080/getFriends";
-        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+        StringRequest sr = new StringRequest(Request.Method.POST, AppConf.GET_FRIENDS_API_URL,
+                new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.i(LOG_TAG, "Facebook login success ");
