@@ -1,42 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="150dp"
-    android:layout_height="130dp"
-    android:padding="0dp">
+    android:layout_height="150dp">
 
-   <!--<ImageView
+    <ImageView
         android:id="@+id/grid_image"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
-        android:src="@drawable/nuggeticon"
-        android:layout_width="50dp"
-        android:layout_height="50dp">
-    </ImageView>
--->
-    <com.makeramen.roundedimageview.RoundedImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/grid_image"
-        android:layout_height="120dp"
+        android:layout_height="wrap_content"
         android:layout_width="150dp"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
-        android:scaleType="fitCenter"
-        app:riv_corner_radius="0dp"
-        app:riv_border_width="2dip"
-        app:riv_border_color="#333333"
-        app:riv_mutate_background="true"
-        app:riv_tile_mode="repeat"
-        app:riv_oval="false" />
+        android:scaleType="fitCenter" />
 
     <TextView
         android:id="@+id/grid_text"
         android:textStyle="bold"
-        android:layout_marginTop="95dp"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp" >
-    </TextView>
+        android:textSize="15sp" />
 
-</RelativeLayout>
+</LinearLayout>

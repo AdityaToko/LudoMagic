@@ -33,10 +33,10 @@ public class GamesChatActivity extends AppCompatActivity {
     @BindView(R.id.pager)
     /* package-local */ ViewPager viewPager;
 
-    @BindView(R.id.kid_name_text)
+    @BindView(R.id.name_text)
     /* package-local */ TextView kidNameText;
 
-    @BindView(R.id.kid_image)
+    @BindView(R.id.image)
     /* package-local */ ImageView kidImage;
 
     private LinearLayout tabView;

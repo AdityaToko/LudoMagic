@@ -45,7 +45,7 @@ public class ChatService extends Service {
             socket = IO.socket(HOST);
         } catch (URISyntaxException e) {
             Log.e(LOG_TAG, "onStartCommand: inside catch");
-            Log.e(LOG_TAG, "Socket Uri Syntax exception: " + e.getMessage());;
+            Log.e(LOG_TAG, "Socket Uri Syntax exception: " + e.getMessage());
         }
         messageHandler = new MessageHandler(socket, this);
         Log.e(LOG_TAG, "onStartCommand: registering events");
