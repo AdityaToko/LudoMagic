@@ -19,6 +19,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 
@@ -47,15 +49,24 @@ public class GamesChatActivity extends AppCompatActivity {
     private TextView textView;
     private  ImageView imageView;
     private Intent intent;
+    private Bundle sdpbundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, ChatService.class));
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
-       intent = getIntent();
-
+        intent = getIntent();
+        sdpbundle = intent.getExtras();
+        if(sdpbundle != null && sdpbundle.getString("from") != null){
+            Log.d(LOG_TAG, sdpbundle.getString("from") + "");
+        }
+        String sdp = "";
+        if (sdpbundle != null && sdpbundle.getString("sdp") != null){
+            sdp = sdpbundle.getString("sdp");
+        }
         setUpToolbar();
 
         setUpTabLayout();
@@ -66,7 +77,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
-        if (intent.getStringExtra("user_id") != null) {
+        if (intent.getStringExtra("user_id") != null || (sdp != null && !"".equals(sdp))) {
             viewPager.setCurrentItem(1);
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
             tabView.setBackgroundResource(R.drawable.second_tab_background);
@@ -151,7 +162,13 @@ public class GamesChatActivity extends AppCompatActivity {
         if (intent != null) {
             Log.d(LOG_TAG, "bundle set");
             Bundle bundle = new Bundle();
-            bundle.putString("user_id", intent.getStringExtra("user_id"));
+            String userId = intent.getStringExtra("user_id");
+            if (userId != null){
+                bundle.putString("user_id", intent.getStringExtra("user_id"));
+            }
+            if (sdpbundle != null){
+                bundle.putBundle("sdpBundle", sdpbundle);
+            }
             chatFragment.setArguments(bundle);
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");

@@ -90,7 +90,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private GLSurfaceView rtcView;
     private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private String targetId;
     private User user1;
     private View view;
     private ArrayList<String> multiPlayerGamesName;
@@ -112,6 +111,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
+            if(bundle != null && bundle.getBundle("sdpBundle") != null){
+                setSDP();
+            }
         }
 
         @Override
@@ -155,8 +157,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         application = (NuggetApplication) getActivity().getApplicationContext();
         fetchData();
 
-        Intent intent = getActivity().getIntent();
-        targetId = intent.getStringExtra("userId");
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
@@ -175,10 +175,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                init(user1, targetId);
-                getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                init(user1);
                 isBound = true;
             }
         });
@@ -352,6 +351,23 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         });
     }
 
+    private void setSDP(){
+        Bundle sdpBundle = bundle.getBundle("sdpBundle");
+        if (sdpBundle == null) {
+            return;
+        }
+        Log.d(LOG_TAG, "setSDP " + sdpBundle.toString());
+        String type = sdpBundle.getString("type");
+        String sdp = sdpBundle.getString("sdp");
+        String from = sdpBundle.getString("from");
+        SessionDescription sessionDescription = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type), sdp
+        );
+        webRtcClient.addFriendForChat(from, chatService.socket);
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
+    }
+
     private void setUpListView(final int i) {
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
@@ -404,12 +420,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
-    private void startCall() {
-        webRtcClient.setInitiator(true);
-        webRtcClient.createOffer(webRtcClient.peers.get(0));
-    }
-
-    private void init(User user1, String targetId) {
+    private void init(User user1) {
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
@@ -456,6 +467,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             audioManager.setMode(isWiredHeadsetOn ?
                     AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
             audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
+
+            showEndCallBtn();
         }
     }
 
@@ -633,10 +646,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (requestCode == 1234 && data != null) {
             Log.d(LOG_TAG, "before toast onActivityResult");
             hideFriendsAddCluster();
-            Toast.makeText(getActivity(), "AA" + data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
-            endCall.setVisibility(View.VISIBLE);
-            startCallButton.setVisibility(View.INVISIBLE);
-            startFriendCall(data.getStringExtra("user_id"));
+            if (data != null) {
+                Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+                showEndCallBtn();
+                startFriendCall(data.getStringExtra("user_id"));
+            }
         }
     }
 
@@ -646,8 +660,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.addFriendForChat(userId, socket);
         }
         audioPlayer.playRingtone();
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        showEndCallBtn();
     }
 
     @Override
@@ -655,8 +668,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
         audioPlayer.stopRingtone();
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        showEndCallBtn();
     }
 
     @Override
@@ -671,8 +683,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallEnd() {
         webRtcClient.endCall();
         audioPlayer.stopRingtone();
-        endCall.setVisibility(View.INVISIBLE);
-        startCallButton.setVisibility(View.VISIBLE);
+        showStartCallBtn();
     }
 
     @Override
@@ -694,5 +705,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     peer.getPeerConnection().getRemoteDescription());
             peer.getPeerConnection().addIceCandidate(candidate);
         }
+    }
+
+    private void showStartCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.INVISIBLE);
+                startCallButton.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void showEndCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 }

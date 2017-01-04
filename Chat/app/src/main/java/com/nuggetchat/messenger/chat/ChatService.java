@@ -21,7 +21,7 @@ public class ChatService extends Service {
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     public Socket socket;
     MessageHandler messageHandler;
-    List<EventListener> listeners = new ArrayList<>();
+    EventListener eventListener;
 
     public class ChatBinder extends Binder {
        public ChatService getService() {
@@ -59,12 +59,13 @@ public class ChatService extends Service {
     }
 
     public void registerEventListener(EventListener eventListener) {
-        listeners.add(eventListener);
+        this.eventListener = eventListener;
         registerForCallEvents(eventListener);
     }
 
     public void unregisterEventListener(EventListener eventListener){
-        listeners.remove(eventListener);
+        this.eventListener = eventListener;
+        this.eventListener = null;
     }
 
     private void registerForCallEvents(EventListener eventListener){
