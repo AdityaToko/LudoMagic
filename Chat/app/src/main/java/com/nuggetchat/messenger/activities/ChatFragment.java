@@ -85,7 +85,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private GLSurfaceView rtcView;
     private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private String targetId;
     private User user1;
     private View view;
     private ArrayList<String> multiPlayerGamesName;
@@ -106,6 +105,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
+            if(bundle != null && bundle.getBundle("sdpBundle") != null){
+                setSDP();
+            }
         }
 
         @Override
@@ -148,8 +150,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         application = (NuggetApplication) getActivity().getApplicationContext();
         fetchData();
 
-        Intent intent = getActivity().getIntent();
-        targetId = intent.getStringExtra("userId");
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
@@ -168,10 +168,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
-                init(user1, targetId);
+                init(user1);
                 isBound = true;
             }
         });
@@ -415,12 +414,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
-    private void startCall() {
-        webRtcClient.setInitiator(true);
-        webRtcClient.createOffer(webRtcClient.peers.get(0));
-    }
-
-    private void init(User user1, String targetId) {
+    private void init(User user1) {
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
@@ -430,9 +424,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient = new WebRtcClient(this, params,
                 VideoRendererGui.getEGLContext(), user1, iceServersString,
                 getActivity());
-        if(bundle != null && bundle.getBundle("sdpBundle") != null){
+       /* if(bundle != null && bundle.getBundle("sdpBundle") != null){
             setSDP();
-        }
+        }*/
     }
 
     @Override
@@ -470,6 +464,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             audioManager.setMode(isWiredHeadsetOn ?
                     AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
             audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
+
+            showEndCallBtn();
         }
     }
 

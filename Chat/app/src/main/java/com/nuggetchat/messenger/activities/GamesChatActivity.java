@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -48,6 +49,7 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, ChatService.class));
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
