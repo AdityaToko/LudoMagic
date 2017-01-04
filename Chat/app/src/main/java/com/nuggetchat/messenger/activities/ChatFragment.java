@@ -605,15 +605,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(LOG_TAG, "fragment onActivityResult");
-        if (requestCode == 1234) {
+        if (requestCode == 1234 && data != null) {
             Log.d(LOG_TAG, "before toast onActivityResult");
             hideFriendsAddCluster();
-            if (data != null) {
-                Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
-                endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
-                startFriendCall(data.getStringExtra("user_id"));
-            }
+            Toast.makeText(getActivity(), "AA" + data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
+            endCall.setVisibility(View.VISIBLE);
+            startCallButton.setVisibility(View.INVISIBLE);
+            startFriendCall(data.getStringExtra("user_id"));
         }
     }
 
