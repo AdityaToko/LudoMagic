@@ -37,6 +37,7 @@ public class GetFriendsServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
+        log("GetFriend request");
         final String requestUid = UUID.randomUUID().toString();
         final String facebookAccessToken = req.getParameter(RequestParams.FACEBOOK_ACCESS_TOKEN);
         final String firebaseIdToken = req.getParameter(RequestParams.FIREBASE_ID_TOKEN);
