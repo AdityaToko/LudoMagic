@@ -13,15 +13,12 @@ import android.widget.TextView;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.utils.GlideUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserFriendsAdapter extends BaseAdapter {
 
-    public List<FriendInfo> userDetails;
-    private ArrayList<FriendInfo> userDetailsList;
-    Context context;
-    ViewHolder viewHolder;
+    private List<FriendInfo> userDetails;
+    private Context context;
 
     public UserFriendsAdapter(List<FriendInfo> selectUsers, Context context) {
         userDetails = selectUsers;

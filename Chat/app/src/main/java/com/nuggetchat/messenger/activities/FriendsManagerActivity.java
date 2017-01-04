@@ -2,8 +2,9 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -26,7 +27,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.CallbackManager;
 import com.facebook.login.LoginManager;
-import com.facebook.share.model.ShareLinkContent;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,7 +37,6 @@ import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.AppConf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
-import com.nuggetchat.messenger.datamodel.UserDetails;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -55,18 +54,16 @@ import static android.view.View.VISIBLE;
 
 public class FriendsManagerActivity extends AppCompatActivity {
     private static final String LOG_TAG = FriendsManagerActivity.class.getSimpleName();
-    ArrayList<FriendInfo> selectUsers;
-    List<UserDetails> temp;
+    ArrayList<FriendInfo> usersFriendList;
     // Contact List
     ListView listView;
-    // Cursor to load contacts list
-    Cursor phones, email;
 
     // Pop up
     ContentResolver resolver;
     UserFriendsAdapter adapter;
     CallbackManager callbackManager;
     Intent intent;
+    Handler mainHandler;
 
     @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
     @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
@@ -75,23 +72,21 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_friendsmanager);
         ButterKnife.bind(this);
         intent = getIntent();
         getUserFriends();
         callbackManager = CallbackManager.Factory.create();
-
-        selectUsers = new ArrayList<>();
+        mainHandler = new Handler(Looper.getMainLooper());
+        usersFriendList = new ArrayList<>();
         resolver = this.getContentResolver();
         listView = (ListView) findViewById(R.id.contacts_list);
-        ShareLinkContent linkContent = new ShareLinkContent.Builder()
-                .setContentTitle("....")
-                .build();
+        adapter = new UserFriendsAdapter(usersFriendList, FriendsManagerActivity.this);
+        listView.setAdapter(adapter);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                selectUsers.clear();
+                usersFriendList.clear();
                 getUserFriends();
             }
         });
@@ -184,8 +179,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         Log.d(LOG_TAG, "Request success " + response);
                         getFriendsFromFirebase(firebaseUid);
-                        adapter = new UserFriendsAdapter(selectUsers, FriendsManagerActivity.this);
-                        listView.setAdapter(adapter);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -227,8 +220,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
 
         final DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(firebaseUri);
         friendsManagerProgressBar.setVisibility(INVISIBLE);
-        swipeContainer.setRefreshing(false);
         inviteFriendsText.setVisibility(VISIBLE);
+        swipeContainer.setRefreshing(false);
         if (firebaseRef == null) {
             Log.e(LOG_TAG, "Unable to get database reference.");
             return;
@@ -237,14 +230,15 @@ public class FriendsManagerActivity extends AppCompatActivity {
         firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                List<FriendInfo> newFriendList = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     FriendInfo friendInfo = snapshot.getValue(FriendInfo.class);
-                    if (!selectUsers.contains(friendInfo)) {
-                        selectUsers.add(friendInfo);
-                        adapter.notifyDataSetChanged();
-                    }
-                    friendsManagerProgressBar.setVisibility(INVISIBLE);
-                    inviteFriendsText.setVisibility(INVISIBLE);
+                    newFriendList.add(friendInfo);
+                }
+                if (!newFriendList.isEmpty()) {
+                    usersFriendList.clear();
+                    usersFriendList.addAll(newFriendList);
+                    updateAdapterAndHideProgressBar();
                 }
             }
 
@@ -253,7 +247,16 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "Friend request cancelled," + databaseError);
             }
         });
+    }
 
-
+    private void updateAdapterAndHideProgressBar() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                friendsManagerProgressBar.setVisibility(INVISIBLE);
+                inviteFriendsText.setVisibility(INVISIBLE);
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 }

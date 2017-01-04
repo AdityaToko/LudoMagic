@@ -37,20 +37,20 @@ public class GetFriendsServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
-        log("GetFriend request");
         final String requestUid = UUID.randomUUID().toString();
+        myLog(requestUid, "GetFriend request");
         final String facebookAccessToken = req.getParameter(RequestParams.FACEBOOK_ACCESS_TOKEN);
         final String firebaseIdToken = req.getParameter(RequestParams.FIREBASE_ID_TOKEN);
         if (facebookAccessToken == null || facebookAccessToken.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Facebook access token required. Request id: " + requestUid);
-            log(requestUid + ": Facebook access token not provided.");
+            myLog(requestUid, "Facebook access token not provided.");
             return;
         }
         if (firebaseIdToken == null || firebaseIdToken.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Firebase id token required. Request id: " + requestUid);
-            log(requestUid + ": Firebase id token not provided.");
+            myLog(requestUid, "Firebase id token not provided.");
             return;
         }
 
@@ -79,7 +79,7 @@ public class GetFriendsServlet extends HttpServlet {
     private void writeToFirebase(Task<FirebaseToken> task, String facebookAccessToken,
             final String requestUid) {
         if (!task.isSuccessful()) {
-            log(requestUid + ": Invalid firebase id token.", task.getException());
+            myLog(requestUid, "Invalid firebase id token.", task.getException());
             return;
         }
 
@@ -108,6 +108,8 @@ public class GetFriendsServlet extends HttpServlet {
             friendsInfo.put(friend.getId(), friendInfo);
         }
         userInfo.setFriends(friendsInfo);
+        myLog(requestUid, "Friend count:" + friendsInfo.size());
+
 
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReferenceFromUrl(
                 "https://nuggetplay-ceaaf.firebaseio.com/users/" + userId);
@@ -115,11 +117,19 @@ public class GetFriendsServlet extends HttpServlet {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    log(requestUid + ": Update successful.");
+                    myLog(requestUid, " Update successful.");
                 } else {
-                    log(requestUid + ": Unable to update friends.", task.getException());
+                    myLog(requestUid, ": Unable to update friends.", task.getException());
                 }
             }
         });
+    }
+
+    private void myLog(String reqId, String mesg) {
+        log(reqId + ":" + mesg);
+    }
+
+    private void myLog(String reqId, String mesg, Exception e) {
+        log(reqId + ":" + mesg, e);
     }
 }
