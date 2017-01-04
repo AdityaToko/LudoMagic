@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_chat"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".chat.ChatActivity">
+    android:layout_height="match_parent">
 
     <android.opengl.GLSurfaceView
         android:id="@+id/glview_call"
@@ -81,7 +79,7 @@
         android:layout_marginTop="50dp"
         android:orientation="vertical">
 
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        <ImageView
             android:id="@+id/add_friends_to_chat"
             android:layout_width="50dp"
             android:layout_height="50dp"
@@ -89,28 +87,21 @@
             android:layout_marginRight="5dp"
             android:src="@drawable/add_friend_to_chat" />
 
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        <ImageView
             android:id="@+id/popular_friend_1"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
-            android:layout_marginTop="10dp"
-            android:src="@drawable/nuggeticon"
-            app:civ_border_color="#FF000000"
-            app:civ_border_width="2dp" />
+            android:layout_marginTop="10dp" />
 
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        <ImageView
             android:id="@+id/popular_friend_2"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
-            android:layout_marginTop="10dp"
-            android:src="@drawable/nuggeticon"
-            app:civ_border_color="#FF000000"
-            app:civ_border_width="2dp" />
-
+            android:layout_marginTop="10dp" />
     </LinearLayout>
 
 </RelativeLayout>

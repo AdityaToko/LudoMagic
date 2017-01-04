@@ -32,7 +32,7 @@
         android:background="@color/accept_btn_color" />
     </LinearLayout>
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/caller_image"
         android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"

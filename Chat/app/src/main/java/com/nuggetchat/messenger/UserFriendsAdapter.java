@@ -2,7 +2,10 @@ package com.nuggetchat.messenger;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +13,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.lib.model.FriendInfo;
-import com.nuggetchat.messenger.utils.GlideUtils;
 
 import java.util.List;
 
 public class UserFriendsAdapter extends BaseAdapter {
 
-    private List<FriendInfo> userDetails;
-    private Context context;
+    public List<FriendInfo> userDetails;
+    Context context;
 
     public UserFriendsAdapter(List<FriendInfo> selectUsers, Context context) {
         userDetails = selectUsers;
@@ -52,7 +56,7 @@ public class UserFriendsAdapter extends BaseAdapter {
             view = convertView;
         }
 
-        ViewHolder viewHolder = new ViewHolder();
+        final ViewHolder viewHolder = new ViewHolder();
 
         viewHolder.title = (TextView) view.findViewById(R.id.name);
         viewHolder.imageView = (ImageView) view.findViewById(R.id.profile_image);
@@ -65,7 +69,16 @@ public class UserFriendsAdapter extends BaseAdapter {
             String profilePicUrl;
             if (data.getFacebookId() != null) {
                 profilePicUrl = getProfilePicUrl(data.getFacebookId());
-                GlideUtils.loadImage(context, viewHolder.imageView, null, profilePicUrl);
+                Glide.with(context).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(viewHolder.imageView) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        RoundedBitmapDrawable circularBitmapDrawable =
+                                RoundedBitmapDrawableFactory.create(context.getResources(), resource);
+                        circularBitmapDrawable.setCircular(true);
+                        viewHolder.imageView.setImageDrawable(circularBitmapDrawable);
+                    }
+                });
+
             } else {
                 viewHolder.imageView.setImageResource(R.drawable.nuggeticon);
             }

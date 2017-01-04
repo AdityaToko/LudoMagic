@@ -1,10 +1,13 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,12 +17,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -39,25 +45,34 @@ public class GamesChatActivity extends AppCompatActivity {
     @BindView(R.id.pager)
     /* package-local */ ViewPager viewPager;
 
-    @BindView(R.id.kid_name_text)
-    /* package-local */ TextView kidNameText;
+    @BindView(R.id.name_text)
+    /* package-local */ TextView nameText;
 
-    @BindView(R.id.kid_image)
-    /* package-local */ ImageView kidImage;
+    @BindView(R.id.image)
+    /* package-local */ ImageView image;
 
     private LinearLayout tabView;
     private TextView textView;
     private  ImageView imageView;
     private Intent intent;
+    private Bundle sdpbundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, ChatService.class));
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
-       intent = getIntent();
-
+        intent = getIntent();
+        sdpbundle = intent.getExtras();
+        if(sdpbundle != null && sdpbundle.getString("from") != null){
+            Log.d(LOG_TAG, sdpbundle.getString("from") + "");
+        }
+        String sdp = "";
+        if (sdpbundle != null && sdpbundle.getString("sdp") != null){
+            sdp = sdpbundle.getString("sdp");
+        }
         setUpToolbar();
 
         setUpTabLayout();
@@ -70,7 +85,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
-        if (intent.getStringExtra("user_id") != null) {
+        if (intent.getStringExtra("user_id") != null || (sdp != null && !"".equals(sdp))) {
             viewPager.setCurrentItem(1);
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
             tabView.setBackgroundResource(R.drawable.second_tab_background);
@@ -128,8 +143,17 @@ public class GamesChatActivity extends AppCompatActivity {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
         Log.i(LOG_TAG, "the username, " + userName);
         String profilePicUrl = getProfilePicUrl(SharedPreferenceUtility.getFacebookUserId(this));
-        GlideUtils.loadImage(this, kidImage, null, profilePicUrl);
-        kidNameText.setText(userName);
+        Glide.with(this).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(image) {
+            @Override
+            protected void setResource(Bitmap resource) {
+                RoundedBitmapDrawable circularBitmapDrawable =
+                        RoundedBitmapDrawableFactory.create(getApplicationContext().getResources(), resource);
+                circularBitmapDrawable.setCircular(true);
+                image.setImageDrawable(circularBitmapDrawable);
+            }
+        });
+
+        nameText.setText(userName);
         setSupportActionBar(toolbar);
     }
 
@@ -146,7 +170,13 @@ public class GamesChatActivity extends AppCompatActivity {
         if (intent != null) {
             Log.d(LOG_TAG, "bundle set");
             Bundle bundle = new Bundle();
-            bundle.putString("user_id", intent.getStringExtra("user_id"));
+            String userId = intent.getStringExtra("user_id");
+            if (userId != null){
+                bundle.putString("user_id", intent.getStringExtra("user_id"));
+            }
+            if (sdpbundle != null){
+                bundle.putBundle("sdpBundle", sdpbundle);
+            }
             chatFragment.setArguments(bundle);
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");

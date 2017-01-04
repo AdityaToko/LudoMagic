@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.AppConf;
 import com.nuggetchat.messenger.R;
@@ -114,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
                         getFirebaseIdToken(task, loginResult.getAccessToken());
                     }
                 });
-
     }
 
     private void getFirebaseIdToken(final Task<AuthResult> task, final AccessToken accessToken) {
@@ -128,16 +128,45 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
                         String firebaseIdToken = tokenTask.getResult().getToken();
-//                        Log.i(LOG_TAG, "firebaseIdToken " + firebaseIdToken);
-                        //getFriendsGraph(accessToken);
+                        String firebaseUid = task.getResult().getUser().getUid();
+
                         SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
-                        SharedPreferenceUtility.setFirebaseUid(task.getResult().getUser().getUid(), MainActivity.this);
+                        SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
                         SharedPreferenceUtility.setFacebookUserName(task.getResult().getUser().getDisplayName(), MainActivity.this);
                         getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
+
+                        String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+                        saveDeviceRegistrationToken("devices", firebaseUid, deviceRegistrationToken);
                     }
                 });
 
+    }
+
+    private void saveDeviceRegistrationToken(String handle, String uid, String deviceRegistrationToken) {
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        if (firebaseDatabase == null) {
+            return;
+        }
+
+        String userDeviceIDUrl = "https://nuggetplay-ceaaf.firebaseio.com/" + handle + "/" + uid + "/";
+        Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
+
+        firebaseDatabase.getReferenceFromUrl(userDeviceIDUrl)
+                .setValue(deviceRegistrationToken)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(LOG_TAG, "Firebase Device Id stored successfully!");
+                        } else {
+                            Exception exception = task.getException();
+                            if (exception != null) {
+                                Log.e(LOG_TAG, "Unable to update friends." + exception);
+                            }
+                        }
+                    }
+                });
     }
 
     private void setUserFacebookUserId() {
@@ -154,8 +183,13 @@ public class MainActivity extends AppCompatActivity {
         firebaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                SharedPreferenceUtility.setFacebookUserId(dataSnapshot.getValue().toString(), MainActivity.this);
+                String facebookUserId = dataSnapshot.getValue().toString();
+                SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
                 Log.d(LOG_TAG, SharedPreferenceUtility.getFacebookUserId(MainActivity.this));
+
+                String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+                saveDeviceRegistrationToken("devices-facebook", facebookUserId, deviceRegistrationToken);
+
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
                 loginProgressBar.setVisibility(View.INVISIBLE);
