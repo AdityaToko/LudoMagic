@@ -168,10 +168,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         VideoRendererGui.setView(rtcView, new Runnable() {
             @Override
             public void run() {
-                init(user1, targetId);
                 getActivity().startService(new Intent(getActivity(), ChatService.class));
                 getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                         Context.BIND_AUTO_CREATE);
+                init(user1, targetId);
                 isBound = true;
             }
         });
@@ -352,6 +352,23 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         });
     }
 
+    private void setSDP(){
+        Bundle sdpBundle = bundle.getBundle("sdpBundle");
+        if (sdpBundle == null) {
+            return;
+        }
+        Log.d(LOG_TAG, "setSDP " + sdpBundle.toString());
+        String type = sdpBundle.getString("type");
+        String sdp = sdpBundle.getString("sdp");
+        String from = sdpBundle.getString("from");
+        SessionDescription sessionDescription = new SessionDescription(
+                SessionDescription.Type.fromCanonicalForm(type), sdp
+        );
+        webRtcClient.addFriendForChat(from, chatService.socket);
+        Peer peer = webRtcClient.peers.get(0);
+        peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
+    }
+
     private void setUpListView(final int i) {
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
@@ -419,6 +436,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient = new WebRtcClient(this, params,
                 VideoRendererGui.getEGLContext(), user1, iceServersString,
                 getActivity());
+        if(bundle != null && bundle.getBundle("sdpBundle") != null){
+            setSDP();
+        }
     }
 
     @Override
@@ -622,8 +642,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
-                endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                /*endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);*/
+                showEndCallBtn();
                 startFriendCall(data.getStringExtra("user_id"));
             }
         }
@@ -634,16 +655,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!webRtcClient.isInitiator()) {
             webRtcClient.addFriendForChat(userId, socket);
         }
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        /*endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);*/
+        showEndCallBtn();
     }
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+        /*endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);*/
+        showEndCallBtn();
     }
 
     @Override
@@ -657,8 +680,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
-        endCall.setVisibility(View.INVISIBLE);
-        startCallButton.setVisibility(View.VISIBLE);
+       /* endCall.setVisibility(View.INVISIBLE);
+        startCallButton.setVisibility(View.VISIBLE);*/
+        showStartCallBtn();
     }
 
     @Override
@@ -680,5 +704,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     peer.getPeerConnection().getRemoteDescription());
             peer.getPeerConnection().addIceCandidate(candidate);
         }
+    }
+
+    private void showStartCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.INVISIBLE);
+                startCallButton.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void showEndCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.VISIBLE);
+                startCallButton.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 }
