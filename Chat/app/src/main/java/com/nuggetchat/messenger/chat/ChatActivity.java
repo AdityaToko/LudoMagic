@@ -237,7 +237,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
                 GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-//              Log.i(LOG_TAG, "the data id, " + gamesDate.getTitle());
 
                 gamesName.add(gamesDate.getTitle());
                 gamesImage.add(gamesDate.getFeaturedImage());

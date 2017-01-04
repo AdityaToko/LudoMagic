@@ -11,14 +11,10 @@
         android:layout_margin="5dp"
         android:weightSum="3">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <ImageView
             android:id="@+id/profile_image"
             android:layout_width="76dp"
-            android:layout_height="66dp"
-            android:src="@drawable/nuggeticon"
-            app:civ_border_width="2dp"
-            app:civ_border_color="#FF000000"/>
+            android:layout_height="66dp" />
 
         <TextView
             android:layout_width="wrap_content"

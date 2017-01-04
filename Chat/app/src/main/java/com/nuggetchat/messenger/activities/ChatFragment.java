@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
@@ -12,6 +13,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +26,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
@@ -304,7 +310,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 for (int i = 0 ; i < gamesItemList.size(); i++) {
                     Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
@@ -537,19 +542,38 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
+        if (chatService.socket.connected()) {
+            hideFriendsAddCluster();
+        }
     }
 
     private void triggerImageChanges() {
         String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
         String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
         if (!friend1.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend1, null,
-                    "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150");
+            String friendOnePicUrl = "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150";
+            Glide.with(getActivity()).load(friendOnePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(popularFriend1) {
+                @Override
+                protected void setResource(Bitmap resource) {
+                    RoundedBitmapDrawable circularBitmapDrawable =
+                            RoundedBitmapDrawableFactory.create(getActivity().getResources(), resource);
+                    circularBitmapDrawable.setCircular(true);
+                    popularFriend1.setImageDrawable(circularBitmapDrawable);
+                }
+            });
             popularFriend1.setVisibility(View.VISIBLE);
         }
         if (!friend2.equals("")) {
-            GlideUtils.loadImage(getActivity(), popularFriend2, null,
-                    "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150");
+            String friendTwoPicUrl = "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150";
+            Glide.with(getActivity()).load(friendTwoPicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(popularFriend2) {
+                @Override
+                protected void setResource(Bitmap resource) {
+                    RoundedBitmapDrawable circularBitmapDrawable =
+                            RoundedBitmapDrawableFactory.create(getActivity().getResources(), resource);
+                    circularBitmapDrawable.setCircular(true);
+                    popularFriend2.setImageDrawable(circularBitmapDrawable);
+                }
+            });
             popularFriend2.setVisibility(View.VISIBLE);
         }
     }
