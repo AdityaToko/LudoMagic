@@ -549,6 +549,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
+        if (chatService.socket.connected()) {
+            hideFriendsAddCluster();
+        }
     }
 
     private void triggerImageChanges() {
@@ -619,7 +622,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.d(LOG_TAG, "fragment onActivityResult");
         if (requestCode == 1234) {
             Log.d(LOG_TAG, "before toast onActivityResult");
-            hideFriendsAddCluster();
+            //hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
                 endCall.setVisibility(View.VISIBLE);
