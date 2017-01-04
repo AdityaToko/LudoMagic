@@ -136,19 +136,19 @@ public class MainActivity extends AppCompatActivity {
                         getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
 
                         String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
-                        saveDeviceRegistrationToken(firebaseUid, deviceRegistrationToken);
+                        saveDeviceRegistrationToken("devices", firebaseUid, deviceRegistrationToken);
                     }
                 });
 
     }
 
-    private void saveDeviceRegistrationToken(String firebaseUid, String deviceRegistrationToken) {
+    private void saveDeviceRegistrationToken(String handle, String uid, String deviceRegistrationToken) {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         if (firebaseDatabase == null) {
             return;
         }
 
-        String userDeviceIDUrl = "https://nuggetplay-ceaaf.firebaseio.com/devices/" + firebaseUid + "/";
+        String userDeviceIDUrl = "https://nuggetplay-ceaaf.firebaseio.com/" + handle + "/" + uid + "/";
         Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
 
         firebaseDatabase.getReferenceFromUrl(userDeviceIDUrl)
@@ -182,8 +182,13 @@ public class MainActivity extends AppCompatActivity {
         firebaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                SharedPreferenceUtility.setFacebookUserId(dataSnapshot.getValue().toString(), MainActivity.this);
+                String facebookUserId = dataSnapshot.getValue().toString();
+                SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
                 Log.d(LOG_TAG, SharedPreferenceUtility.getFacebookUserId(MainActivity.this));
+
+                String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+                saveDeviceRegistrationToken("devices-facebook", facebookUserId, deviceRegistrationToken);
+
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
                 loginProgressBar.setVisibility(View.INVISIBLE);

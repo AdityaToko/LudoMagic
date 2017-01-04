@@ -84,6 +84,13 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".FBMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".CallRequestReceiver"
             android:enabled="true"
