@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -26,11 +27,11 @@ import com.android.volley.toolbox.Volley;
 import com.facebook.CallbackManager;
 import com.facebook.login.LoginManager;
 import com.facebook.share.model.ShareLinkContent;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.R;
@@ -68,6 +69,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
 
     @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
     @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
+    @BindView(R.id.swipeContainer) /* package-local */ SwipeRefreshLayout swipeContainer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,6 +89,19 @@ public class FriendsManagerActivity extends AppCompatActivity {
         ShareLinkContent linkContent = new ShareLinkContent.Builder()
                 .setContentTitle("....")
                 .build();
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                selectUsers.clear();
+                getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this),
+                        SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this));
+            }
+        });
+
+        swipeContainer.setColorSchemeResources(android.R.color.holo_red_light,
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light);
     }
 
     public void sendMessagetoFriends(View v) {
@@ -203,36 +218,65 @@ public class FriendsManagerActivity extends AppCompatActivity {
         String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + firebaseId + "/friends";
         Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
 
-        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+        final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
         friendsManagerProgressBar.setVisibility(INVISIBLE);
+        swipeContainer.setRefreshing(false);
         inviteFriendsText.setVisibility(VISIBLE);
         if (firebaseRef == null) {
             Log.e(LOG_TAG, "Unable to get database reference.");
             return;
         }
-
-        firebaseRef.addChildEventListener(new ChildEventListener() {
+        final ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                FriendInfo friendInfo = dataSnapshot.getValue(FriendInfo.class);
-                selectUsers.add(friendInfo);
-                adapter.notifyDataSetChanged();
-                friendsManagerProgressBar.setVisibility(INVISIBLE);
-                inviteFriendsText.setVisibility(INVISIBLE);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    FriendInfo friendInfo = snapshot.getValue(FriendInfo.class);
+                    if (!selectUsers.contains(friendInfo)) {
+                        selectUsers.add(friendInfo);
+                        adapter.notifyDataSetChanged();
+                    }
+                    friendsManagerProgressBar.setVisibility(INVISIBLE);
+                    inviteFriendsText.setVisibility(INVISIBLE);
+                }
+                firebaseRef.removeEventListener(this);
             }
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+            public void onCancelled(DatabaseError databaseError) {
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {}
+            }
+        };
 
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+        firebaseRef.addValueEventListener(valueEventListener);
+    }
 
+    public void getUserFriends(final String accessToken, final String idToken) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://server.nuggetchat.com:8080/getFriends";
+        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
+            public void onResponse(String response) {
+                Log.i(LOG_TAG, "Facebook login success ");
+//                Log.i(LOG_TAG, "Facebook response " + response);
+                getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this),
+                        SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this),
+                        SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this));
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Error in making friends request", error);
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, accessToken);
+                params.put(RequestParams.FIREBASE_ID_TOKEN, idToken);
+                return params;
+            }
+        };
+        queue.add(sr);
     }
 }
