@@ -552,12 +552,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
         webRtcClient.createOffer(webRtcClient.peers.get(0));
-        hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        if (chatService.socket.connected()) {
-            hideFriendsAddCluster();
-        }
     }
 
     private void triggerImageChanges() {
@@ -592,8 +588,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void hideFriendsAddCluster() {
-        endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
         multiplayerGamesView.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
     }
@@ -644,7 +638,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.d(LOG_TAG, "fragment onActivityResult");
         if (requestCode == 1234 && data != null) {
             Log.d(LOG_TAG, "before toast onActivityResult");
-            hideFriendsAddCluster();
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
                 showEndCallBtn();
@@ -718,6 +711,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.VISIBLE);
+                hideFriendsAddCluster();
                 startCallButton.setVisibility(View.INVISIBLE);
             }
         });
