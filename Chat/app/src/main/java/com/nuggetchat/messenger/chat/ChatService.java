@@ -16,8 +16,8 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class ChatService extends Service {
-    private static final String HOST = "http://chat.nuggetkids.com/";
-    //private static final String HOST = "http://192.168.0.118:5000";
+//    private static final String HOST = "http://chat.nuggetkids.com/";
+    private static final String HOST = "http://192.168.0.119:3000";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     public Socket socket;
     MessageHandler messageHandler;
@@ -51,6 +51,8 @@ public class ChatService extends Service {
         Log.e(LOG_TAG, "onStartCommand: registering events");
         socket.on(Socket.EVENT_CONNECT, messageHandler.onInit);
         socket.on("init_successful", messageHandler.onInitSuccessful);
+        socket.on("pre_call_handshake", messageHandler.onPreCallHandshake);
+        socket.on("handshake_complete", messageHandler.onHandshakeComplete);
         socket.on("call_requested", messageHandler.onCallRequested);
         socket.on(Socket.EVENT_DISCONNECT, messageHandler.onDisconnect);
         socket.connect();

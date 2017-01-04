@@ -233,12 +233,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick({R.id.popular_friend_1})
     /* package-local */ void callFavFriend1() {
-        startFriendCall(SharedPreferenceUtility.getFavFriend1(getActivity()));
+        sendPreCallHandshake(SharedPreferenceUtility.getFavFriend1(getActivity()));
     }
 
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
-        startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
+        sendPreCallHandshake(SharedPreferenceUtility.getFavFriend2(getActivity()));
     }
 
     private void undbindService(){
@@ -362,7 +362,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         SessionDescription sessionDescription = new SessionDescription(
                 SessionDescription.Type.fromCanonicalForm(type), sdp
         );
-        webRtcClient.addFriendForChat(from, chatService.socket);
+        // TODO: get here
+        // webRtcClient.addFriendForChat(from, chatService.socket);
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
     }
@@ -547,17 +548,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
     }
 
-    private void startFriendCall(String facebookId) {
+    private void sendPreCallHandshake(String facebookId) {
         webRtcClient.setInitiator(true);
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
-        webRtcClient.createOffer(webRtcClient.peers.get(0));
+
+        JSONObject payload = new JSONObject();
+        try {
+            payload.put("from", webRtcClient.userId1);
+            payload.put("to", webRtcClient.userId2);
+            payload.put("token", "abcd");
+            chatService.socket.emit("pre_call_handshake", payload);
+            Log.e(LOG_TAG, "pre call handshake sent.." + payload.toString());
+        } catch(JSONException e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
+
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        if (chatService.socket.connected()) {
-            hideFriendsAddCluster();
-        }
     }
 
     private void triggerImageChanges() {
@@ -648,17 +657,61 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             if (data != null) {
                 Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
                 showEndCallBtn();
-                startFriendCall(data.getStringExtra("user_id"));
+                sendPreCallHandshake(data.getStringExtra("user_id"));
+            }
+        }
+    }
+
+    @Override
+    public void onPreCallHandshake(JSONObject data) {
+        if (!webRtcClient.isInitiator()) {
+            try {
+                String from = data.getString("from");
+                String to = data.getString("to");
+                String token = data.getString("token");
+                if (webRtcClient.userId1.equals(to) && "abcd".equals(token)) {
+                    webRtcClient.addFriendForChat(from, chatService.socket);
+
+                    JSONObject payload = new JSONObject();
+                    payload.put("from", webRtcClient.userId1);
+                    payload.put("to", webRtcClient.userId2);
+                    payload.put("token", token);
+                    chatService.socket.emit("handshake_complete", payload);
+                    showEndCallBtn();
+                    Log.e(LOG_TAG, "pre call handshake complete.. sending handshake_complete");
+                }
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void onHandshakeComplete(JSONObject data) {
+        if (webRtcClient.isInitiator()) {
+            try {
+                String from = data.getString("from");
+                String to = data.getString("to");
+                String token = data.getString("token");
+
+                if (webRtcClient.userId1.equals(to)
+                        && webRtcClient.userId2.equals(from)
+                        && "abcd".equals(token)) {
+                    webRtcClient.createOffer(webRtcClient.peers.get(0));
+                    Log.e(LOG_TAG, "when handshake complete... create offer");
+                }
+            } catch(JSONException e) {
+                Log.e(LOG_TAG, e.getMessage());
             }
         }
     }
 
     @Override
     public void onCall(String userId, Socket socket) {
-        if (!webRtcClient.isInitiator()) {
-            webRtcClient.addFriendForChat(userId, socket);
-        }
-        showEndCallBtn();
+//        if (!webRtcClient.isInitiator()) {
+//            webRtcClient.addFriendForChat(userId, socket);
+//        }
+//        showEndCallBtn();
     }
 
     @Override

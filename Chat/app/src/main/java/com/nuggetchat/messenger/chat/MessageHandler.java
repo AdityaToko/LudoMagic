@@ -88,29 +88,42 @@ public class MessageHandler {
         }
     };
 
+    public Emitter.Listener onPreCallHandshake = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.e(LOG_TAG, "Pre call handshake received!");
+            eventListener.onPreCallHandshake((JSONObject) args[0]);
+        }
+    };
+
+    public Emitter.Listener onHandshakeComplete = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.e(LOG_TAG, "Pre call handshake completed!");
+            eventListener.onHandshakeComplete((JSONObject) args[0]);
+        }
+    };
+
     public Emitter.Listener onCallRequested = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
 
-            if (!application.isInitiator()) {
-                Intent intent = new Intent();
-                try {
-                    String from = requestObject.getString("from");
-                    String to = requestObject.getString("to");
-                    JSONObject offerObj = requestObject.getJSONObject("offer");
-                    String type = offerObj.getString("type");
-                    String sdp = offerObj.getString("sdp");
-                    Bundle bundle = new Bundle();
-                    bundle.putString("from", from);
-                    bundle.putString("to", to);
-                    bundle.putString("type", type);
-                    bundle.putString("sdp", sdp);
-                    intent.putExtras(bundle);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+
+            Intent intent = new Intent();
+            try {
+                String from = requestObject.getString("from");
+                String to = requestObject.getString("to");
+                JSONObject offerObj = requestObject.getJSONObject("offer");
+                String type = offerObj.getString("type");
+                String sdp = offerObj.getString("sdp");
+                Bundle bundle = new Bundle();
+                bundle.putString("from", from);
+                bundle.putString("to", to);
+                bundle.putString("type", type);
+                bundle.putString("sdp", sdp);
+                intent.putExtras(bundle);
                 intent.setAction("com.nuggetchat.messenger.intent.action.INCOMING_CALL");
                 context.sendBroadcast(intent);
                 Handler handler = new Handler(Looper.getMainLooper());
@@ -127,24 +140,8 @@ public class MessageHandler {
                         }
                     }
                 });
-            } else {
-                try {
-                    eventListener.onCall(requestObject.getString("from"), socket);
-                    Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
-                    if (userId.equals(requestObject.getString("to"))
-                            && requestObject.getJSONObject("offer") != null) {
-                        Log.e(LOG_TAG, "call requested inside if");
-                        JSONObject offerObj = requestObject.getJSONObject("offer");
-                        SessionDescription sdp = new SessionDescription(
-                                SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
-                                offerObj.getString("sdp")
-                        );
-                        Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
-                        eventListener.onCallRequestOrAnswer(sdp);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
     };
@@ -155,7 +152,7 @@ public class MessageHandler {
             Log.d(LOG_TAG, "inside onCallAccepted ");
             JSONObject acceptObject = (JSONObject) args[0];
             try {
-                eventListener.onCall(acceptObject.getString("from"), socket);
+                // eventListener.onCall(acceptObject.getString("from"), socket);
                 if (userId.equals(acceptObject.getString("to"))
                         && acceptObject.get("answer") != null) {
                     JSONObject answerObj = acceptObject.getJSONObject("answer");
@@ -179,7 +176,8 @@ public class MessageHandler {
 
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
-                eventListener.onCall(iceCandidateObj.getString("from"), socket);
+                // TODO: commented onCall
+                // eventListener.onCall(iceCandidateObj.getString("from"), socket);
                 if (userId.equals(iceCandidateObj.getString("to"))
                         && iceCandidateObj.get("candidate") != null) {
                     Log.e(LOG_TAG, "inside onIceCandidates if ");

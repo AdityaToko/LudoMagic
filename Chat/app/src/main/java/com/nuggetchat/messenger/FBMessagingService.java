@@ -14,5 +14,7 @@ public class FBMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         Log.d(LOG_TAG, remoteMessage.toString());
+
+
     }
 }
