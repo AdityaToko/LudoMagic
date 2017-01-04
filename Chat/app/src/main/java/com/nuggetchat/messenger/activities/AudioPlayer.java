@@ -9,6 +9,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
 
+import com.nuggetchat.messenger.BuildConfig;
 import com.nuggetchat.messenger.R;
 
 import java.io.FileInputStream;
@@ -41,7 +42,7 @@ public class AudioPlayer {
 
                 try {
                     mPlayer.setDataSource(mContext,
-                            Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.progress_tone));
+                            Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.raw.progress_tone));
                     mPlayer.prepare();
                 } catch (IOException e) {
                     Log.e(LOG_TAG, "Could not setup media player for ringtone");
