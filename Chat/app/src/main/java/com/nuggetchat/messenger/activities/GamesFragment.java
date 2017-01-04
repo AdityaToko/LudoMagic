@@ -35,6 +35,7 @@ public class GamesFragment extends Fragment {
     private ArrayList<String> gamesImages;
     private ArrayList<String> gamesUrl;
     private ArrayList<GamesItem> gamesItemList;
+    private View view;
 
     @BindView(R.id.loading_icon)
     ProgressBar loadingIcon;
@@ -43,7 +44,7 @@ public class GamesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_games_layout, container, false);
+        view = inflater.inflate(R.layout.fragment_games_layout, container, false);
         ButterKnife.bind(this, view);
         gamesName = new ArrayList<>();
         gamesImages = new ArrayList<>();
@@ -52,22 +53,6 @@ public class GamesFragment extends Fragment {
 
         fetchDataForGames();
 
-        CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
-        GridView gridView = (GridView) view.findViewById(R.id.grid_view);
-        gridView.setAdapter(customeGridAdapter);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
-                        Toast.LENGTH_SHORT).show();
-                Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
-                Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
-                Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
-                gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
-                startActivity(gameIntent);
-            }
-        });
         return view;
     }
 
@@ -95,6 +80,23 @@ public class GamesFragment extends Fragment {
                         gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait());
                 gamesItemList.add(gamesItem);
                 Log.i(LOG_TAG, "Game " + gamesData.getDataId() + " isPortrait " + gamesData.getPortrait());
+
+                CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
+                GridView gridView = (GridView) view.findViewById(R.id.grid_view);
+                gridView.setAdapter(customeGridAdapter);
+                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                        Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
+                                Toast.LENGTH_SHORT).show();
+                        Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
+                        Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                        gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
+                        Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
+                        gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                        startActivity(gameIntent);
+                    }
+                });
             }
 
             @Override
