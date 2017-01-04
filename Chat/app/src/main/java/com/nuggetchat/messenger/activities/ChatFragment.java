@@ -15,7 +15,6 @@ import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -105,6 +104,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private Handler mainHandler;
     private AudioManager audioManager;
     private int audioManagerMode = AudioManager.MODE_NORMAL;
+    private AudioPlayer audioPlayer;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -139,6 +139,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (SharedPreferenceUtility.getFavFriend1(getActivity()).equals("")) {
             popularFriend1.setVisibility(View.INVISIBLE);
         }
+        audioPlayer = new AudioPlayer(this.getActivity());
 
         if (SharedPreferenceUtility.getFavFriend2(getActivity()).equals("")) {
             popularFriend2.setVisibility(View.INVISIBLE);
@@ -644,6 +645,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!webRtcClient.isInitiator()) {
             webRtcClient.addFriendForChat(userId, socket);
         }
+        audioPlayer.playRingtone();
+        audioPlayer.playProgressTone();
         endCall.setVisibility(View.VISIBLE);
         startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -652,6 +655,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallRequestOrAnswer(SessionDescription sdp) {
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
+        audioPlayer.stopRingtone();
+        audioPlayer.stopProgressTone();
         endCall.setVisibility(View.VISIBLE);
         startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -667,6 +672,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
+        audioPlayer.stopRingtone();
+        audioPlayer.stopProgressTone();
         endCall.setVisibility(View.INVISIBLE);
         startCallButton.setVisibility(View.VISIBLE);
     }
