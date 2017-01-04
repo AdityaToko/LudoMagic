@@ -34,7 +34,7 @@
                 android:layout_alignParentRight="true">
 
                 <TextView
-                    android:id="@+id/kid_name_text"
+                    android:id="@+id/name_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
@@ -42,8 +42,8 @@
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
-                <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/kid_image"
+                <ImageView
+                    android:id="@+id/image"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginLeft="15dp"

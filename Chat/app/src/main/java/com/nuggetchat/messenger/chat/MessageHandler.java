@@ -29,7 +29,7 @@ public class MessageHandler {
     private static final String LOG_TAG = MessageHandler.class.getSimpleName();
     private Socket socket;
     private Context context;
-    private List<EventListener> listeners = new ArrayList<>();
+    private EventListener eventListener;
     private NuggetApplication application;
     String userId;
     String username;
@@ -48,7 +48,7 @@ public class MessageHandler {
     }
 
     public void addEventListener(EventListener eventListener) {
-        listeners.add(eventListener);
+        this.eventListener = eventListener;
     }
 
     public Emitter.Listener onInit = new Emitter.Listener() {
@@ -129,9 +129,7 @@ public class MessageHandler {
                 });
             } else {
                 try {
-                    for (EventListener listener : listeners) {
-                        listener.onCall(requestObject.getString("from"), socket);
-                    }
+                    eventListener.onCall(requestObject.getString("from"), socket);
                     Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
                     if (userId.equals(requestObject.getString("to"))
                             && requestObject.getJSONObject("offer") != null) {
@@ -142,9 +140,7 @@ public class MessageHandler {
                                 offerObj.getString("sdp")
                         );
                         Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
-                        for (EventListener listener : listeners) {
-                            listener.onCallRequestOrAnswer(sdp);
-                        }
+                        eventListener.onCallRequestOrAnswer(sdp);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -159,9 +155,7 @@ public class MessageHandler {
             Log.d(LOG_TAG, "inside onCallAccepted ");
             JSONObject acceptObject = (JSONObject) args[0];
             try {
-                for (EventListener listener : listeners) {
-                    listener.onCall(acceptObject.getString("from"), socket);
-                }
+                eventListener.onCall(acceptObject.getString("from"), socket);
                 if (userId.equals(acceptObject.getString("to"))
                         && acceptObject.get("answer") != null) {
                     JSONObject answerObj = acceptObject.getJSONObject("answer");
@@ -169,9 +163,7 @@ public class MessageHandler {
                             SessionDescription.Type.fromCanonicalForm(answerObj.getString("type")),
                             answerObj.getString("sdp")
                     );
-                    for (EventListener listener : listeners) {
-                        listener.onCallRequestOrAnswer(sdp);
-                    }
+                    eventListener.onCallRequestOrAnswer(sdp);
                     Log.e(LOG_TAG, "Setting remote desc after onCallAccepted for " + acceptObject.getString("to"));
                 }
             } catch (JSONException e) {
@@ -187,18 +179,14 @@ public class MessageHandler {
 
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
-                for (EventListener listener : listeners) {
-                    listener.onCall(iceCandidateObj.getString("from"), socket);
-                }
+                eventListener.onCall(iceCandidateObj.getString("from"), socket);
                 if (userId.equals(iceCandidateObj.getString("to"))
                         && iceCandidateObj.get("candidate") != null) {
                     Log.e(LOG_TAG, "inside onIceCandidates if ");
                     IceCandidate candidate = new IceCandidate(iceCandidateObj.getString("id"),
                             iceCandidateObj.getInt("label"),
                             iceCandidateObj.getString("candidate"));
-                    for (EventListener listener : listeners) {
-                        listener.onFetchIceCandidates(candidate);
-                    }
+                    eventListener.onFetchIceCandidates(candidate);
                     Log.e(LOG_TAG, "setting ice candidates successfully for :" + iceCandidateObj.getString("to"));
                 } else {
                     Log.e(LOG_TAG, "candidate is null or " + userId
@@ -218,14 +206,10 @@ public class MessageHandler {
             JSONObject gameLinkObject = (JSONObject) args[0];
 
             try {
-                for (EventListener listener : listeners) {
-                    listener.onCall(gameLinkObject.getString("from"), socket);
-                }
+                eventListener.onCall(gameLinkObject.getString("from"),socket);
                 if (userId.equals(gameLinkObject.getString("to"))
                         && gameLinkObject.getString("game_link") != null) {
-                    for (EventListener listener : listeners) {
-                        listener.onGameLink(gameLinkObject.getString("game_link"));
-                    }
+                    eventListener.onGameLink(gameLinkObject.getString("game_link"));
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -237,9 +221,7 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             Log.d(LOG_TAG, "inside onCallEnded");
-            for (EventListener listener : listeners) {
-                listener.onCallEnd();
-            }
+            eventListener.onCallEnd();
         }
     };
 
