@@ -67,8 +67,8 @@ import io.socket.client.Socket;
 
 public class ChatFragment extends Fragment implements RtcListener, EventListener {
     private static final String LOG_TAG = ChatFragment.class.getSimpleName();
-    private static final int LOCAL_X = 72;
-    private static final int LOCAL_Y = 72;
+    private static final int LOCAL_X = 3;
+    private static final int LOCAL_Y = 3;
     private static final int LOCAL_WIDTH = 25;
     private static final int LOCAL_HEIGHT = 25;
     private static final int REMOTE_X = 0;
@@ -99,6 +99,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private NuggetApplication application;
     private ChatService chatService;
     private Handler mainHandler;
+    private AudioManager audioManager;
+    private int audioManagerMode = AudioManager.MODE_NORMAL;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -176,19 +178,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
         });
 
+        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        audioManagerMode = audioManager.getMode();
+
         remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, false);
 
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);
-
-        AudioManager audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-        // TODO: figure out how to do this right and remove the suppression.
-        @SuppressWarnings("deprecation")
-        boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
-        audioManager.setMode(isWiredHeadsetOn ?
-                AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
-        audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
 
         startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -449,6 +446,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     scalingType, true);
             VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
                     scalingType, true);
+
+            // TODO: figure out how to do this right and remove the suppression.
+            @SuppressWarnings("deprecation")
+            boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
+            audioManager.setMode(isWiredHeadsetOn ?
+                    AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
+            audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
         }
     }
 
@@ -461,6 +465,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
         VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+        resetAudioManager();
+    }
+
+    private void resetAudioManager() {
+        if (audioManager != null) {
+            audioManager.setMode(audioManagerMode);
+            audioManager.setSpeakerphoneOn(false);
+        }
     }
 
     @Override
@@ -492,6 +504,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.onPause();
         }
 
+        resetAudioManager();
     }
 
     @Override
