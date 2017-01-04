@@ -14,7 +14,6 @@ import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -202,8 +201,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
                 false);*/
         eglBase = EglBase.create();
-        localRender.init(eglBase.getEglBaseContext(), null);
-        remoteRender.init(eglBase.getEglBaseContext(), null);
+        initVideoViews();
 
         localRender.setZOrderMediaOverlay(true);
         //        FIXME commented since compile error
@@ -211,8 +209,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 //        remoteRender.setEnableHardwareScaler(true);
         updateVideoViews();
 
-        init(user1, targetId);
-        getActivity().startService(new Intent(getActivity(), ChatService.class));
+        init(user1);
         getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
                 Context.BIND_AUTO_CREATE);
         isBound = true;
@@ -252,6 +249,23 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         return view;
     }
 
+    private void initVideoViews() {
+        if (eglBase != null) {
+            if (localRender != null) {
+                localRender.init(eglBase.getEglBaseContext(), null);
+            } else {
+                Log.e(LOG_TAG, "Local video render null");
+            }
+            if (remoteRender != null) {
+                remoteRender.init(eglBase.getEglBaseContext(), null);
+            } else {
+                Log.e(LOG_TAG, "Remote video render null");
+            }
+        } else {
+            Log.e(LOG_TAG, "EGL base null");
+        }
+    }
+
     private void updateVideoViews() {
         remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
         remoteRender.setScalingType(scalingType);
@@ -268,6 +282,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         localRender.setMirror(true);
         localRender.requestLayout();
         remoteRender.requestLayout();
+    }
+
+    private void destroyVideoViews() {
+        if (localRender != null) {
+            localRender.release();
+        }
+        if (remoteRender != null) {
+            remoteRender.release();
+        }
+        if (eglBase != null) {
+            eglBase.release();
+        }
     }
 
     @OnClick(R.id.add_friends_to_chat)
@@ -541,7 +567,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
-       // rtcView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -560,18 +585,22 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onPause() {
-        super.onPause();
         //rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
-
         resetAudioManager();
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        destroyVideoViews();
+        super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         if (webRtcClient != null) {
             JSONObject payload = new JSONObject();
             try {
@@ -592,6 +621,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.endCall();
             undbindService();
         }
+        super.onDestroy();
     }
 
     private void startFriendCall(String facebookId) {
