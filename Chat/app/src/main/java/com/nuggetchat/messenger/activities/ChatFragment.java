@@ -430,7 +430,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         );
         webRtcClient.addFriendForChat(from, chatService.socket);
         targetUserId = from;
-        Peer peer = webRtcClient.peers.get(0);
+        Peer peer = webRtcClient.getPeer();
         peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
     }
 
@@ -617,7 +617,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
         targetUserId = facebookId;
-        webRtcClient.createOffer(webRtcClient.peers.get(0));
+        webRtcClient.createOffer(webRtcClient.getPeer());
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
     }
@@ -724,7 +724,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
-        Peer peer = webRtcClient.peers.get(0);
+        Peer peer = webRtcClient.getPeer();
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
         showEndCallBtn();
     }
@@ -745,10 +745,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
-        if (webRtcClient.peers != null && webRtcClient.peers.isEmpty()) {
+        if (webRtcClient.getPeer() == null) {
             return;
         }
-        Peer peer = webRtcClient.peers.get(0);
+        Peer peer = webRtcClient.getPeer();
         if (webRtcClient.queuedRemoteCandidates != null) {
             if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {
                 Log.e(LOG_TAG, "local desc before queueing peers :" +

@@ -28,13 +28,12 @@ public class WebRtcClient{
     private PeerConnectionParameters params;
     private String currentUserId;
     private boolean initiator = false;
-    public NuggetApplication application;
-    private Context context;
-    public List<Peer> peers = new ArrayList<>();
+    private NuggetApplication application;
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
     private String userId2;
+    private Peer peer;
     /* package-local */ PeerConnectionFactory factory;
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
@@ -48,7 +47,6 @@ public class WebRtcClient{
                 true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
         factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
-        this.context = context;
         application = (NuggetApplication) context.getApplicationContext();
         this.currentUserId = currentUserId;
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
@@ -64,10 +62,7 @@ public class WebRtcClient{
         try {
             setInitiator(false);
             application.setInitiator(false);
-            for (Peer peer : peers) {
-                peer.resetPeerConnection();
-            }
-
+            peer.resetPeerConnection();
             if (factory != null) {
                 factory.dispose();
                 factory = null;
@@ -83,7 +78,7 @@ public class WebRtcClient{
         Peer peer = new Peer(this);
         peer.setLocalStream();
         peer.setSocket(socket);
-        peers.add(peer);
+        this.peer = peer;
         return peer;
     }
 
@@ -109,6 +104,10 @@ public class WebRtcClient{
 
     public String getUserId2() {
         return userId2;
+    }
+
+    public Peer getPeer() {
+        return peer;
     }
 
     public void onPause() {
