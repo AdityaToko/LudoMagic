@@ -646,7 +646,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.addFriendForChat(userId, socket);
         }
         audioPlayer.playRingtone();
-        audioPlayer.playProgressTone();
         endCall.setVisibility(View.VISIBLE);
         startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -656,7 +655,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Peer peer = webRtcClient.peers.get(0);
         peer.getPeerConnection().setRemoteDescription(peer, sdp);
         audioPlayer.stopRingtone();
-        audioPlayer.stopProgressTone();
         endCall.setVisibility(View.VISIBLE);
         startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -673,7 +671,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallEnd() {
         webRtcClient.endCall();
         audioPlayer.stopRingtone();
-        audioPlayer.stopProgressTone();
         endCall.setVisibility(View.INVISIBLE);
         startCallButton.setVisibility(View.VISIBLE);
     }
