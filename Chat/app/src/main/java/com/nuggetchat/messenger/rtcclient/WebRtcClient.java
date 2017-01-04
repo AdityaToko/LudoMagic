@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetApplication;
-import com.nuggetchat.messenger.chat.Friend;
-import com.nuggetchat.messenger.chat.User;
 
 import org.webrtc.AudioSource;
 import org.webrtc.EglBase;
@@ -28,7 +26,7 @@ public class WebRtcClient{
     private static final String LOG_TAG = WebRtcClient.class.getSimpleName();
     private VideoSource videoSource;
     private PeerConnectionParameters params;
-    private User currentUser;
+    private String currentUserId;
     private boolean initiator = false;
     public NuggetApplication application;
     private Context context;
@@ -42,8 +40,8 @@ public class WebRtcClient{
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params,  EglBase.Context mEGLcontext
-                        /*EGLContext mEGLcontext*/, User user1, String iceServerUrls, Context context) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
+                        /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
@@ -52,8 +50,7 @@ public class WebRtcClient{
         factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
         this.context = context;
         application = (NuggetApplication) context.getApplicationContext();
-        currentUser = user1;
-        userId1 = user1.getId();
+        this.currentUserId = currentUserId;
         Log.e(LOG_TAG, "User ID 1 is : " + userId1);
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
@@ -102,7 +99,7 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
-        userId1 = currentUser.getId();
+        userId1 = currentUserId;
         userId2 = userId;
         addPeer(socket);
     }
@@ -130,7 +127,6 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
 
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            //videoSource = factory.createVideoSource(getVideoCapturer());
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 

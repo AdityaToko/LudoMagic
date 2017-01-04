@@ -42,7 +42,6 @@ import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.chat.ChatService;
-import com.nuggetchat.messenger.chat.User;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.Peer;
@@ -98,7 +97,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private EglBase eglBase;
     private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private User user1;
     private View view;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
@@ -169,10 +167,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         initVideoViews();
 
-        String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
-        String username = SharedPreferenceUtility.getFacebookUserName(getActivity());
-        Log.e(LOG_TAG, "User is : " + userId + " " + username);
-        user1 = new User(userId, username);
+        String currentUserId = SharedPreferenceUtility.getFacebookUserId(getActivity());
+        Log.e(LOG_TAG, "User is : " + currentUserId);
         triggerImageChanges();
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
@@ -182,7 +178,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "onCreate - call update View");
         updateVideoViews();
 
-        initWebRtc(user1);
+        initWebRtc(currentUserId);
         bindChatService();
         return view;
     }
@@ -487,7 +483,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
-    private void initWebRtc(User user1) {
+    private void initWebRtc(String currentUserId) {
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
@@ -495,7 +491,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(getActivity());
         webRtcClient = new WebRtcClient(this, params,
-                eglBase.getEglBaseContext(), user1, iceServersString,
+                eglBase.getEglBaseContext(), currentUserId, iceServersString,
                 getActivity());
     }
 
