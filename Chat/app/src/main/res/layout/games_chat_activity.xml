@@ -6,9 +6,9 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
         android:background="@color/colorWhite"
         android:foreground="?android:windowContentOverlay"
         android:padding="5dp">
@@ -21,10 +21,10 @@
 
             <ImageView
                 android:id="@+id/logo_image"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:src="@mipmap/game" />
 
             <LinearLayout
