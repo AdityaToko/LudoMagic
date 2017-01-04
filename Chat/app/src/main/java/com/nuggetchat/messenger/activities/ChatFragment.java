@@ -110,12 +110,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private ChatService chatService;
     private Handler mainHandler;
     private AudioManager audioManager;
-    private int audioManagerMode = AudioManager.MODE_NORMAL;
+    private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.i(LOG_TAG, "On Service connected");
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
             if(bundle != null && bundle.getBundle("sdpBundle") != null){
@@ -136,13 +137,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     RelativeLayout multiplayerGamesView;
     @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
+    private VideoRenderer remoteVideoRender;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mainHandler = new Handler(Looper.getMainLooper());
-        // Enabled once connected.
-        // ViewUtils.setWindowImmersive(getActivity().getWindow());
+        ViewUtils.setWindowImmersive(getActivity().getWindow());
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
         if (SharedPreferenceUtility.getFavFriend1(getActivity()).equals("")) {
@@ -166,134 +167,128 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
-
-        localRenderLayout = (PercentFrameLayout) view.findViewById(R.id.local_layout);
-        remoteRenderLayout = (PercentFrameLayout) view.findViewById(R.id.remote_layout);
-        localRender = (SurfaceViewRenderer) view.findViewById(R.id.local_video_view);
-        remoteRender = (SurfaceViewRenderer) view.findViewById(R.id.remote_video_view);
+        initVideoViews();
 
         String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
         String username = SharedPreferenceUtility.getFacebookUserName(getActivity());
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
         user1 = new User(userId, username);
-        Log.e(LOG_TAG, "User is : " + userId + " " + username);
-        /*rtcView = (GLSurfaceView) view.findViewById(R.id.glview_call);
-        rtcView.setPreserveEGLContextOnPause(true);
-        rtcView.setKeepScreenOn(true);*/
         triggerImageChanges();
-
-        user1 = new User(userId, username);
-
-        /*VideoRendererGui.setView(rtcView, new Runnable() {
-            @Override
-            public void run() {
-                getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
-                        Context.BIND_AUTO_CREATE);
-                init(user1);
-                isBound = true;
-            }
-        });*/
-        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
-        audioManagerMode = audioManager.getMode();
-       /* remoteRender = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-                scalingType, false);
-
-        localRender = VideoRendererGui.create(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT, scalingType,
-                false);*/
-        eglBase = EglBase.create();
-        initVideoViews();
-
+        audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
         //        FIXME commented since compile error
 //        localRender.setEnableHardwareScaler(true);
 //        remoteRender.setEnableHardwareScaler(true);
+        Log.i(LOG_TAG, "onCreate - call update View");
         updateVideoViews();
 
-        init(user1);
-        getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
-                Context.BIND_AUTO_CREATE);
-        isBound = true;
-
-        startCallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showEndCallBtn();
-                Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
-                intent.putExtra("user_id", "dummy");
-                startActivityForResult(intent, 1234);
-            }
-        });
-
-        endCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                JSONObject payload = new JSONObject();
-                try {
-                    Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
-                    payload.put("from", webRtcClient.userId1);
-                    payload.put("to", webRtcClient.userId2);
-                    payload.put("token", "abcd");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                chatService.socket.emit("end_call", payload);
-                webRtcClient.endCall();
-                showFriendsAddCluster();
-//                VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-//                        LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
-                updateVideoViews();
-                showStartCallBtn();
-            }
-        });
-
+        initWebRtc(user1);
+        bindChatService();
         return view;
     }
 
-    private void initVideoViews() {
-        if (eglBase != null) {
-            if (localRender != null) {
-                localRender.init(eglBase.getEglBaseContext(), null);
-            } else {
-                Log.e(LOG_TAG, "Local video render null");
-            }
-            if (remoteRender != null) {
-                remoteRender.init(eglBase.getEglBaseContext(), null);
-            } else {
-                Log.e(LOG_TAG, "Remote video render null");
-            }
-        } else {
-            Log.e(LOG_TAG, "EGL base null");
+    private void audioManagerInit() {
+        Log.i(LOG_TAG, "Audio manager Init");
+        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        defaultAudioManagerMode = audioManager.getMode();
+    }
+
+    private void resetAudioManager() {
+        Log.i(LOG_TAG, "Audio manager Reset");
+        if (audioManager != null) {
+            audioManager.setMode(defaultAudioManagerMode);
+            audioManager.setSpeakerphoneOn(false);
         }
+    }
+
+
+    private void setLoudSpeakerOn() {
+        Log.i(LOG_TAG, "Audio manager set loudspeaker on");
+        if (audioManager != null) {
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            audioManager.setSpeakerphoneOn(true);
+        }
+    }
+
+    private void bindChatService() {
+        Log.i(LOG_TAG, " Binding service ");
+        getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
+                Context.BIND_AUTO_CREATE);
+        isBound = true;
+    }
+
+    @OnClick(R.id.start_call_button)
+    public void onStartCallBtnClick() {
+        showEndCallBtn();
+        Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
+        intent.putExtra("user_id", "dummy");
+        startActivityForResult(intent, 1234);
+    }
+
+    @OnClick(R.id.end_call_button)
+    public void onEndCallBtnClick() {
+        Log.i(LOG_TAG, "end call Button clicked");
+        JSONObject payload = new JSONObject();
+        try {
+            Log.e(LOG_TAG, "Users: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+            payload.put("from", webRtcClient.userId1);
+            payload.put("to", webRtcClient.userId2);
+            payload.put("token", "abcd");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        chatService.socket.emit("end_call", payload);
+        webRtcClient.endCall();
+        showFriendsAddCluster();
+        updateVideoViews();
+        showStartCallBtn();
+    }
+
+    private void initVideoViews() {
+        localRenderLayout = (PercentFrameLayout) view.findViewById(R.id.local_layout);
+        remoteRenderLayout = (PercentFrameLayout) view.findViewById(R.id.remote_layout);
+        eglBase = EglBase.create();
+        localRender = (SurfaceViewRenderer) view.findViewById(R.id.local_video_view);
+        remoteRender = (SurfaceViewRenderer) view.findViewById(R.id.remote_video_view);
+        localRender.init(eglBase.getEglBaseContext(), null);
+        remoteRender.init(eglBase.getEglBaseContext(), null);
     }
 
     private void updateVideoViews() {
-        remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
-        remoteRender.setScalingType(scalingType);
-        remoteRender.setMirror(true);
-        //FIXME: set Condition for showing remote screen
-        if (application.isOngoingCall()) {
-            localRenderLayout.setPosition(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT);
-            localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
-        } else {
-            localRenderLayout.setPosition(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                    LOCAL_HEIGHT_CONNECTING);
-            localRender.setScalingType(scalingType);
-        }
-        localRender.setMirror(true);
-        localRender.requestLayout();
-        remoteRender.requestLayout();
+        Log.i(LOG_TAG, "Post to Updating video Views");
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (application.isOngoingCall()) {
+                    Log.i(LOG_TAG, "On Going call Updating video Views");
+                    remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
+                    remoteRender.setScalingType(scalingType);
+                    remoteRender.setMirror(true);
+                    localRenderLayout.setPosition(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT);
+                    localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+                } else {
+                    Log.i(LOG_TAG, "NO call Updating video Views");
+                    localRenderLayout.setPosition(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                            LOCAL_HEIGHT_CONNECTING);
+                    localRender.setScalingType(scalingType);
+                }
+                localRender.setMirror(true);
+                localRender.requestLayout();
+                remoteRender.requestLayout();
+            }
+        });
     }
 
     private void destroyVideoViews() {
-        if (localRender != null) {
-            localRender.release();
-        }
-        if (remoteRender != null) {
-            remoteRender.release();
-        }
-        if (eglBase != null) {
-            eglBase.release();
-        }
+//        if (localRender != null) {
+//            localRender.release();
+//        }
+//        if (remoteRender != null) {
+//            remoteRender.release();
+//        }
+//        if (eglBase != null) {
+//            eglBase.release();
+//        }
     }
 
     @OnClick(R.id.add_friends_to_chat)
@@ -423,6 +418,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void setSDP(){
+        Log.i(LOG_TAG, "calling setSDP");
         Bundle sdpBundle = bundle.getBundle("sdpBundle");
         if (sdpBundle == null) {
             return;
@@ -491,7 +487,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
-    private void init(User user1) {
+    private void initWebRtc(User user1) {
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
@@ -515,52 +511,44 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onLocalStream(MediaStream localStream) {
-        localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
-//        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-//                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
-        updateVideoViews();
+        Log.i(LOG_TAG, "onLocalStream");
+        if (!localStream.videoTracks.isEmpty()) {
+            localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
+            updateVideoViews();
+        } else {
+            Log.w(LOG_TAG, "Video tracks empty");
+        }
+
     }
 
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
         ViewUtils.setWindowImmersive(getActivity().getWindow(), mainHandler);
-        if (remoteStream.videoTracks.size() == 1) {
+        if (!remoteStream.videoTracks.isEmpty()) {
             application.setOngoingCall(true);
-            remoteStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-//            VideoRendererGui.update(remoteRender, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
-//                    scalingType, true);
-//            VideoRendererGui.update(localRender, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
-//                    scalingType, true);
+            remoteVideoRender = new VideoRenderer(remoteRender);
+            remoteStream.videoTracks.get(0).addRenderer(remoteVideoRender);
             updateVideoViews();
-            // TODO: figure out how to do this right and remove the suppression.
-            @SuppressWarnings("deprecation")
-            boolean isWiredHeadsetOn = audioManager.isWiredHeadsetOn();
-            audioManager.setMode(isWiredHeadsetOn ?
-                    AudioManager.MODE_IN_CALL : AudioManager.MODE_IN_COMMUNICATION);
-            audioManager.setSpeakerphoneOn(!isWiredHeadsetOn);
-
+            setLoudSpeakerOn();
             showEndCallBtn();
+        } else {
+            Log.w(LOG_TAG, "Remote video tracks empty");
         }
     }
 
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
+        Log.i(LOG_TAG, "on Remove Remote stream");
         ViewUtils.showWindowNavigation(getActivity().getWindow(), mainHandler);
         application.setOngoingCall(false);
-        if (remoteStream != null && remoteStream.videoTracks.size() == 1) {
-            remoteStream.videoTracks.get(0).dispose();
-        }
-//        VideoRendererGui.update(localRender, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
-//                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
-        updateVideoViews();
-        resetAudioManager();
-    }
-
-    private void resetAudioManager() {
-        if (audioManager != null) {
-            audioManager.setMode(audioManagerMode);
-            audioManager.setSpeakerphoneOn(false);
+        if (remoteStream != null && !remoteStream.videoTracks.isEmpty()) {
+            if (remoteVideoRender != null) {
+                remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
+                remoteVideoRender = null;
+            }
+            updateVideoViews();
+            resetAudioManager();
         }
     }
 
@@ -625,6 +613,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void startFriendCall(String facebookId) {
+        Log.i(LOG_TAG, "start friend call");
         webRtcClient.setInitiator(true);
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
@@ -726,9 +715,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCall(String userId, Socket socket) {
-        if (!webRtcClient.isInitiator()) {
-            webRtcClient.addFriendForChat(userId, socket);
-        }
+//        if (!webRtcClient.isInitiator()) {
+//            webRtcClient.addFriendForChat(userId, socket);
+//        }
         showEndCallBtn();
     }
 
@@ -755,6 +744,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
+        if (webRtcClient.peers != null && webRtcClient.peers.isEmpty()) {
+            return;
+        }
         Peer peer = webRtcClient.peers.get(0);
         if (webRtcClient.queuedRemoteCandidates != null) {
             if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {

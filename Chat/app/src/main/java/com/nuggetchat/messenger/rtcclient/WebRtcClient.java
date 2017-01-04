@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
-import android.opengl.EGLContext;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetApplication;
@@ -9,8 +8,6 @@ import com.nuggetchat.messenger.chat.Friend;
 import com.nuggetchat.messenger.chat.User;
 
 import org.webrtc.AudioSource;
-import org.webrtc.Camera2Enumerator;
-import org.webrtc.CameraEnumerator;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -18,7 +15,6 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
-import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
 import java.util.ArrayList;
@@ -46,34 +42,6 @@ public class WebRtcClient{
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
 
-    public void endCall() {
-        Log.i(LOG_TAG, "End call - Incoming");
-        try {
-            setInitiator(false);
-            application.setInitiator(false);
-            for (Peer peer : peers) {
-                peer.resetPeerConnection();
-            }
-
-            if (factory != null) {
-                factory.dispose();
-                factory = null;
-            }
-
-            rtcListener.onRemoveRemoteStream(null);
-        } catch (Error e) {
-            Log.i(LOG_TAG, "End call - Error " + e.getMessage());
-        }
-    }
-
-    public Peer addPeer(User user, Friend friend, Socket socket) {
-        Peer peer = new Peer(this, user, friend);
-        peer.setLocalStream();
-        peer.setSocket(socket);
-        peers.add(peer);
-        return peer;
-    }
-
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params,  EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, User user1, String iceServerUrls, Context context) {
         rtcListener = listener;
@@ -94,6 +62,35 @@ public class WebRtcClient{
         setCamera();
     }
 
+
+    public void endCall() {
+        Log.i(LOG_TAG, "End call - Incoming");
+        try {
+            setInitiator(false);
+            application.setInitiator(false);
+            for (Peer peer : peers) {
+                peer.resetPeerConnection();
+            }
+
+            if (factory != null) {
+                factory.dispose();
+                factory = null;
+            }
+
+            rtcListener.onRemoveRemoteStream(null);
+        } catch (Error e) {
+            Log.i(LOG_TAG, "End call - Error " + e.getMessage());
+        }
+    }
+
+    public Peer addPeer(Socket socket) {
+        Peer peer = new Peer(this);
+        peer.setLocalStream();
+        peer.setSocket(socket);
+        peers.add(peer);
+        return peer;
+    }
+
     public void addIceServers(String iceServersUrl){
         Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
         iceServersUrl = "stun:stun.services.mozilla.com,stun:stun.l.google.com:19302,";
@@ -105,30 +102,21 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
-        User user2 = new User(userId, WebRtcClient.getRandomString());
-        Friend friend = new Friend(currentUser, user2, WebRtcClient.getRandomString());
         userId1 = currentUser.getId();
         userId2 = userId;
-        addPeer(currentUser, friend, socket);
+        addPeer(socket);
     }
 
     public void onPause() {
         if (videoSource != null) {
             videoSource.stop();
         }
-//        if(videoSource!=null){
-//            videoSource.dispose();
-//        }
     }
 
     public void onResume() {
         if (videoSource != null) {
             videoSource.restart();
         }
-//        VideoCapturer videoCapturer = getVideoCapturer();
-//        if(videoCapturer != null){
-//            videoCapturer.startCapture(params.videoWidth, params.videoHeight, params.videoFps);
-//        }
     }
 
     private void setCamera() {
