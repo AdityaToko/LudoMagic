@@ -17,6 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.activities.GamesChatActivity;
 import com.nuggetchat.messenger.utils.GlideUtils;
 
 import butterknife.BindView;
@@ -107,7 +108,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
-        Intent startChatIntent = new Intent(this, ChatActivity.class);
+        Intent startChatIntent = new Intent(this, GamesChatActivity.class);
         startChatIntent.putExtras(bundle);
         startActivity(startChatIntent);
         finish();
