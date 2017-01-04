@@ -280,7 +280,6 @@ public class ChatActivity extends AppCompatActivity implements RtcListener, Even
         firebaseRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//              Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
                 for (int i = 0; i < gamesItemList.size(); i++) {
                     Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
                     if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {
