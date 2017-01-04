@@ -2,7 +2,6 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
@@ -13,7 +12,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -190,9 +188,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         startCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showFriendsDialog();
-                endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
+                intent.putExtra("user_id", "dummy");
+                startActivityForResult(intent, 1234);
             }
         });
 
@@ -223,7 +221,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick(R.id.add_friends_to_chat)
     /* package-local */ void addFriendsForCall() {
-        //showFriendsDialog();
         Intent intent = new Intent(this.getActivity(), FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
@@ -530,28 +527,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.endCall();
             undbindService();
         }
-    }
-
-
-    private void showFriendsDialog() {
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
-        builderSingle.setTitle("Choose a friend");
-
-        builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        builderSingle.setAdapter(adapter, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                FriendInfo user = (FriendInfo) adapter.getItem(which);
-                startFriendCall(user.getFacebookId());
-            }
-        });
-        builderSingle.show();
     }
 
     private void startFriendCall(String facebookId) {
