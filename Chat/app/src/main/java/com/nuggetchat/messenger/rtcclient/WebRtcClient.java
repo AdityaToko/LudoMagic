@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetApplication;
-import com.nuggetchat.messenger.chat.Friend;
-import com.nuggetchat.messenger.chat.User;
 
 import org.webrtc.AudioSource;
 import org.webrtc.EglBase;
@@ -28,33 +26,29 @@ public class WebRtcClient{
     private static final String LOG_TAG = WebRtcClient.class.getSimpleName();
     private VideoSource videoSource;
     private PeerConnectionParameters params;
-    private User currentUser;
+    private String currentUserId;
     private boolean initiator = false;
-    public NuggetApplication application;
-    private Context context;
-    public List<Peer> peers = new ArrayList<>();
+    private NuggetApplication application;
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
-    public String userId1;
-    public String userId2;
+    private String userId1;
+    private String userId2;
+    private Peer peer;
     /* package-local */ PeerConnectionFactory factory;
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
 
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params,  EglBase.Context mEGLcontext
-                        /*EGLContext mEGLcontext*/, User user1, String iceServerUrls, Context context) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
+                        /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
         factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
-        this.context = context;
         application = (NuggetApplication) context.getApplicationContext();
-        currentUser = user1;
-        userId1 = user1.getId();
-        Log.e(LOG_TAG, "User ID 1 is : " + userId1);
+        this.currentUserId = currentUserId;
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
@@ -68,10 +62,7 @@ public class WebRtcClient{
         try {
             setInitiator(false);
             application.setInitiator(false);
-            for (Peer peer : peers) {
-                peer.resetPeerConnection();
-            }
-
+            peer.resetPeerConnection();
             if (factory != null) {
                 factory.dispose();
                 factory = null;
@@ -87,7 +78,7 @@ public class WebRtcClient{
         Peer peer = new Peer(this);
         peer.setLocalStream();
         peer.setSocket(socket);
-        peers.add(peer);
+        this.peer = peer;
         return peer;
     }
 
@@ -102,9 +93,21 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
-        userId1 = currentUser.getId();
+        userId1 = currentUserId;
         userId2 = userId;
         addPeer(socket);
+    }
+
+    public String getUserId1() {
+        return userId1;
+    }
+
+    public String getUserId2() {
+        return userId2;
+    }
+
+    public Peer getPeer() {
+        return peer;
     }
 
     public void onPause() {
@@ -130,7 +133,6 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
 
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            //videoSource = factory.createVideoSource(getVideoCapturer());
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
