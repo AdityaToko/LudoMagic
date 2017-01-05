@@ -15,7 +15,6 @@ import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -59,33 +58,31 @@ public class WebRtcClient{
 
     public void endCall() {
         Log.i(LOG_TAG, "End call - Incoming");
-        try {
-            setInitiator(false);
-            application.setInitiator(false);
+        setInitiator(false);
+        application.setInitiator(false);
+        if (peer != null) {
             peer.resetPeerConnection();
-            if (factory != null) {
-                factory.dispose();
-                factory = null;
-            }
-
+        }
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
+        if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null);
-        } catch (Error e) {
-            Log.i(LOG_TAG, "End call - Error " + e.getMessage());
         }
     }
 
     public Peer addPeer(Socket socket) {
-        Peer peer = new Peer(this);
-        peer.setLocalStream();
-        peer.setSocket(socket);
-        this.peer = peer;
-        return peer;
+        Peer newPeer = new Peer(this);
+        newPeer.setLocalStream();
+        newPeer.setSocket(socket);
+        this.peer = newPeer;
+        return newPeer;
     }
 
     public void addIceServers(String iceServersUrl){
         Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
-        iceServersUrl = "stun:stun.services.mozilla.com,stun:stun.l.google.com:19302,";
-        if(iceServersUrl != null || !iceServersUrl.equals("")){
+        if(iceServersUrl != null && !"".equals(iceServersUrl)){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
                 iceServers.add(new PeerConnection.IceServer(server));
