@@ -1,24 +1,20 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
-import android.opengl.EGLContext;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetApplication;
-import com.nuggetchat.messenger.chat.Friend;
-import com.nuggetchat.messenger.chat.User;
 
 import org.webrtc.AudioSource;
+import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
-import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -29,55 +25,29 @@ public class WebRtcClient{
     private static final String LOG_TAG = WebRtcClient.class.getSimpleName();
     private VideoSource videoSource;
     private PeerConnectionParameters params;
-    private User currentUser;
+    private String currentUserId;
     private boolean initiator = false;
-    public NuggetApplication application;
-    private Context context;
-    public List<Peer> peers = new ArrayList<>();
+    private NuggetApplication application;
     public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
-    public String userId1;
-    public String userId2;
+    private String userId1;
+    private String userId2;
+    private Peer peer;
     /* package-local */ PeerConnectionFactory factory;
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
 
-    public void endCall() {
-        setInitiator(false);
-        application.setInitiator(false);
-        for (Peer peer : peers) {
-            peer.resetPeerConnection();
-        }
-
-        if (factory != null) {
-            factory.dispose();
-            factory = null;
-        }
-
-        rtcListener.onRemoveRemoteStream(null);
-    }
-
-    public Peer addPeer(User user, Friend friend, Socket socket) {
-        Peer peer = new Peer(this, user, friend);
-        peer.setLocalStream();
-        peer.setSocket(socket);
-        peers.add(peer);
-        return peer;
-    }
-
-    public WebRtcClient(RtcListener listener, PeerConnectionParameters params,
-                        EGLContext mEGLcontext, User user1, String iceServerUrls, Context context) {
+    public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
+                        /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
-                true /* initializedVideo */, params.videoCodecHwAcceleration, mEGLcontext);
+                true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
-        this.context = context;
+        factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
         application = (NuggetApplication) context.getApplicationContext();
-        currentUser = user1;
-        userId1 = user1.getId();
-        Log.e(LOG_TAG, "User ID 1 is : " + userId1);
+        this.currentUserId = currentUserId;
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
@@ -85,10 +55,34 @@ public class WebRtcClient{
         setCamera();
     }
 
+
+    public void endCall() {
+        Log.i(LOG_TAG, "End call - Incoming");
+        setInitiator(false);
+        application.setInitiator(false);
+        if (peer != null) {
+            peer.resetPeerConnection();
+        }
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
+        if (rtcListener != null) {
+            rtcListener.onRemoveRemoteStream(null);
+        }
+    }
+
+    public Peer addPeer(Socket socket) {
+        Peer newPeer = new Peer(this);
+        newPeer.setLocalStream();
+        newPeer.setSocket(socket);
+        this.peer = newPeer;
+        return newPeer;
+    }
+
     public void addIceServers(String iceServersUrl){
         Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
-        iceServersUrl = "stun:stun.services.mozilla.com,stun:stun.l.google.com:19302,";
-        if(iceServersUrl != null || !iceServersUrl.equals("")){
+        if(iceServersUrl != null && !"".equals(iceServersUrl)){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
                 iceServers.add(new PeerConnection.IceServer(server));
@@ -96,19 +90,33 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
-        User user2 = new User(userId, WebRtcClient.getRandomString());
-        Friend friend = new Friend(currentUser, user2, WebRtcClient.getRandomString());
-        userId1 = currentUser.getId();
+        userId1 = currentUserId;
         userId2 = userId;
-        addPeer(currentUser, friend, socket);
+        addPeer(socket);
+    }
+
+    public String getUserId1() {
+        return userId1;
+    }
+
+    public String getUserId2() {
+        return userId2;
+    }
+
+    public Peer getPeer() {
+        return peer;
     }
 
     public void onPause() {
-        if (videoSource != null) videoSource.stop();
+        if (videoSource != null) {
+            videoSource.stop();
+        }
     }
 
     public void onResume() {
-        if (videoSource != null) videoSource.restart();
+        if (videoSource != null) {
+            videoSource.restart();
+        }
     }
 
     private void setCamera() {
@@ -131,9 +139,26 @@ public class WebRtcClient{
         rtcListener.onLocalStream(localMediaStream);
     }
 
+    // Cycle through likely device names for the camera and return the first
+    // capturer that works, or crash if none do.
     private VideoCapturer getVideoCapturer() {
-        String frontCameraDeviceName = VideoCapturerAndroid.getNameOfFrontFacingDevice();
-        return VideoCapturerAndroid.create(frontCameraDeviceName);
+        String[] cameraFacing = { "front", "back" };
+        int[] cameraIndex = { 0, 1 };
+        int[] cameraOrientation = { 0, 90, 180, 270 };
+        for (String facing : cameraFacing) {
+            for (int index : cameraIndex) {
+                for (int orientation : cameraOrientation) {
+                    String name = "Camera " + index + ", Facing " + facing +
+                            ", Orientation " + orientation;
+                    VideoCapturer capturer = VideoCapturer.create(name);
+                    if (capturer != null) {
+                        Log.i(LOG_TAG, "Using camera: " + name);
+                        return capturer;
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Failed to open capturer");
     }
 
     public boolean isInitiator() {
