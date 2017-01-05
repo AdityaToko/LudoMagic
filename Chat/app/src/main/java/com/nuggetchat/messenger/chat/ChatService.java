@@ -16,8 +16,8 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class ChatService extends Service {
-//    private static final String HOST = "http://chat.nuggetkids.com/";
-    private static final String HOST = "http://192.168.0.119:3000";
+    private static final String HOST = "http://chat.nuggetkids.com/";
+//    private static final String HOST = "http://192.168.0.119:3000";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     public Socket socket;
     MessageHandler messageHandler;
