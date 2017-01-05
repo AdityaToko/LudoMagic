@@ -20,9 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
-import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

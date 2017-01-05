@@ -57,7 +57,7 @@ public class ChatService extends Service {
         socket.on(Socket.EVENT_DISCONNECT, messageHandler.onDisconnect);
         socket.connect();
         Log.e(LOG_TAG, "onStartCommand: after socket connect" );
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     public void registerEventListener(EventListener eventListener) {
@@ -76,12 +76,5 @@ public class ChatService extends Service {
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        Intent intent = new Intent();
-        intent.setAction("com.android.ServiceStopped");
-        sendBroadcast(intent);
     }
 }

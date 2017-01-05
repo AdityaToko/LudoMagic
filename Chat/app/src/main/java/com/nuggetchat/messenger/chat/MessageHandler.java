@@ -9,18 +9,15 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
