@@ -74,7 +74,23 @@ public class GameWebViewActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (gameWebView != null) {
+            gameWebView.pauseTimers();
+            gameWebView.onPause();
+        }
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (gameWebView != null) {
+            gameWebView.resumeTimers();
+            gameWebView.onResume();
+        }
+    }
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
