@@ -80,23 +80,6 @@ public class GamesFragment extends Fragment {
                         gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait());
                 gamesItemList.add(gamesItem);
                 Log.i(LOG_TAG, "Game " + gamesData.getDataId() + " isPortrait " + gamesData.getPortrait());
-
-                CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
-                GridView gridView = (GridView) view.findViewById(R.id.grid_view);
-                gridView.setAdapter(customeGridAdapter);
-                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                        Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
-                                Toast.LENGTH_SHORT).show();
-                        Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
-                        Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                        gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
-                        Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
-                        gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
-                        startActivity(gameIntent);
-                    }
-                });
             }
 
             @Override
@@ -117,6 +100,74 @@ public class GamesFragment extends Fragment {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        String firebaseMultiPlayerGamesUri = Conf.firebaseMultiPlayerGamesUri();
+        Log.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
+
+        firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseMultiPlayerGamesUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
+                for (int i = 0 ; i < gamesItemList.size(); i++) {
+                    Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
+                    if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {
+                        Log.i(LOG_TAG, "dataSnapshot games key " + dataSnapshot.getKey());
+                        gamesName.remove(i);
+                        gamesImages.remove(i);
+                        gamesItemList.remove(i);
+                    }
+                }
+
+                setUpGridView();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void setUpGridView() {
+        CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
+        GridView gridView = (GridView) view.findViewById(R.id.grid_view);
+        gridView.setAdapter(customeGridAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
+                        Toast.LENGTH_SHORT).show();
+                Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
+                Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
+                Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
+                gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                startActivity(gameIntent);
             }
         });
     }

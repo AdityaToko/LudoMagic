@@ -2,9 +2,6 @@ package com.nuggetchat.messenger.rtcclient;
 
 import android.util.Log;
 
-import com.nuggetchat.messenger.chat.Friend;
-import com.nuggetchat.messenger.chat.User;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.DataChannel;
@@ -20,20 +17,14 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     private static final String LOG_TAG = Peer.class.getSimpleName();
     private PeerConnection peerConnection;
     private WebRtcClient webRtcClient;
-    private User user;
-    private Friend friend;
     private SessionDescription localSdp;
     private Socket socket;
 
-    public Peer(WebRtcClient webRtcClient, User user, Friend friend) {
+    public Peer(WebRtcClient webRtcClient) {
         Log.d(LOG_TAG, "Peer created ");
         this.webRtcClient = webRtcClient;
         peerConnection = webRtcClient.factory.createPeerConnection(webRtcClient.iceServers,
                 webRtcClient.constraints, this);
-        this.user = user;
-        this.friend = friend;
-        //local media stream added
-        //peerConnection.addStream(webRtcClient.localMediaStream);
         webRtcClient.rtcListener.onStatusChanged("CONNECTING");
     }
 
@@ -42,7 +33,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     public void setLocalStream() {
-        Log.e(LOG_TAG, "setLocalStream called " + webRtcClient.toString());
+        Log.e(LOG_TAG, "setLocalStream called ");
         peerConnection.addStream(webRtcClient.localMediaStream);
     }
 
@@ -88,8 +79,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             payload.put("label", iceCandidate.sdpMLineIndex);
             payload.put("id", iceCandidate.sdpMid);
             payload.put("candidate", iceCandidate.sdp);
-            payload.put("from", webRtcClient.userId1);
-            payload.put("to", webRtcClient.userId2);
+            payload.put("from", webRtcClient.getUserId1());
+            payload.put("to", webRtcClient.getUserId2());
             payload.put("token", "abcd");
             socket.emit("ice_candidates", payload);
         } catch (JSONException e) {
@@ -172,12 +163,12 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.e(LOG_TAG, "sendOfferLocalDescription: sending Offer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
-        Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.userId1 + " " + webRtcClient.userId2);
+        Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.getUserId1() + " " + webRtcClient.getUserId2());
         try {
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
-            callData.put("from", webRtcClient.userId1);
-            callData.put("to", webRtcClient.userId2);
+            callData.put("from", webRtcClient.getUserId1());
+            callData.put("to", webRtcClient.getUserId2());
             callData.put("offer", localDesc);
             callData.put("token", "abcd");
             socket.emit("request_call", callData);
@@ -194,8 +185,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             Log.e(LOG_TAG, "sendAnswerLocalDescription: inside try");
             localDesc.put("type", localSdp.type.canonicalForm());
             localDesc.put("sdp", localSdp.description);
-            callData.put("from", webRtcClient.userId1);
-            callData.put("to", webRtcClient.userId2);
+            callData.put("from", webRtcClient.getUserId1());
+            callData.put("to", webRtcClient.getUserId2());
             callData.put("token", "abcd");
             callData.put("answer", localDesc);
             Log.e(LOG_TAG, "sendAnswerLocalDescription: " + callData.toString() );
