@@ -17,13 +17,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.lib.model.FriendInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserFriendsAdapter extends BaseAdapter {
 
     public List<FriendInfo> userDetails;
-    private ArrayList<FriendInfo> userDetailsList;
     Context context;
 
     public UserFriendsAdapter(List<FriendInfo> selectUsers, Context context) {

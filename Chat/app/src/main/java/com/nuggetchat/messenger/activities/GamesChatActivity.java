@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -18,6 +19,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.GlideUtils;
@@ -74,6 +80,8 @@ public class GamesChatActivity extends AppCompatActivity {
         setUpViewPager(viewPager);
 
         gamesChatTabLayout.setupWithViewPager(viewPager);
+
+        refreshFirebaseToken();
 
         setUpTabItems();
 
@@ -214,5 +222,28 @@ public class GamesChatActivity extends AppCompatActivity {
 
     private String getProfilePicUrl(String facebookUserId) {
         return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
+    }
+
+    private void refreshFirebaseToken() {
+        Log.i(LOG_TAG, "Refreshing firebase token");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.w(LOG_TAG, "Unable to authenticate firebase");
+            return;
+        }
+        user.getToken(false /* forceRefresh */)
+                .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
+                        String firebaseIdToken = tokenTask.getResult().getToken();
+                        if (firebaseIdToken != null) {
+                            SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken,
+                                    GamesChatActivity.this);
+                        } else {
+                            Log.e(LOG_TAG, "Firebase returned null token ");
+                        }
+                    }
+                });
+
     }
 }
