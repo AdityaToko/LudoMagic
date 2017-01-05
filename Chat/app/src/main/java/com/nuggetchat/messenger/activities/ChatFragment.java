@@ -48,6 +48,7 @@ import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
 import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
@@ -151,6 +152,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
 
         bundle = getArguments();
+        application = NuggetApplication.getInstance();
         multiPlayerGamesName = new ArrayList<>();
         multiPlayerGamesImage = new ArrayList<>();
         multiPlayerGamesUrl = new ArrayList<>();
@@ -211,6 +213,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick(R.id.start_call_button)
     public void onStartCallBtnClick() {
         showEndCallBtn();
+        application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
+                null /* bundle */);
         Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
@@ -220,6 +224,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onEndCallBtnClick() {
         Log.i(LOG_TAG, "end call Button clicked");
         JSONObject payload = new JSONObject();
+        application.logEvent(getContext(),FirebaseAnalyticsConstants.END_CALL_BUTTON_CLICKED,
+                null /* bundle */);
         try {
             Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
             payload.put("from", myUserId);
@@ -286,16 +292,22 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     /* package-local */ void addFriendsForCall() {
         Intent intent = new Intent(this.getActivity(), FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
+        application.logEvent(getContext(), FirebaseAnalyticsConstants.ADD_FRIENDS_TO_CHAT_BUTTON_CLICKED,
+                null /* bundle */);
         startActivityForResult(intent, 1234);
     }
 
     @OnClick({R.id.popular_friend_1})
     /* package-local */ void callFavFriend1() {
+        application.logEvent(getContext(), FirebaseAnalyticsConstants.POPULAR_FRIEND_1_BUTTON_CLICKED,
+                null /* bundle */);
         startFriendCall(SharedPreferenceUtility.getFavFriend1(getActivity()));
     }
 
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
+        application.logEvent(getContext(), FirebaseAnalyticsConstants.POPULAR_FRIEND_2_BUTTON_CLICKED,
+                null /* bundle */);
         startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
     }
 
@@ -448,6 +460,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onClick(View view) {
                 if (application.isOngoingCall()) {
+                    application.logEvent(getContext(), FirebaseAnalyticsConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
+                            null /* bundle */);
                     String thisGameUrl = multiPlayerGamesUrl.get(i)
                             + "?room=" + myUserId
                             + "&user=" + myUserId;
