@@ -15,7 +15,7 @@ import com.nuggetchat.messenger.R;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class AudioPlayer {
+public class AudioPlayer implements MediaPlayer.OnErrorListener{
 
     static final String LOG_TAG = AudioPlayer.class.getSimpleName();
 
@@ -29,14 +29,17 @@ public class AudioPlayer {
 
     public AudioPlayer(Context context) {
         this.mContext = context.getApplicationContext();
+        Log.d(LOG_TAG, "AUDIOPLAYER setup");
     }
 
     public void playRingtone() {
         AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        Log.d(LOG_TAG, "AUDIOPLAYER Playing");
 
         // Honour silent mode
         switch (audioManager.getRingerMode()) {
             case AudioManager.RINGER_MODE_NORMAL:
+                Log.d(LOG_TAG, "AUDIOPLAYER Normal mode");
                 mPlayer = new MediaPlayer();
                 mPlayer.setAudioStreamType(AudioManager.STREAM_RING);
 
@@ -56,7 +59,9 @@ public class AudioPlayer {
     }
 
     public void stopRingtone() {
+        Log.d(LOG_TAG, "AUDIOPLAYER Stop called");
         if (mPlayer != null) {
+            Log.d(LOG_TAG, "AUDIOPLAYER player not null while stopping");
             mPlayer.stop();
             mPlayer.release();
             mPlayer = null;
@@ -108,5 +113,12 @@ public class AudioPlayer {
             }
             bytesRead += res;
         }
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        Log.e(LOG_TAG, "AUDIOPLAYER Error in media player what-" + i + " extra-" + i1);
+        mediaPlayer.release();
+        return true;
     }
 }
