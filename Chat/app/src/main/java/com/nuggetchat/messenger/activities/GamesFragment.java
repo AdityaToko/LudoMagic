@@ -158,6 +158,7 @@ public class GamesFragment extends Fragment {
     }
 
     private void setUpGridView() {
+        Log.i(LOG_TAG, "grid view set, " + gamesItemList);
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
         GridView gridView = (GridView) view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);

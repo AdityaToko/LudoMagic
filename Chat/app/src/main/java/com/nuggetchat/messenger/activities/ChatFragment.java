@@ -140,7 +140,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mainHandler = new Handler(Looper.getMainLooper());
-        ViewUtils.setWindowImmersive(getActivity().getWindow());
+        //ViewUtils.setWindowImmersive(getActivity().getWindow());
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
         if ("".equals(SharedPreferenceUtility.getFavFriend1(getActivity()))) {
@@ -539,7 +539,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             remoteStream.videoTracks.get(0).addRenderer(remoteVideoRender);
             updateVideoViews();
             setLoudSpeakerOn();
-            //showEndCallBtn();
             hideFriendsAddCluster();
         } else {
             Log.w(LOG_TAG, "Remote video tracks empty");

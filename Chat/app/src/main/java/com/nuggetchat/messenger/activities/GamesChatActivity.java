@@ -26,8 +26,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
-import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 
 import butterknife.BindView;
@@ -209,9 +209,9 @@ public class GamesChatActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         //   Disabled since not must - Check Duo
-//        if (hasFocus) {
-//            ViewUtils.setWindowImmersive(getWindow());
-//        }
+      if (hasFocus) {
+           ViewUtils.showWindowNavigation(getWindow());
+        }
     }
 
     @Override
