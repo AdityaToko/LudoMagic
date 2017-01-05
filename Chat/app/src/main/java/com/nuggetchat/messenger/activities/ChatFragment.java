@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -105,6 +106,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private Handler mainHandler;
     private AudioManager audioManager;
     private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
+    private GamesChatActivity gamesChatActivity;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -139,14 +141,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mainHandler = new Handler(Looper.getMainLooper());
-        ViewUtils.setWindowImmersive(getActivity().getWindow());
+        gamesChatActivity = (GamesChatActivity) getActivity();
+
+        ViewUtils.setWindowImmersive(gamesChatActivity.getWindow());
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
-        if ("".equals(SharedPreferenceUtility.getFavFriend1(getActivity()))) {
+        if ("".equals(SharedPreferenceUtility.getFavFriend1(gamesChatActivity))) {
             popularFriend1.setVisibility(View.INVISIBLE);
         }
 
-        if ("".equals(SharedPreferenceUtility.getFavFriend2(getActivity()))) {
+        if ("".equals(SharedPreferenceUtility.getFavFriend2(gamesChatActivity))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
 
@@ -157,15 +161,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesName = new ArrayList<>();
         gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
-        application = (NuggetApplication) getActivity().getApplicationContext();
+        application = (NuggetApplication) gamesChatActivity.getApplicationContext();
         fetchData();
 
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
 
         initVideoViews();
-
-        myUserId = SharedPreferenceUtility.getFacebookUserId(getActivity());
+        myUserId = SharedPreferenceUtility.getFacebookUserId(gamesChatActivity);
         Log.e(LOG_TAG, "User is : " + myUserId);
         triggerImageChanges();
         audioManagerInit();
@@ -180,7 +183,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void audioManagerInit() {
         Log.i(LOG_TAG, "Audio manager Init");
-        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        audioManager = (AudioManager) gamesChatActivity.getSystemService(Context.AUDIO_SERVICE);
         defaultAudioManagerMode = audioManager.getMode();
     }
 
@@ -203,7 +206,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void bindChatService() {
         Log.i(LOG_TAG, " Binding service ");
-        getActivity().bindService(new Intent(getActivity(), ChatService.class), serviceConnection,
+        gamesChatActivity.bindService(new Intent(gamesChatActivity, ChatService.class), serviceConnection,
                 Context.BIND_AUTO_CREATE);
         isBound = true;
     }
@@ -211,7 +214,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick(R.id.start_call_button)
     public void onStartCallBtnClick() {
         showEndCallBtn();
-        Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
+        Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
     }
@@ -284,19 +287,19 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick(R.id.add_friends_to_chat)
     /* package-local */ void addFriendsForCall() {
-        Intent intent = new Intent(this.getActivity(), FriendsManagerActivity.class);
+        Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
     }
 
     @OnClick({R.id.popular_friend_1})
     /* package-local */ void callFavFriend1() {
-        startFriendCall(SharedPreferenceUtility.getFavFriend1(getActivity()));
+        startFriendCall(SharedPreferenceUtility.getFavFriend1(gamesChatActivity));
     }
 
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
-        startFriendCall(SharedPreferenceUtility.getFavFriend2(getActivity()));
+        startFriendCall(SharedPreferenceUtility.getFavFriend2(gamesChatActivity));
     }
 
     private void undbindService(){
@@ -310,7 +313,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void fetchData() {
-        String firebaseUri = Conf.firebaseGamesURI();
+        String firebaseUri = Conf.firebaseGamesUri();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
 
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
@@ -433,7 +436,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
         LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.grid_item, gamesList, false);
+        View view = LayoutInflater.from(gamesChatActivity).inflate(R.layout.grid_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
@@ -442,55 +445,61 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         textView.setText(multiPlayerGamesName.get(i));
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
         Log.d("The image uri " , imageURl);
-        GlideUtils.loadImage(getActivity(), imageView, null, imageURl);
+        GlideUtils.loadImage(gamesChatActivity, imageView, null, imageURl);
 
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (application.isOngoingCall()) {
-                    String thisGameUrl = multiPlayerGamesUrl.get(i)
-                            + "?room=" + myUserId
-                            + "&user=" + myUserId;
-                    String peerGameUrl = multiPlayerGamesUrl.get(i)
-                            + "?room=" + myUserId
-                            + "&user=" + targetUserId;
-
-                    // launch the WebView
-                    Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
-                    startActivity(gameIntent);
-
-                    // emit to peer
-                    JSONObject payload = new JSONObject();
-                    try {
-                        Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
-                        payload.put("from", myUserId);
-                        payload.put("to", targetUserId);
-                        payload.put("token", "abcd");
-                        payload.put("game_link", peerGameUrl);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    chatService.socket.emit("game_link", payload);
-                } else {
-                    Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
+        view.setOnClickListener(new MultiPlayerClickListener(i));
         gamesList.addView(view);
+    }
+
+    private class MultiPlayerClickListener implements View.OnClickListener {
+        private int index;
+
+        public MultiPlayerClickListener(int i) {
+            index = i;
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (application.isOngoingCall()) {
+                String thisGameUrl = multiPlayerGamesUrl.get(index)
+                        + "?room=" + myUserId
+                        + "&user=" + myUserId;
+                String peerGameUrl = multiPlayerGamesUrl.get(index)
+                        + "?room=" + myUserId
+                        + "&user=" + targetUserId;
+                // launch the WebView
+                Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
+                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
+                startActivity(gameIntent);
+
+                // emit to peer
+                JSONObject payload = new JSONObject();
+                try {
+                    Log.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
+                    payload.put("from", myUserId);
+                    payload.put("to", targetUserId);
+                    payload.put("token", "abcd");
+                    payload.put("game_link", peerGameUrl);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                chatService.socket.emit("game_link", payload);
+            } else {
+                Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void initWebRtc(String myUserId) {
         Point displaySize = new Point();
-        getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
+        gamesChatActivity.getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
                 true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
-        String iceServersString = SharedPreferenceUtility.getIceServersUrls(getActivity());
+        String iceServersString = SharedPreferenceUtility.getIceServersUrls(gamesChatActivity);
         webRtcClient = new WebRtcClient(this, params,
                 eglBase.getEglBaseContext(), myUserId, iceServersString,
-                getActivity());
+                gamesChatActivity);
     }
 
     @Override
@@ -518,7 +527,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
         Log.e(LOG_TAG, "inside onAddRemoteStream");
-        ViewUtils.setWindowImmersive(getActivity().getWindow(), mainHandler);
+        if (gamesChatActivity == null) {
+            Log.e(LOG_TAG, "activity game chat destroyed");
+            return;
+        }
+        ViewUtils.setWindowImmersive(gamesChatActivity.getWindow(), mainHandler);
         if (!remoteStream.videoTracks.isEmpty()) {
             application.setOngoingCall(true);
             remoteVideoRender = new VideoRenderer(remoteRender);
@@ -534,7 +547,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onRemoveRemoteStream(MediaStream remoteStream) {
         Log.i(LOG_TAG, "on Remove Remote stream");
-        ViewUtils.showWindowNavigation(getActivity().getWindow(), mainHandler);
+        if (gamesChatActivity == null) {
+            Log.e(LOG_TAG, "onRemove activity game chat destroyed");
+            return;
+        }
+        ViewUtils.showWindowNavigation(gamesChatActivity.getWindow(), mainHandler);
         application.setOngoingCall(false);
         if (remoteStream != null && !remoteStream.videoTracks.isEmpty()) {
             if (remoteVideoRender != null) {
@@ -615,7 +632,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Peer peer = webRtcClient.getPeer();
         if (peer != null) {
             webRtcClient.createOffer(peer);
-            SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
+            SharedPreferenceUtility.setFavouriteFriend(gamesChatActivity, facebookId);
             triggerImageChanges();
         }
     }

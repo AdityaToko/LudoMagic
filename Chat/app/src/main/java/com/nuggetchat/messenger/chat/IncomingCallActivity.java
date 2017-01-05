@@ -59,7 +59,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     private void fetchFriendNameAndPic(final String from) {
-        String firebaseUri = Conf.firebaseUsersURI();
+        String firebaseUri = Conf.firebaseUsersUri();
         Log.i(LOG_TAG, "firebaseURI, " + firebaseUri);
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
@@ -88,7 +88,6 @@ public class IncomingCallActivity extends AppCompatActivity {
                        }
                    });
                }
-
             }
 
             @Override

@@ -143,8 +143,10 @@ public class WebRtcClient{
     // capturer that works, or crash if none do.
     private VideoCapturer getVideoCapturer() {
         String[] cameraFacing = { "front", "back" };
-        int[] cameraIndex = { 0, 1 };
-        int[] cameraOrientation = { 0, 90, 180, 270 };
+//        int[] cameraIndex = { 0, 1 };
+        int[] cameraIndex = { 1 };
+//        int[] cameraOrientation = { 0, 90, 180, 270 };
+        int[] cameraOrientation = { 270 };
         for (String facing : cameraFacing) {
             for (int index : cameraIndex) {
                 for (int orientation : cameraOrientation) {

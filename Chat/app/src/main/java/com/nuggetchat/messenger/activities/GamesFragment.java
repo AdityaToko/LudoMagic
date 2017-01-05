@@ -57,7 +57,7 @@ public class GamesFragment extends Fragment {
     }
 
     private void fetchDataForGames() {
-        String firebaseUri = Conf.firebaseGamesURI();
+        String firebaseUri = Conf.firebaseGamesUri();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
 
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()

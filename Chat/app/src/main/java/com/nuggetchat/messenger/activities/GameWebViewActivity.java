@@ -3,6 +3,7 @@ package com.nuggetchat.messenger.activities;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -34,7 +35,10 @@ public class GameWebViewActivity extends AppCompatActivity {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
-      //  gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null); /*Disabling hardware acceleration*/
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+            /*Disabling hardware acceleration*/
+            gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
         gameWebView.getSettings().setJavaScriptEnabled(true);
         gameWebView.getSettings().setDomStorageEnabled(true);
         gameWebView.getSettings().setAllowFileAccessFromFileURLs(true);
