@@ -87,10 +87,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     Bundle bundle;
     ArrayList<FriendInfo> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
-//    private VideoRenderer.Callbacks localRender;
-//    private VideoRenderer.Callbacks remoteRender;
-//    private GLSurfaceView rtcView;
-//    private VideoRendererGui.ScalingType scalingType = VideoRendererGui.ScalingType.SCALE_ASPECT_FILL;
     private PercentFrameLayout localRenderLayout;
     private PercentFrameLayout remoteRenderLayout;
     private SurfaceViewRenderer localRender;
@@ -98,7 +94,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private EglBase eglBase;
     private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
-    private User user1;
     private View view;
     private ArrayList<String> multiPlayerGamesName;
     private ArrayList<String> multiPlayerGamesImage;
@@ -146,11 +141,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         ViewUtils.setWindowImmersive(getActivity().getWindow());
         view = inflater.inflate(R.layout.activity_chat, container, false);
         ButterKnife.bind(this, view);
-        if (SharedPreferenceUtility.getFavFriend1(getActivity()).equals("")) {
+        if ("".equals(SharedPreferenceUtility.getFavFriend1(getActivity()))) {
             popularFriend1.setVisibility(View.INVISIBLE);
         }
 
-        if (SharedPreferenceUtility.getFavFriend2(getActivity()).equals("")) {
+        if ("".equals(SharedPreferenceUtility.getFavFriend2(getActivity()))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
 
@@ -172,17 +167,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         String userId = SharedPreferenceUtility.getFacebookUserId(getActivity());
         String username = SharedPreferenceUtility.getFacebookUserName(getActivity());
         Log.e(LOG_TAG, "User is : " + userId + " " + username);
-        user1 = new User(userId, username);
         triggerImageChanges();
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
-        //        FIXME commented since compile error
-//        localRender.setEnableHardwareScaler(true);
-//        remoteRender.setEnableHardwareScaler(true);
         Log.i(LOG_TAG, "onCreate - call update View");
         updateVideoViews();
-
-        initWebRtc(user1);
+        initWebRtc(new User(userId, username));
         bindChatService();
         return view;
     }
