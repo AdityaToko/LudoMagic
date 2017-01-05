@@ -9,18 +9,15 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -88,47 +85,43 @@ public class MessageHandler {
         }
     };
 
+    public Emitter.Listener onPreCallHandshake = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.e(LOG_TAG, "Pre call handshake received!");
+            eventListener.onPreCallHandshake((JSONObject) args[0]);
+        }
+    };
+
+    public Emitter.Listener onHandshakeComplete = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.e(LOG_TAG, "Pre call handshake completed!");
+            eventListener.onHandshakeComplete((JSONObject) args[0]);
+        }
+    };
+
     public Emitter.Listener onCallRequested = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
 
-            if (!application.isInitiator()) {
-                Intent intent = new Intent();
-                try {
-                    String from = requestObject.getString("from");
-                    String to = requestObject.getString("to");
+            try {
+                Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
+                if (userId.equals(requestObject.getString("to"))
+                        && requestObject.getJSONObject("offer") != null) {
+                    Log.e(LOG_TAG, "call requested inside if");
                     JSONObject offerObj = requestObject.getJSONObject("offer");
-                    String type = offerObj.getString("type");
-                    String sdp = offerObj.getString("sdp");
-                    Bundle bundle = new Bundle();
-                    bundle.putString("from", from);
-                    bundle.putString("to", to);
-                    bundle.putString("type", type);
-                    bundle.putString("sdp", sdp);
-                    intent.putExtras(bundle);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    SessionDescription sdp = new SessionDescription(
+                            SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
+                            offerObj.getString("sdp")
+                    );
+                    Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
+                    eventListener.onCallRequestOrAnswer(sdp);
                 }
-                intent.setAction("com.nuggetchat.messenger.intent.action.INCOMING_CALL");
-                context.sendBroadcast(intent);
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            Toast.makeText(context,
-                                    "Receiving call from " + requestObject.getString("from"),
-                                    Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            Log.e(LOG_TAG, "JSON ERROR " + e.getMessage());
-                        }
-                    }
-                });
-            } else {
-                Log.d(LOG_TAG, "Receiving call");
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
     };
@@ -139,7 +132,7 @@ public class MessageHandler {
             Log.d(LOG_TAG, "inside onCallAccepted ");
             JSONObject acceptObject = (JSONObject) args[0];
             try {
-                eventListener.onCall(acceptObject.getString("from"), socket);
+                // eventListener.onCall(acceptObject.getString("from"), socket);
                 if (userId.equals(acceptObject.getString("to"))
                         && acceptObject.get("answer") != null) {
                     JSONObject answerObj = acceptObject.getJSONObject("answer");
@@ -156,6 +149,20 @@ public class MessageHandler {
         }
     };
 
+    public Emitter.Listener onCallRejected = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d(LOG_TAG, "Handle call rejected event!");
+        }
+    };
+
+    public Emitter.Listener onSocketError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d(LOG_TAG, "Handle socket error event!");
+        }
+    };
+
     public Emitter.Listener onIceCandidates = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -163,7 +170,8 @@ public class MessageHandler {
 
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
-                eventListener.onCall(iceCandidateObj.getString("from"), socket);
+                // TODO: commented onCall
+                // eventListener.onCall(iceCandidateObj.getString("from"), socket);
                 if (userId.equals(iceCandidateObj.getString("to"))
                         && iceCandidateObj.get("candidate") != null) {
                     Log.e(LOG_TAG, "inside onIceCandidates if ");

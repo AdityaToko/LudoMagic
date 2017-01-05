@@ -11,4 +11,5 @@
     <color name="second_tab_text_color">#2290D3</color>
     <color name="accept_btn_color">#338703</color>
     <color name="reject_btn_color">#B90006</color>
+    <color name="game_web_view_background">#000000</color>
 </resources>

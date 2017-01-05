@@ -18,8 +18,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
+import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
 
 import java.util.ArrayList;
 
@@ -35,6 +37,7 @@ public class GamesFragment extends Fragment {
     private ArrayList<String> gamesImages;
     private ArrayList<String> gamesUrl;
     private ArrayList<GamesItem> gamesItemList;
+    private NuggetApplication nuggetApplication;
     private View view;
 
     @BindView(R.id.loading_icon)
@@ -50,6 +53,7 @@ public class GamesFragment extends Fragment {
         gamesImages = new ArrayList<>();
         gamesItemList = new ArrayList<>();
         gamesUrl = new ArrayList<>();
+        nuggetApplication = NuggetApplication.getInstance();
 
         fetchDataForGames();
 
@@ -154,6 +158,7 @@ public class GamesFragment extends Fragment {
     }
 
     private void setUpGridView() {
+        Log.i(LOG_TAG, "grid view set, " + gamesItemList);
         CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
         GridView gridView = (GridView) view.findViewById(R.id.grid_view);
         gridView.setAdapter(customeGridAdapter);
@@ -162,6 +167,8 @@ public class GamesFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
                         Toast.LENGTH_SHORT).show();
+                nuggetApplication.logEvent(getContext(), FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
+                        null /* bundle */);
                 Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
                 Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
                 gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
