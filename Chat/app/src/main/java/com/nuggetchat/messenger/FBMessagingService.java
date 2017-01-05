@@ -42,7 +42,6 @@ public class FBMessagingService extends FirebaseMessagingService {
                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
                 try {
-                    // Perform the operation associated with our pendingIntent
                     pendingIntent.send();
                 } catch (PendingIntent.CanceledException e) {
                     e.printStackTrace();

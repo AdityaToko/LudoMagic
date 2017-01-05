@@ -114,8 +114,28 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.i(LOG_TAG, "On Service connected");
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
-            if(bundle != null && bundle.getBundle("sdpBundle") != null){
-                setSDP();
+            if(bundle != null && bundle.getBundle("requestBundle") != null){
+                acknowledgePreCallHandshake();
+            }
+        }
+
+        private void acknowledgePreCallHandshake() {
+            Log.e(LOG_TAG, "received pre call handshake, sending acknowledgement");
+            Bundle requestBundle = bundle.getBundle("requestBundle");
+            if (requestBundle == null) {
+                return;
+            }
+
+            JSONObject requestData = new JSONObject();
+            try {
+                targetUserId = requestBundle.getString("from");
+                requestData.put("from", requestBundle.get("from"));
+                requestData.put("to", requestBundle.get("to"));
+                requestData.put("token", requestBundle.get("token"));
+
+                onPreCallHandshake(requestData);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage());
             }
         }
 
@@ -422,7 +442,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void setSDP(){
         Log.i(LOG_TAG, "calling setSDP");
-        Bundle sdpBundle = bundle.getBundle("sdpBundle");
+        Bundle sdpBundle = bundle.getBundle("requestBundle");
         if (sdpBundle == null) {
             return;
         }
@@ -751,6 +771,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onPreCallHandshake(JSONObject data) {
         if (!webRtcClient.isInitiator()) {
             try {
+                targetUserId = data.getString("from");
                 String from = data.getString("from");
                 String to = data.getString("to");
                 String token = data.getString("token");

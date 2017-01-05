@@ -73,8 +73,10 @@ public class ChatService extends Service {
     private void registerForCallEvents(EventListener eventListener){
         messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);
+        socket.on("call_rejected", messageHandler.onCallRejected);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);
+        socket.on("socket_error", messageHandler.onSocketError);
     }
 }

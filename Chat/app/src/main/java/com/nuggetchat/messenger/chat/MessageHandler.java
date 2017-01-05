@@ -107,36 +107,19 @@ public class MessageHandler {
             final JSONObject requestObject = (JSONObject) args[0];
             Log.e(LOG_TAG, "call requested" + args[0].toString());
 
-
-            Intent intent = new Intent();
             try {
-                String from = requestObject.getString("from");
-                String to = requestObject.getString("to");
-                JSONObject offerObj = requestObject.getJSONObject("offer");
-                String type = offerObj.getString("type");
-                String sdp = offerObj.getString("sdp");
-                Bundle bundle = new Bundle();
-                bundle.putString("from", from);
-                bundle.putString("to", to);
-                bundle.putString("type", type);
-                bundle.putString("sdp", sdp);
-                intent.putExtras(bundle);
-                intent.setAction("com.nuggetchat.messenger.intent.action.INCOMING_CALL");
-                context.sendBroadcast(intent);
-                Handler handler = new Handler(Looper.getMainLooper());
-                handler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            Toast.makeText(context,
-                                    "Receiving call from " + requestObject.getString("from"),
-                                    Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            Log.e(LOG_TAG, "JSON ERROR " + e.getMessage());
-                        }
-                    }
-                });
+                Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
+                if (userId.equals(requestObject.getString("to"))
+                        && requestObject.getJSONObject("offer") != null) {
+                    Log.e(LOG_TAG, "call requested inside if");
+                    JSONObject offerObj = requestObject.getJSONObject("offer");
+                    SessionDescription sdp = new SessionDescription(
+                            SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
+                            offerObj.getString("sdp")
+                    );
+                    Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
+                    eventListener.onCallRequestOrAnswer(sdp);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -163,6 +146,20 @@ public class MessageHandler {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    };
+
+    public Emitter.Listener onCallRejected = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d(LOG_TAG, "Handle call rejected event!");
+        }
+    };
+
+    public Emitter.Listener onSocketError = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d(LOG_TAG, "Handle socket error event!");
         }
     };
 

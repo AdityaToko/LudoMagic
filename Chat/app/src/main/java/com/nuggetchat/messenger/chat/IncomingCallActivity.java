@@ -52,7 +52,6 @@ public class IncomingCallActivity extends AppCompatActivity {
         String to = bundle.getString("to");
         String token = bundle.getString("token");
 
-        Log.i(LOG_TAG, "facebook id of friend, " + from);
         Log.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
 
         fetchFriendNameAndPic(from);
