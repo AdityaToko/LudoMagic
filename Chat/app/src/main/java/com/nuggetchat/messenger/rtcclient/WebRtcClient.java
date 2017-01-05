@@ -13,6 +13,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
+import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 
 import java.util.LinkedList;
@@ -76,7 +77,7 @@ public class WebRtcClient{
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
-        this.peer = newPeer;
+        //this.peer = newPeer;
         return newPeer;
     }
 
@@ -92,7 +93,7 @@ public class WebRtcClient{
     public void addFriendForChat(String userId, Socket socket) {
         userId1 = currentUserId;
         userId2 = userId;
-        addPeer(socket);
+        peer = addPeer(socket);
     }
 
     public String getUserId1() {

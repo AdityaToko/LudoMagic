@@ -128,23 +128,7 @@ public class MessageHandler {
                     }
                 });
             } else {
-                try {
-                    eventListener.onCall(requestObject.getString("from"), socket);
-                    Log.e(LOG_TAG, "call requested inside try" + " " + requestObject.getString("to"));
-                    if (userId.equals(requestObject.getString("to"))
-                            && requestObject.getJSONObject("offer") != null) {
-                        Log.e(LOG_TAG, "call requested inside if");
-                        JSONObject offerObj = requestObject.getJSONObject("offer");
-                        SessionDescription sdp = new SessionDescription(
-                                SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
-                                offerObj.getString("sdp")
-                        );
-                        Log.e(LOG_TAG, "Setting remote desc after onCallRequested for " + requestObject.getString("to"));
-                        eventListener.onCallRequestOrAnswer(sdp);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                Log.d(LOG_TAG, "Receiving call");
             }
         }
     };

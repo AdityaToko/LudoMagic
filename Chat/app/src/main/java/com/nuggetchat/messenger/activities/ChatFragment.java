@@ -171,7 +171,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
         Log.i(LOG_TAG, "onCreate - call update View");
-        updateVideoViews();
+        //updateVideoViews();
 
         initWebRtc(myUserId);
         bindChatService();
@@ -494,11 +494,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     @Override
-    public void onCallReady(String callId) {
-
-    }
-
-    @Override
     public void onStatusChanged(String newStatus) {
         Log.i(LOG_TAG, "On Status Changed: " + newStatus);
     }
@@ -541,9 +536,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
                 remoteVideoRender = null;
             }
-            updateVideoViews();
+
             resetAudioManager();
         }
+        updateVideoViews();
     }
 
     @Override
@@ -567,7 +563,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onPause() {
-        //rtcView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
@@ -578,6 +573,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onDestroyView() {
         destroyVideoViews();
+        application.setInitiator(false);
+        application.setOngoingCall(false);
         super.onDestroyView();
     }
 
@@ -603,6 +600,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.endCall();
             undbindService();
         }
+        //eglBase.release();
         super.onDestroy();
     }
 
