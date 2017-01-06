@@ -118,7 +118,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
             if(bundle != null && bundle.getBundle("requestBundle") != null){
-                acknowledgePreCallHandshake();
+                Bundle requestBundle = bundle.getBundle("requestBundle");
+                if (requestBundle.getString("user_id") != null) {
+                    sendPreCallHandshake(bundle.getString("user_id"));
+                }
+                if ("pre_call_handshake".equals(requestBundle.getString("type"))) {
+                    acknowledgePreCallHandshake();
+                }
             }
         }
 
