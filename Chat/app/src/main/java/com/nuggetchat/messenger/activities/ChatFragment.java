@@ -42,6 +42,7 @@ import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.chat.IncomingCallActivity;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.Peer;
@@ -134,7 +135,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 requestData.put("to", requestBundle.get("to"));
                 requestData.put("token", requestBundle.get("token"));
 
-                onPreCallHandshake(requestData);
+                sendPreCallHandshakeComplete(requestData);
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage());
             }
@@ -783,8 +784,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
     }
 
-    @Override
-    public void onPreCallHandshake(JSONObject data) {
+    public void sendPreCallHandshakeComplete(JSONObject data) {
         if (!webRtcClient.isInitiator()) {
             try {
                 targetUserId = data.getString("from");
@@ -801,6 +801,34 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     chatService.socket.emit("handshake_complete", payload);
                     showEndCallBtn();
                     Log.e(LOG_TAG, "pre call handshake complete.. sending handshake_complete");
+                }
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void onPreCallHandshake(JSONObject data) {
+        if (!webRtcClient.isInitiator()) {
+            try {
+                targetUserId = data.getString("from");
+                String from = data.getString("from");
+                String to = data.getString("to");
+                String token = data.getString("token");
+                String type = "pre_call_handshake";
+                Log.e(LOG_TAG, from +"::"+ to+"::"+token+"::");
+
+                if (myUserId.equals(to) && "abcd".equals(token)) {
+                    webRtcClient.addFriendForChat(from, chatService.socket);
+                    Intent intent = new Intent(this.getActivity(), IncomingCallActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("to", to);
+                    bundle.putString("from", from);
+                    bundle.putString("token", token);
+                    bundle.putString("type", type);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
                 }
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage());
@@ -858,6 +886,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallEnd() {
         webRtcClient.endCall();
         showStartCallBtn();
+        showFriendsAddCluster();
     }
 
     @Override
