@@ -207,7 +207,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+                                Intent resultIntent = GamesChatActivity.getNewIntentGameChatActivity(FriendsManagerActivity.this);
                                 resultIntent.putExtra("user_id", ((FriendInfo) adapterView.getAdapter().getItem(i)).getFacebookId());
                                 if (intent.getStringExtra("user_id") == null) {
                                     startActivity(resultIntent);

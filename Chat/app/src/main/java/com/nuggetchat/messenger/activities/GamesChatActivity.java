@@ -1,5 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -59,7 +61,10 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startService(new Intent(this, ChatService.class));
+
+        Log.i(LOG_TAG, "onCreate GameChatActivity");
+        startService(new Intent(GamesChatActivity.this, ChatService.class));
+
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
@@ -82,13 +87,9 @@ public class GamesChatActivity extends AppCompatActivity {
         setUpTabItems();
 
         if (shouldShowChatTab()) {
-            viewPager.setCurrentItem(1);
-            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
-            tabView.setBackgroundResource(R.drawable.second_tab_background);
+            showChatTab();
         } else {
-            viewPager.setCurrentItem(0);
-            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
-            tabView.setBackgroundResource(R.drawable.first_tab_background);
+            showGamesTab();
         }
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -133,6 +134,20 @@ public class GamesChatActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void showGamesTab() {
+        viewPager.setCurrentItem(0);
+        tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
+        tabView.setBackgroundResource(R.drawable.first_tab_background);
+    }
+
+    private void showChatTab() {
+        viewPager.setCurrentItem(1);
+        tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
+        tabView.setBackgroundResource(R.drawable.second_tab_background);
+//        tabView.requestFocus();
+        Log.i(LOG_TAG, "chat view in focus " + tabView.hasFocus());
     }
 
     private boolean shouldShowChatTab() {
@@ -219,11 +234,15 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "activity onActivityResult");
+        Log.i(LOG_TAG, "activity onActivityResult focus 1:" + this.hasWindowFocus() + " req:" + requestCode + " result" + resultCode);
+        if (resultCode == ChatFragment.INCOMING_CALL_CODE) {
+            Log.i(LOG_TAG, "Switch to chat tab");
+            viewPager.setCurrentItem(1);
+        }
     }
 
     private String getProfilePicUrl(String facebookUserId) {
-        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=150&height=150";
     }
 
     private void refreshFirebaseToken() {
@@ -247,5 +266,13 @@ public class GamesChatActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+
+    public static Intent getNewIntentGameChatActivity(Context fromActivityContext) {
+        Intent intent = new Intent(fromActivityContext, GamesChatActivity.class);
+        intent.setFlags(Intent.FLAG_FROM_BACKGROUND
+                | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return intent;
     }
 }

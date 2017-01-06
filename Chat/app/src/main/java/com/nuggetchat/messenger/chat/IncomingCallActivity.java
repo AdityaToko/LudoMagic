@@ -23,6 +23,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
+import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
 
 import butterknife.BindView;
@@ -31,6 +32,7 @@ import butterknife.OnClick;
 
 public class IncomingCallActivity extends AppCompatActivity {
     private static final String LOG_TAG = IncomingCallActivity.class.getSimpleName();
+    public static final String CALL_ACCEPTED = "call_accepted";
     @BindView(R.id.accept_btn)
     public Button acceptButton;
     @BindView(R.id.reject_btn)
@@ -40,6 +42,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     @BindView(R.id.caller_image)
     public ImageView callerImage;
     private AudioPlayer audioPlayer;
+    private boolean isActivityForResult;
 
     Bundle bundle;
     @Override
@@ -53,6 +56,10 @@ public class IncomingCallActivity extends AppCompatActivity {
         String from = bundle.getString("from");
         String to = bundle.getString("to");
         String token = bundle.getString("token");
+        isActivityForResult = false;
+        if ("chat_frag".equals(bundle.getString("from_activity"))) {
+            isActivityForResult = true;
+        }
 
         Log.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
 
@@ -130,16 +137,28 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
-        audioPlayer.stopRingtone();
-        Intent startChatIntent = new Intent(this, GamesChatActivity.class);
-        startChatIntent.putExtras(bundle);
-        startActivity(startChatIntent);
-        finish();
+        triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
+        triggerUserAction(false /*accepted*/);
+    }
+
+    private void triggerUserAction(boolean accepted) {
         audioPlayer.stopRingtone();
-        finishAffinity();
+        if (!isActivityForResult) {
+            Log.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
+            Intent startChatIntent = new Intent(this, GamesChatActivity.class);
+            startChatIntent.putExtras(bundle);
+            startActivity(startChatIntent);
+        } else {
+            Log.i(LOG_TAG, "MessageHandler Trigger - Restart game chat activity ");
+            Intent startChatIntent = new Intent();
+            bundle.putBoolean(CALL_ACCEPTED, accepted);
+            startChatIntent.putExtras(bundle);
+            setResult(ChatFragment.INCOMING_CALL_CODE, startChatIntent);
+        }
+        finish();
     }
 }
