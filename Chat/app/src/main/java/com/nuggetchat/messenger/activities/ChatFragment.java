@@ -153,7 +153,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
-    @BindView(R.id.add_friends_to_chat) /* package-local */ ImageView startCallButton;
+    //@BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
@@ -234,14 +234,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         isBound = true;
     }
 
-    @OnClick(R.id.add_friends_to_chat)
+   /* @OnClick(R.id.start_call_button)
     public void onStartCallBtnClick() {
+        showEndCallBtn();
         application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
-                null /* bundle */);
-        Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
+                null *//* bundle *//*);
+        Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
-    }
+    }*/
 
     @OnClick(R.id.end_call_button)
     public void onEndCallBtnClick() {
@@ -667,7 +668,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         triggerImageChanges();
         audioPlayer.playRingtone();
         endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+      //  startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void startFriendCall(String facebookId) {
@@ -733,7 +734,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 endCall.setVisibility(View.INVISIBLE);
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
                 Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
-                startCallButton.setVisibility(View.VISIBLE);
+              //  startCallButton.setVisibility(View.VISIBLE);
                 linearLayout.setVisibility(View.VISIBLE);
             }
         });
@@ -918,7 +919,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
+                //startCallButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -928,7 +929,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                //startCallButton.setVisibility(View.INVISIBLE);
             }
         });
     }
