@@ -22,6 +22,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
 
 import butterknife.BindView;
@@ -38,6 +39,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     public TextView callerName;
     @BindView(R.id.caller_image)
     public ImageView callerImage;
+    private AudioPlayer audioPlayer;
 
     Bundle bundle;
     @Override
@@ -63,6 +65,8 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        audioPlayer = new AudioPlayer(this);
+        audioPlayer.playRingtone();
     }
 
     private void fetchFriendNameAndPic(final String from) {
@@ -127,6 +131,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
+        audioPlayer.stopRingtone();
         Intent startChatIntent = new Intent(this, GamesChatActivity.class);
         startChatIntent.putExtras(bundle);
         startActivity(startChatIntent);
@@ -135,6 +140,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
+        audioPlayer.stopRingtone();
         finishAffinity();
     }
 }
