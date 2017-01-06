@@ -228,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                startService(new Intent(MainActivity.this, ChatService.class));
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
                 loginProgressBar.setVisibility(View.INVISIBLE);
@@ -238,7 +237,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void gotoGameChatActivity() {
-        startService(new Intent(MainActivity.this, ChatService.class));
         Intent intent = GamesChatActivity.getNewIntentGameChatActivity(MainActivity.this);
         startActivity(intent);
         finish();

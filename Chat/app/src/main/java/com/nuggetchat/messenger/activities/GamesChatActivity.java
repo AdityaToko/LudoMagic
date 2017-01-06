@@ -63,6 +63,8 @@ public class GamesChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         Log.i(LOG_TAG, "onCreate GameChatActivity");
+        startService(new Intent(GamesChatActivity.this, ChatService.class));
+
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
