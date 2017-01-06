@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -568,7 +567,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
                 remoteVideoRender = null;
             }
-            resetAudioManager();
         }
         mainHandler.post(new Runnable() {
             @Override
@@ -576,6 +574,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
             }
         });
+        resetAudioManager();
         updateVideoViews();
         webRtcClient.setCamera();
     }
