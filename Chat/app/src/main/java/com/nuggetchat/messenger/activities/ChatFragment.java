@@ -669,7 +669,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, e.getMessage());
         }
 
-        hideFriendsAddCluster();
+        //hideFriendsAddCluster();
+        linearLayout.setVisibility(View.INVISIBLE);
+
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
         audioPlayer.playRingtone();
@@ -728,7 +730,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                linearLayout.setVisibility(View.INVISIBLE);
+              //  linearLayout.setVisibility(View.INVISIBLE);
             }
         });
     }
