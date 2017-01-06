@@ -69,6 +69,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     public void playProgressTone() {
+        Log.d(LOG_TAG, "AUDIOPLAYER Play Progress Tone");
         stopProgressTone();
         try {
             mProgressTone = createProgressTone(mContext);
@@ -79,6 +80,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     public void stopProgressTone() {
+        Log.d(LOG_TAG, "AUDIOPLAYER Stop progress tone");
         if (mProgressTone != null) {
             mProgressTone.stop();
             mProgressTone.release();
@@ -87,11 +89,12 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     private static AudioTrack createProgressTone(Context context) throws IOException {
+        Log.d(LOG_TAG, "AUDIOPLAYER Creatign progress tone");
         AssetFileDescriptor fd = context.getResources().openRawResourceFd(R.raw.progress_tone);
         int length = (int) fd.getLength();
 
         AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_VOICE_CALL, SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, length, AudioTrack.MODE_STATIC);
+                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, 10000, AudioTrack.MODE_STATIC);
 
         byte[] data = new byte[length];
         readFileToBytes(fd, data);
@@ -118,6 +121,8 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
         Log.e(LOG_TAG, "AUDIOPLAYER Error in media player what-" + i + " extra-" + i1);
+        mPlayer.stop();
+        mPlayer.release();
         mediaPlayer.release();
         return true;
     }

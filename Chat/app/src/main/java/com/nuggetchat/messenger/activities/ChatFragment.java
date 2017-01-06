@@ -105,6 +105,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private Handler mainHandler;
     private AudioManager audioManager;
     private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
+    private AudioPlayer audioPlayer;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -149,6 +150,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if ("".equals(SharedPreferenceUtility.getFavFriend2(getActivity()))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
+        audioPlayer = new AudioPlayer(getActivity());
 
         bundle = getArguments();
         multiPlayerGamesName = new ArrayList<>();
@@ -233,6 +235,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         showFriendsAddCluster();
         updateVideoViews();
         showStartCallBtn();
+        audioPlayer.stopRingtone();
     }
 
     private void initVideoViews() {
@@ -603,6 +606,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             webRtcClient.endCall();
             undbindService();
         }
+        audioPlayer.stopRingtone();
         super.onDestroy();
     }
 
@@ -612,12 +616,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         application.setInitiator(true);
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
         targetUserId = facebookId;
+        audioPlayer.playRingtone();
         Peer peer = webRtcClient.getPeer();
         if (peer != null) {
             webRtcClient.createOffer(peer);
             SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
             triggerImageChanges();
         }
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void triggerImageChanges() {
@@ -704,7 +711,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (requestCode == 1234 && data != null) {
             Log.d(LOG_TAG, "before toast onActivityResult");
             if (data != null) {
-                Toast.makeText(getActivity(), data.getStringExtra("user_id"), Toast.LENGTH_LONG).show();
                 showEndCallBtn();
                 startFriendCall(data.getStringExtra("user_id"));
             }
@@ -723,6 +729,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             peer.getPeerConnection().setRemoteDescription(peer, sdp);
             showEndCallBtn();
         }
+        audioPlayer.stopRingtone();
     }
 
     @Override
