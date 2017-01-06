@@ -88,6 +88,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginEnd="5dp"
+        android:layout_marginRight="5dp"
         android:layout_marginTop="50dp"
         android:orientation="vertical">
 
@@ -95,14 +97,20 @@
             android:id="@+id/add_friends_to_chat"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginRight="5dp"
+            android:layout_gravity="center_horizontal"
             android:src="@drawable/video_icon" />
 
         <TextView
             android:id="@+id/video_calling_text"
-            android:text="calling.."
+            android:text="@string/start_call"
+            android:textColor="@color/colorWhite"
             android:layout_marginTop="3dp"
+            android:shadowColor="#000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:layout_gravity="center_horizontal"
+            android:foregroundGravity="center_horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

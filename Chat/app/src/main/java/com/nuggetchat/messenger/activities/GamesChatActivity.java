@@ -103,7 +103,7 @@ public class GamesChatActivity extends AppCompatActivity {
                     tabView.setBackgroundResource(R.drawable.first_tab_background);
                     textView.setTextColor(Color.parseColor("#F2830A"));
                 } else {
-                    imageView.setImageResource(R.drawable.chat_icon);
+                    imageView.setImageResource(R.drawable.video_icon);
                     tabView.setBackgroundResource(R.drawable.second_tab_background);
                     textView.setTextColor(Color.parseColor("#2290D3"));
                 }
@@ -162,7 +162,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpTabLayout() {
         // Add Tab
         gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("games"));
-        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("chat"));
+        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("call"));
     }
 
     private void setUpViewPager(ViewPager viewPager) {
@@ -199,11 +199,11 @@ public class GamesChatActivity extends AppCompatActivity {
         //set view for second tab
         LinearLayout tabSecondItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView secondTextView = (TextView) tabSecondItem.findViewById(R.id.tab_item_text);
-        secondTextView.setText("chat");
+        secondTextView.setText("call");
         //tabSecondItem.setBackgroundResource(R.drawable.second_tab_background);
         secondTextView.setTextColor(Color.parseColor("#2290D3"));
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
-        secondImageView.setImageResource(R.drawable.chat_icon);
+        secondImageView.setImageResource(R.drawable.video_icon);
         gamesChatTabLayout.getTabAt(1).setCustomView(tabSecondItem);
     }
 
