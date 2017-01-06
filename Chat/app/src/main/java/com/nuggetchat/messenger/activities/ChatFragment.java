@@ -518,13 +518,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onAddRemoteStream(MediaStream remoteStream) {
-        Log.e(LOG_TAG, "inside onAddRemoteStream");
+        Log.i(LOG_TAG, "inside onAddRemoteStream");
         if (gamesChatActivity == null) {
             Log.e(LOG_TAG, "activity game chat destroyed");
             return;
         }
         ViewUtils.setWindowImmersive(gamesChatActivity.getWindow(), mainHandler);
         if (!remoteStream.videoTracks.isEmpty()) {
+            Log.i(LOG_TAG, "remote stream not empty");
             application.setOngoingCall(true);
             remoteVideoRender = new VideoRenderer(remoteRender);
             remoteStream.videoTracks.get(0).addRenderer(remoteVideoRender);
@@ -656,21 +657,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         startCallButton.setVisibility(View.INVISIBLE);
     }
 
-    private void startFriendCall(String facebookId) {
-        Log.i(LOG_TAG, "start friend call");
-        webRtcClient.setInitiator(true);
-        application.setInitiator(true);
-        webRtcClient.addFriendForChat(facebookId, chatService.socket);
-        audioPlayer.playRingtone();
-        Peer peer = webRtcClient.getPeer();
-        if (peer != null) {
-            webRtcClient.createOffer(peer);
-            SharedPreferenceUtility.setFavouriteFriend(gamesChatActivity, facebookId);
-            triggerImageChanges();
-        }
-        showEndCallBtn();
-    }
-
     private void triggerImageChanges() {
         String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
         String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
@@ -782,6 +768,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     public void sendPreCallHandshakeComplete(JSONObject data) {
+        Log.i(LOG_TAG, "Peer sendPreCallHandshakeComplete");
         if (!webRtcClient.isInitiator()) {
             try {
                 targetUserId = data.getString("from");
@@ -790,7 +777,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 String token = data.getString("token");
                 if (myUserId.equals(to) && "abcd".equals(token)) {
                     webRtcClient.addFriendForChat(from, chatService.socket);
-
                     JSONObject payload = new JSONObject();
                     payload.put("from", myUserId);
                     payload.put("to", targetUserId);
@@ -807,6 +793,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onPreCallHandshake(JSONObject data) {
+        Log.i(LOG_TAG, "Peer onPreCallHandshake");
         if (!webRtcClient.isInitiator()) {
             try {
                 targetUserId = data.getString("from");
@@ -817,7 +804,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 Log.e(LOG_TAG, from +"::"+ to+"::"+token+"::");
 
                 if (myUserId.equals(to) && "abcd".equals(token)) {
-                    webRtcClient.addFriendForChat(from, chatService.socket);
                     Intent intent = new Intent(this.getActivity(), IncomingCallActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("to", to);
@@ -864,8 +850,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallRequestOrAnswer(SessionDescription sdp) {
+        Log.i(LOG_TAG, "onCallRequestOrAnswer sdp" + sdp.type);
         Peer peer = webRtcClient.getPeer();
         if (peer != null) {
+            Log.i(LOG_TAG, "Peer not null.. going to set remote sdp");
             peer.getPeerConnection().setRemoteDescription(peer, sdp);
             showEndCallBtn();
         }

@@ -21,7 +21,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     private Socket socket;
 
     public Peer(WebRtcClient webRtcClient) {
-        Log.d(LOG_TAG, "Peer created ");
+        Log.i(LOG_TAG, "Peer created ");
         this.webRtcClient = webRtcClient;
         peerConnection = webRtcClient.factory.createPeerConnection(webRtcClient.iceServers,
                 webRtcClient.constraints, this);
@@ -29,11 +29,12 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     public void setSocket(Socket socket) {
+        Log.i(LOG_TAG, "setSocket");
         this.socket = socket;
     }
 
     public void setLocalStream() {
-        Log.e(LOG_TAG, "setLocalStream called ");
+        Log.i(LOG_TAG, "setLocalStream");
         peerConnection.addStream(webRtcClient.localMediaStream);
     }
 
@@ -42,7 +43,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     public void resetPeerConnection() {
-        Log.i(LOG_TAG, "MessageHandler reset Peer connection");
+        Log.i(LOG_TAG, "resetPeerConnection & dispose");
         if (peerConnection != null) {
             Log.i(LOG_TAG, "MessageHandler reset Peer connection disposing");
             peerConnection.dispose();
@@ -75,7 +76,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onIceCandidate(IceCandidate iceCandidate) {
-        Log.e(LOG_TAG, "onIceCandidate called");
+        Log.i(LOG_TAG, "onIceCandidate called");
         JSONObject payload = new JSONObject();
         try {
             payload.put("label", iceCandidate.sdpMLineIndex);
@@ -94,13 +95,16 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onAddStream(MediaStream mediaStream) {
-        Log.d(LOG_TAG, "onAddStream: " + mediaStream.label());
+        Log.i(LOG_TAG, "onAddStream: " + mediaStream.label());
         webRtcClient.rtcListener.onAddRemoteStream(mediaStream);
+
+        Log.i(LOG_TAG, "local: " + (peerConnection.getLocalDescription() != null));
+        Log.i(LOG_TAG, "remote: " + (peerConnection.getRemoteDescription() != null));
     }
 
     @Override
     public void onRemoveStream(MediaStream mediaStream) {
-        Log.d(LOG_TAG, "onRemoveStream: " + mediaStream.label());
+        Log.i(LOG_TAG, "onRemoveStream: & Closing " + mediaStream.label());
         webRtcClient.rtcListener.onRemoveRemoteStream(mediaStream);
         peerConnection.close();
     }
@@ -117,7 +121,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
-        Log.d(LOG_TAG, "onCreateSuccess called");
+        Log.i(LOG_TAG, "onCreateSuccess called");
 
         SessionDescription sdp = new SessionDescription(sessionDescription.type, sessionDescription.description);
         localSdp = sdp;
@@ -128,23 +132,19 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d(LOG_TAG, payload.toString() + "");
+        Log.i(LOG_TAG, payload.toString() + "");
         peerConnection.setLocalDescription(this, sdp);
     }
 
     @Override
     public void onSetSuccess() {
-        Log.d(LOG_TAG, "onSetSuccess called");
+        Log.i(LOG_TAG, "onSetSuccess called");
         new Runnable() {
             @Override
             public void run() {
                 if (webRtcClient.isInitiator() ) {
                     if (peerConnection.getRemoteDescription() != null) {
-                        if (webRtcClient.queuedRemoteCandidates != null) {
-                            Log.e(LOG_TAG, "remote desc is set. Draining candidates. Count : "
-                                    + webRtcClient.queuedRemoteCandidates.size());
-                            drainRemoteCandidates();
-                        }
+                        drainRemoteCandidates();
                     } else {
                         sendOfferLocalDescription();
                     }
@@ -154,12 +154,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
                         peerConnection.createAnswer(Peer.this, webRtcClient.constraints);
                     } else {
                         sendAnswerLocalDescription();
-                        if (webRtcClient.queuedRemoteCandidates != null) {
-                            Log.e(LOG_TAG, "Sending answer desc. and draining candidates. Count " +
-                                    webRtcClient.queuedRemoteCandidates.size());
-                            drainRemoteCandidates();
-                        }
-
+                        drainRemoteCandidates();
                     }
                 }
 
@@ -168,7 +163,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     private void sendOfferLocalDescription() {
-        Log.e(LOG_TAG, "sendOfferLocalDescription: sending Offer");
+        Log.i(LOG_TAG, "sendOfferLocalDescription: sending Offer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
         Log.e(LOG_TAG, "sendOfferLocalDescription: " + webRtcClient.getUserId1() + " " + webRtcClient.getUserId2());
@@ -187,7 +182,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     private void sendAnswerLocalDescription() {
-        Log.e(LOG_TAG, "sendAnswerLocalDescription: sending answer");
+        Log.i(LOG_TAG, "sendAnswerLocalDescription: sending answer");
         JSONObject callData = new JSONObject();
         JSONObject localDesc = new JSONObject();
         try {
@@ -207,15 +202,18 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
 
     @Override
     public void onCreateFailure(String s) {
-
+        Log.i(LOG_TAG, "Failed to create something in peer" + s);
     }
 
     @Override
     public void onSetFailure(String s) {
-
+        Log.i(LOG_TAG, "Failed to set something in peer" + s);
     }
 
     private void drainRemoteCandidates() {
+        if (webRtcClient.queuedRemoteCandidates == null) {
+            return;
+        }
         for (IceCandidate candidate : webRtcClient.queuedRemoteCandidates) {
             peerConnection.addIceCandidate(candidate);
         }

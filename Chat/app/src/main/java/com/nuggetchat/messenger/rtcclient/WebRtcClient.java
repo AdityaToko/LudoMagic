@@ -6,6 +6,7 @@ import android.util.Log;
 import com.nuggetchat.messenger.NuggetApplication;
 
 import org.webrtc.AudioSource;
+import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -14,6 +15,7 @@ import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
+import org.webrtc.VideoTrack;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +39,9 @@ public class WebRtcClient{
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
+    private VideoTrack videoTrack;
+    private AudioTrack audioTrack;
+    private AudioSource audioSource;
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
@@ -61,6 +66,27 @@ public class WebRtcClient{
         setInitiator(false);
         application.setInitiator(false);
         if (peer != null) {
+
+            if (localMediaStream != null) {
+                if (videoTrack != null) {
+                    localMediaStream.removeTrack(videoTrack);
+                    videoTrack = null;
+                }
+                if (audioTrack != null) {
+                    localMediaStream.removeTrack(audioTrack);
+                    audioTrack = null;
+                }
+                if (videoSource != null) {
+                    videoSource.dispose();
+                    videoSource = null;
+                }
+                if (audioSource != null) {
+                    audioSource.dispose();
+                    audioSource = null;
+                }
+                localMediaStream.dispose();
+                localMediaStream = null;
+            }
             peer.resetPeerConnection();
             Log.i(LOG_TAG, "peer reset done");
         }
@@ -87,6 +113,7 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
+        Log.i(LOG_TAG, "addFriendForChat userId: " + userId);
         userId1 = currentUserId;
         userId2 = userId;
         peer = addPeer(socket);
@@ -129,11 +156,15 @@ public class WebRtcClient{
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
         }
         Log.i(LOG_TAG, "Adding video track");
-        localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
+        videoTrack = factory.createVideoTrack("ARDAMSv0", videoSource);
+        localMediaStream.addTrack(videoTrack);
 
+        if (audioSource == null) {
+            audioSource = factory.createAudioSource(new MediaConstraints());
+        }
         Log.i(LOG_TAG, "Adding audio track");
-        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
-        localMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
+        audioTrack = factory.createAudioTrack("ARDAMSa0", audioSource);
+        localMediaStream.addTrack(audioTrack);
 
         Log.i(LOG_TAG, "Trigger local stream");
         rtcListener.onLocalStream(localMediaStream);  // Updating video views
