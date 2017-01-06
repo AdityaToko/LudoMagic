@@ -124,8 +124,9 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            if(videoSource == null){
+                videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            }
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
