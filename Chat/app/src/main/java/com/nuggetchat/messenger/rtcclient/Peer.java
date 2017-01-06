@@ -98,8 +98,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     @Override
     public void onRemoveStream(MediaStream mediaStream) {
         Log.d(LOG_TAG, "onRemoveStream: " + mediaStream.label());
-        peerConnection.close();
         webRtcClient.rtcListener.onRemoveRemoteStream(mediaStream);
+        peerConnection.close();
     }
 
     @Override
@@ -137,9 +137,11 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             public void run() {
                 if (webRtcClient.isInitiator() ) {
                     if (peerConnection.getRemoteDescription() != null) {
-                        Log.e(LOG_TAG, "remote desc is set. Draining candidates. Count : "
-                                + webRtcClient.queuedRemoteCandidates.size());
-                        drainRemoteCandidates();
+                        if (webRtcClient.queuedRemoteCandidates != null) {
+                            Log.e(LOG_TAG, "remote desc is set. Draining candidates. Count : "
+                                    + webRtcClient.queuedRemoteCandidates.size());
+                            drainRemoteCandidates();
+                        }
                     } else {
                         sendOfferLocalDescription();
                     }
@@ -148,10 +150,13 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
                         Log.e(LOG_TAG, "local desc not set. Create answer");
                         peerConnection.createAnswer(Peer.this, webRtcClient.constraints);
                     } else {
-                        Log.e(LOG_TAG, "Sending answer desc. and draining candidates. Count " +
-                                webRtcClient.queuedRemoteCandidates.size());
                         sendAnswerLocalDescription();
-                        drainRemoteCandidates();
+                        if (webRtcClient.queuedRemoteCandidates != null) {
+                            Log.e(LOG_TAG, "Sending answer desc. and draining candidates. Count " +
+                                    webRtcClient.queuedRemoteCandidates.size());
+                            drainRemoteCandidates();
+                        }
+
                     }
                 }
 
@@ -210,6 +215,6 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         for (IceCandidate candidate : webRtcClient.queuedRemoteCandidates) {
             peerConnection.addIceCandidate(candidate);
         }
-        webRtcClient.queuedRemoteCandidates = null;
+        webRtcClient.queuedRemoteCandidates.clear();
     }
 }

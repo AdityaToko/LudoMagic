@@ -63,10 +63,6 @@ public class WebRtcClient{
         if (peer != null) {
             peer.resetPeerConnection();
         }
-        if (factory != null) {
-            factory.dispose();
-            factory = null;
-        }
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null);
         }
@@ -76,7 +72,7 @@ public class WebRtcClient{
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
-        this.peer = newPeer;
+        //this.peer = newPeer;
         return newPeer;
     }
 
@@ -92,7 +88,7 @@ public class WebRtcClient{
     public void addFriendForChat(String userId, Socket socket) {
         userId1 = currentUserId;
         userId2 = userId;
-        addPeer(socket);
+        peer = addPeer(socket);
     }
 
     public String getUserId1() {
@@ -119,7 +115,7 @@ public class WebRtcClient{
         }
     }
 
-    private void setCamera() {
+    public void setCamera() {
         Log.i(LOG_TAG, "setCamera method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
         if (params.videoCallEnabled) {
@@ -128,8 +124,9 @@ public class WebRtcClient{
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            if(videoSource == null){
+                videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            }
             localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }
 
@@ -143,8 +140,10 @@ public class WebRtcClient{
     // capturer that works, or crash if none do.
     private VideoCapturer getVideoCapturer() {
         String[] cameraFacing = { "front", "back" };
-        int[] cameraIndex = { 0, 1 };
-        int[] cameraOrientation = { 0, 90, 180, 270 };
+//        int[] cameraIndex = { 0, 1 };
+        int[] cameraIndex = { 1 };
+//        int[] cameraOrientation = { 0, 90, 180, 270 };
+        int[] cameraOrientation = { 270 };
         for (String facing : cameraFacing) {
             for (int index : cameraIndex) {
                 for (int orientation : cameraOrientation) {
@@ -159,6 +158,13 @@ public class WebRtcClient{
             }
         }
         throw new RuntimeException("Failed to open capturer");
+    }
+
+    public void disposePeerConnnectionFactory(){
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
     }
 
     public boolean isInitiator() {

@@ -64,21 +64,22 @@
         <activity
             android:name=".activities.GamesChatActivity"
             android:label="@string/title_activity_games_chat"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.GameWebViewActivity"
             android:label="@string/title_activity_game_web_view"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".chat.IncomingCallActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
         <service
             android:name=".chat.ChatService"
             android:enabled="true"
             android:exported="true" >
-            <intent-filter>
-                <action android:name="com.android.ServiceStopped" />
-            </intent-filter>
         </service>
 
         <service
@@ -87,32 +88,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-
-        <receiver
-            android:name=".CallRequestReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
-            </intent-filter>
-        </receiver>
-
-        <activity
-            android:name=".chat.IncomingCallActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="com.nuggetchat.messenger.intent.action.INCOMING_CALL" />
-            </intent-filter>
-        </activity>
-
-        <receiver
-            android:name=".RestartServiceReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.android.ServiceStopped" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
