@@ -30,7 +30,7 @@ public class WebRtcClient{
     private String currentUserId;
     private boolean initiator = false;
     private NuggetApplication application;
-    public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
+    public List<IceCandidate> queuedRemoteCandidates;
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
     private String userId2;
@@ -97,6 +97,7 @@ public class WebRtcClient{
     }
 
     public Peer addPeer(Socket socket) {
+        queuedRemoteCandidates = new LinkedList<>();
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);

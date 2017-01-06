@@ -144,15 +144,18 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             public void run() {
                 if (webRtcClient.isInitiator() ) {
                     if (peerConnection.getRemoteDescription() != null) {
+                        Log.i(LOG_TAG, "initiator + remote desc done");
                         drainRemoteCandidates();
                     } else {
+                        Log.i(LOG_TAG, "Offer generated sending offer");
                         sendOfferLocalDescription();
                     }
                 } else {
                     if (peerConnection.getLocalDescription() == null) {
-                        Log.e(LOG_TAG, "local desc not set. Create answer");
+                        Log.i(LOG_TAG, "local desc not set. Create answer");
                         peerConnection.createAnswer(Peer.this, webRtcClient.constraints);
                     } else {
+                        Log.i(LOG_TAG, "Answer generated sending answer");
                         sendAnswerLocalDescription();
                         drainRemoteCandidates();
                     }
@@ -211,10 +214,12 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     private void drainRemoteCandidates() {
+        Log.i(LOG_TAG, "Drain remote candidate");
         if (webRtcClient.queuedRemoteCandidates == null) {
             return;
         }
         for (IceCandidate candidate : webRtcClient.queuedRemoteCandidates) {
+            Log.i(LOG_TAG, "Drain remote candidate " + candidate + " set succesful");
             peerConnection.addIceCandidate(candidate);
         }
         webRtcClient.queuedRemoteCandidates.clear();

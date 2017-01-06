@@ -878,24 +878,17 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
+        Log.i(LOG_TAG, "onFetchIceCandidates");
         Peer peer = webRtcClient.getPeer();
         if ( peer == null) {
             return;
         }
+        Log.i(LOG_TAG, "onFetchIceCandidates peer not null");
         if (webRtcClient.queuedRemoteCandidates != null) {
-            if (!webRtcClient.queuedRemoteCandidates.isEmpty()) {
-                Log.e(LOG_TAG, "local desc before queueing peers :" +
-                        peer.getPeerConnection().getLocalDescription());
-                Log.e(LOG_TAG, "remote desc before queueing peers :" +
-                        peer.getPeerConnection().getRemoteDescription());
-                webRtcClient.queuedRemoteCandidates.add(candidate);
-            }
-
+            Log.i(LOG_TAG, "Queueing ice candidates before connection");
+            webRtcClient.queuedRemoteCandidates.add(candidate);
         } else {
-            Log.e(LOG_TAG, "local desc before adding peers :" +
-                    peer.getPeerConnection().getLocalDescription());
-            Log.e(LOG_TAG, "remote desc before adding peers :" +
-                    peer.getPeerConnection().getRemoteDescription());
+            Log.i(LOG_TAG, "Directly add to peer ice candidates after connection");
             peer.getPeerConnection().addIceCandidate(candidate);
         }
     }
