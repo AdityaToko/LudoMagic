@@ -54,6 +54,7 @@ public class GlideUtils {
 
             DrawableRequestBuilder<String> drawableRequestBuilder = Glide.with(context)
                     .load(imageUrl)
+                    .fitCenter()
                     .thumbnail(thumbnailRequest)
                     .diskCacheStrategy(cacheStrategy);
             if (progressBar != null) {

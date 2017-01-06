@@ -1,5 +1,8 @@
 package com.nuggetchat.messenger.activities;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,6 +25,7 @@ import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import java.util.ArrayList;
 
@@ -33,12 +37,14 @@ import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME
 
 public class GamesFragment extends Fragment {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
-    private ArrayList<String> gamesName;
-    private ArrayList<String> gamesImages;
-    private ArrayList<String> gamesUrl;
+    private static final int TOTAL_NUMBER_LOCKED = 20;
+    private static final int UNLOCK_INCENTIVE = 2;
+
     private ArrayList<GamesItem> gamesItemList;
     private NuggetApplication nuggetApplication;
     private View view;
+    private int numberOfFriends;
+    private int numberLocked;
 
     @BindView(R.id.loading_icon)
     ProgressBar loadingIcon;
@@ -49,18 +55,62 @@ public class GamesFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_games_layout, container, false);
         ButterKnife.bind(this, view);
-        gamesName = new ArrayList<>();
-        gamesImages = new ArrayList<>();
+
         gamesItemList = new ArrayList<>();
-        gamesUrl = new ArrayList<>();
         nuggetApplication = NuggetApplication.getInstance();
 
-        fetchDataForGames();
+        numberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
+        Log.d("GAMESFRAGMENT", ">>>>NUM OF FRIENDS: " + String.valueOf(numberOfFriends));
+        numberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * numberOfFriends;
+        Log.d("GAMESFRAGMENT", ">>>>NUM LOCKED: " + String.valueOf(numberLocked));
+
+        fetchDataForGames(this.getContext());
 
         return view;
     }
 
-    private void fetchDataForGames() {
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(numberOfFriends < SharedPreferenceUtility.getNumberOfFriends(this.getContext())) {
+            int newNumberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
+            int newNumberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * newNumberOfFriends;
+            int toBeUnlocked = newNumberLocked - numberLocked;
+
+            Log.d("GAMESFRAGMENT", ">>>>NEW NUM OF FRIENDS: " + String.valueOf(newNumberOfFriends));
+            Log.d("GAMESFRAGMENT", ">>>>NEW NUM LOCKED: " + String.valueOf(newNumberLocked));
+
+            processUnlockGames(toBeUnlocked, newNumberOfFriends, newNumberLocked);
+        }
+    }
+
+    private void processUnlockGames(int toBeUnlocked, final int newNumberOfFriends, final int newNumberLocked) {
+        new AlertDialog.Builder(this.getContext())
+                .setTitle("You've unlocked new games!!")
+                .setMessage("By adding more friends you've unlocked some new games. Try them out")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with unlock
+                        unlockGames(newNumberLocked);
+                        numberOfFriends = newNumberOfFriends;
+                        numberLocked = newNumberLocked;
+                    }
+                })
+                .setIcon(R.drawable.unlock_dialog_icon)
+                .show();
+    }
+
+    private void unlockGames(int newNumberLocked) {
+        for(int i = gamesItemList.size()-numberLocked; i<= gamesItemList.size()-numberLocked; i++) {
+            Log.d("GAMESFRAGMENT", ">>>>UNLOCKING: " + String.valueOf(i) + "  " + gamesItemList.get(i).getGamesName());
+            gamesItemList.get(i).setLocked(false);
+            gamesItemList.get(i).setNewlyUnlocked(true);
+        }
+        setUpGridView(this.getContext());
+    }
+
+    private void fetchDataForGames(final Context context) {
         String firebaseUri = Conf.firebaseGamesUri();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
 
@@ -72,17 +122,23 @@ public class GamesFragment extends Fragment {
             return;
         }
 
-        firebaseRef.addChildEventListener(new ChildEventListener() {
+        firebaseRef.orderByChild("valueScore").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 loadingIcon.setVisibility(View.INVISIBLE);
                 GamesData gamesData = dataSnapshot.getValue(GamesData.class);
-                gamesName.add(gamesData.getTitle());
-                gamesImages.add(gamesData.getFeaturedImage());
-                gamesUrl.add(gamesData.getUrl());
-                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                        gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait());
-                gamesItemList.add(gamesItem);
+
+                if (gamesItemList.size() >= numberLocked) {
+                    GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false);
+                    gamesItemList.add(0, gamesItem);
+                    Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "false");
+                } else {
+                    GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), true);
+                    gamesItemList.add(0, gamesItem);
+                    Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "true");
+                }
                 Log.i(LOG_TAG, "Game " + gamesData.getDataId() + " isPortrait " + gamesData.getPortrait());
             }
 
@@ -122,17 +178,16 @@ public class GamesFragment extends Fragment {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
-                for (int i = 0 ; i < gamesItemList.size(); i++) {
+                for (int i = 0; i < gamesItemList.size(); i++) {
                     Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
                     if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {
                         Log.i(LOG_TAG, "dataSnapshot games key " + dataSnapshot.getKey());
-                        gamesName.remove(i);
-                        gamesImages.remove(i);
+
                         gamesItemList.remove(i);
                     }
                 }
 
-                setUpGridView();
+                setUpGridView(context);
             }
 
             @Override
@@ -157,24 +212,50 @@ public class GamesFragment extends Fragment {
         });
     }
 
-    private void setUpGridView() {
+    private void setUpGridView(final Context context) {
         Log.i(LOG_TAG, "grid view set, " + gamesItemList);
-        CustomGridAdapter customeGridAdapter = new CustomGridAdapter(getActivity(), gamesName, gamesImages);
+        CustomGridAdapter customGridAdapter = new CustomGridAdapter(getActivity(), gamesItemList);
         GridView gridView = (GridView) view.findViewById(R.id.grid_view);
-        gridView.setAdapter(customeGridAdapter);
+        gridView.setAdapter(customGridAdapter);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Toast.makeText(getActivity(), "Starting " + gamesName.get(position),
-                        Toast.LENGTH_SHORT).show();
-                nuggetApplication.logEvent(getContext(), FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
-                        null /* bundle */);
-                Log.i(LOG_TAG, "the games url, " + gamesUrl.get(position));
-                Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                gameIntent.putExtra(EXTRA_GAME_URL, gamesUrl.get(position));
-                Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
-                gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
-                startActivity(gameIntent);
+
+                if(gamesItemList.get(position).getLocked()) {
+
+                    new AlertDialog.Builder(context)
+                            .setTitle("Add friends to unlock these games!")
+                            .setMessage("Would you like to invite some friends now?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with add friends
+                                    Intent intent = new Intent(context, FriendsManagerActivity.class);
+                                    intent.putExtra("user_id", "dummy");
+                                    startActivityForResult(intent, 1234);
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with unlock
+
+                                }
+                            })
+                            .setIcon(R.drawable.unlock_dialog_icon)
+                            .show();
+
+                } else {
+                    Toast.makeText(getActivity(), "Starting " + gamesItemList.get(position).getGamesName(),
+                            Toast.LENGTH_SHORT).show();
+                    nuggetApplication.logEvent(getContext(), FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
+                            null /* bundle */);
+                    Log.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
+
+                    Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                    gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
+                    Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
+                    gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                    startActivity(gameIntent);
+                }
             }
         });
     }

@@ -250,6 +250,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 if (!newFriendList.isEmpty()) {
                     usersFriendList.clear();
                     usersFriendList.addAll(newFriendList);
+                    Log.d("FRIENDSMANAGER",String.valueOf(usersFriendList.size()));
+                    SharedPreferenceUtility.setNumberOfFriends(usersFriendList.size(),FriendsManagerActivity.this);
                 }
                 updateAdapterAndHideProgressBar(usersFriendList.isEmpty());
             }

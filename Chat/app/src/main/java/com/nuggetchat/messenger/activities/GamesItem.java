@@ -6,6 +6,16 @@ public class GamesItem {
     private String gamesImage;
     private String gamesUrl;
     private Boolean portrait;
+    private Boolean locked;
+    private Boolean newlyUnlocked = false;
+
+    public Boolean getNewlyUnlocked() {
+        return newlyUnlocked;
+    }
+
+    public void setNewlyUnlocked(Boolean newlyUnlocked) {
+        this.newlyUnlocked = newlyUnlocked;
+    }
 
     public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl, Boolean portrait) {
         this.gameKey = gameKey;
@@ -13,6 +23,17 @@ public class GamesItem {
         this.gamesImage = gamesImage;
         this.gamesUrl = gamesUrl;
         this.portrait = portrait;
+    }
+
+    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl, Boolean portrait, Boolean locked) {
+        this(gameKey, gamesName,gamesImage,gamesUrl,portrait);
+        this.locked = locked;
+    }
+
+    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl, Boolean portrait, Boolean locked, Boolean newlyUnlocked) {
+        this(gameKey, gamesName,gamesImage,gamesUrl,portrait);
+        this.locked = locked;
+        this.newlyUnlocked = newlyUnlocked;
     }
 
     public String getGameKey() {
@@ -53,6 +74,14 @@ public class GamesItem {
 
     public void setPortrait(Boolean portrait) {
         this.portrait = portrait;
+    }
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 
 }

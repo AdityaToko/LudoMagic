@@ -3,13 +3,29 @@
     android:orientation="vertical" android:layout_width="150dp"
     android:layout_height="150dp">
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
     <ImageView
         android:id="@+id/grid_image"
-        android:layout_height="wrap_content"
+        android:layout_height="86dp"
         android:layout_width="150dp"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
-        android:scaleType="fitCenter" />
+        android:scaleType="center" />
+
+    <ImageView
+        android:id="@+id/lock_icon"
+        android:layout_height="20dp"
+        android:layout_width="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_alignBottom="@id/grid_image"
+        android:layout_alignEnd="@id/grid_image"
+        android:layout_alignRight="@id/grid_image"
+        android:background="@drawable/locked"
+        android:visibility="invisible"/>
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/grid_text"
