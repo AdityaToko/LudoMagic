@@ -444,26 +444,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         });
     }
 
-    private void setSDP(){
-        Log.i(LOG_TAG, "calling setSDP");
-        Bundle sdpBundle = bundle.getBundle("requestBundle");
-        if (sdpBundle == null) {
-            return;
-        }
-        Log.d(LOG_TAG, "setSDP " + sdpBundle.toString());
-        String type = sdpBundle.getString("type");
-        String sdp = sdpBundle.getString("sdp");
-        targetUserId = sdpBundle.getString("from");
-        SessionDescription sessionDescription = new SessionDescription(
-                SessionDescription.Type.fromCanonicalForm(type), sdp
-        );
-
-        Peer peer = webRtcClient.getPeer();
-        if (peer != null) {
-            peer.getPeerConnection().setRemoteDescription(peer, sessionDescription);
-        }
-    }
-
     private void setUpListView(final int i) {
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
