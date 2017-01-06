@@ -20,7 +20,7 @@
     <application
         android:name=".NuggetApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/game"
+        android:icon="@mipmap/chat_icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">

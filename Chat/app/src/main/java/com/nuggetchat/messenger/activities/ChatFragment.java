@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -119,7 +118,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
             if(bundle != null && bundle.getBundle("requestBundle") != null){
-                acknowledgePreCallHandshake();
+                Bundle requestBundle = bundle.getBundle("requestBundle");
+                if (requestBundle.getString("user_id") != null) {
+                    sendPreCallHandshake(bundle.getString("user_id"));
+                }
+                if ("pre_call_handshake".equals(requestBundle.getString("type"))) {
+                    acknowledgePreCallHandshake();
+                }
             }
         }
 
@@ -154,7 +159,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
-    @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
+    //@BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
@@ -207,7 +212,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     private void audioManagerInit() {
         Log.i(LOG_TAG, "Audio manager Init");
-        audioManager = (AudioManager) gamesChatActivity.getSystemService(Context.AUDIO_SERVICE);
+        audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         defaultAudioManagerMode = audioManager.getMode();
     }
 
@@ -235,14 +240,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         isBound = true;
     }
 
-    @OnClick(R.id.start_call_button)
+   /* @OnClick(R.id.start_call_button)
     public void onStartCallBtnClick() {
+        showEndCallBtn();
         application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
-                null /* bundle */);
-        Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
+                null *//* bundle *//*);
+        Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
         startActivityForResult(intent, 1234);
-    }
+    }*/
 
     @OnClick(R.id.end_call_button)
     public void onEndCallBtnClick() {
@@ -262,7 +268,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient.endCall();
         showFriendsAddCluster();
         updateVideoViews();
-        showStartCallBtn();
+       // showStartCallBtn();
         audioPlayer.stopRingtone();
     }
 
@@ -449,7 +455,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
         LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
-        View view = LayoutInflater.from(gamesChatActivity).inflate(R.layout.grid_item, gamesList, false);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.multiplayer_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
@@ -568,7 +574,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
                 remoteVideoRender = null;
             }
-            resetAudioManager();
         }
         mainHandler.post(new Runnable() {
             @Override
@@ -576,6 +581,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
             }
         });
+        resetAudioManager();
         updateVideoViews();
         webRtcClient.setCamera();
     }
@@ -663,12 +669,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, e.getMessage());
         }
 
-        hideFriendsAddCluster();
+        //hideFriendsAddCluster();
+        linearLayout.setVisibility(View.INVISIBLE);
+
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
         audioPlayer.playRingtone();
         endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+      //  startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void startFriendCall(String facebookId) {
@@ -722,7 +730,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                linearLayout.setVisibility(View.INVISIBLE);
+              //  linearLayout.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -734,7 +742,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 endCall.setVisibility(View.INVISIBLE);
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
                 Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
-                startCallButton.setVisibility(View.VISIBLE);
+              //  startCallButton.setVisibility(View.VISIBLE);
                 linearLayout.setVisibility(View.VISIBLE);
             }
         });
@@ -886,7 +894,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
-        showStartCallBtn();
+        //showStartCallBtn();
         showFriendsAddCluster();
     }
 
@@ -919,7 +927,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
+                //startCallButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -929,7 +937,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                //startCallButton.setVisibility(View.INVISIBLE);
             }
         });
     }
