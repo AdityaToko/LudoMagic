@@ -64,10 +64,6 @@ public class WebRtcClient{
         if (peer != null) {
             peer.resetPeerConnection();
         }
-        if (factory != null) {
-            factory.dispose();
-            factory = null;
-        }
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null);
         }
@@ -120,7 +116,7 @@ public class WebRtcClient{
         }
     }
 
-    private void setCamera() {
+    public void setCamera() {
         Log.i(LOG_TAG, "setCamera method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
         if (params.videoCallEnabled) {
@@ -160,6 +156,13 @@ public class WebRtcClient{
             }
         }
         throw new RuntimeException("Failed to open capturer");
+    }
+
+    public void disposePeerConnnectionFactory(){
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
     }
 
     public boolean isInitiator() {

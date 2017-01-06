@@ -193,7 +193,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
         Log.i(LOG_TAG, "onCreate - call update View");
-        //updateVideoViews();
 
         initWebRtc(myUserId);
         bindChatService();
@@ -569,10 +568,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
                 remoteVideoRender = null;
             }
-
             resetAudioManager();
         }
         updateVideoViews();
+        webRtcClient.setCamera();
     }
 
     @Override
@@ -633,6 +632,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 }
             }
             webRtcClient.endCall();
+            webRtcClient.disposePeerConnnectionFactory();
             undbindService();
         }
         //eglBase.release();
@@ -706,16 +706,26 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void hideFriendsAddCluster() {
-        multiplayerGamesView.setVisibility(View.VISIBLE);
-        linearLayout.setVisibility(View.INVISIBLE);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                multiplayerGamesView.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     private void showFriendsAddCluster() {
-        endCall.setVisibility(View.INVISIBLE);
-        multiplayerGamesView.setVisibility(View.INVISIBLE);
-        Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
-        startCallButton.setVisibility(View.VISIBLE);
-        linearLayout.setVisibility(View.VISIBLE);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endCall.setVisibility(View.INVISIBLE);
+                multiplayerGamesView.setVisibility(View.INVISIBLE);
+                Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
+                startCallButton.setVisibility(View.VISIBLE);
+                linearLayout.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void getUserFriends() {
