@@ -75,7 +75,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
     @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
     @BindView(R.id.swipeContainer) /* package-local */ SwipeRefreshLayout swipeContainer;
-    @BindView(R.id.add_your_facebook_friends_text) /* package-local */ TextView addFacebookFriendsText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,15 +103,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light);
-
-        Spannable wordOne  = new SpannableString(addFacebookFriendsText.getText().toString().substring(0,addFacebookFriendsText.getText().length()-10));
-        wordOne.setSpan(new ForegroundColorSpan(Color.parseColor("#426599")), 0, wordOne.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        Spannable wordSecond = new SpannableString(addFacebookFriendsText.getText().toString()
-                .substring(addFacebookFriendsText.getText().length()-10, addFacebookFriendsText.getText().length()));
-        wordSecond.setSpan(new ForegroundColorSpan(Color.parseColor("#EA476E")), 0, wordSecond.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        addFacebookFriendsText.setText(wordOne);
-        addFacebookFriendsText.append(wordSecond);
     }
 
     public void sendMessagetoFriends(View v) {

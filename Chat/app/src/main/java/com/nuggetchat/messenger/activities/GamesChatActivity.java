@@ -122,7 +122,7 @@ public class GamesChatActivity extends AppCompatActivity {
                     tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#1cb1be"));
                 } else {
-                    imageView.setImageResource(R.drawable.chat_icon);
+                    imageView.setImageResource(R.drawable.video_icon);
                     tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#F9B21B"));
                 }

@@ -15,4 +15,5 @@
     <color name="colorBlue">#426599</color>
     <color name="one_extra_game_unlocked_text_color">#686868</color>
     <color name="add_friends_background_color">#FFF2BB</color>
+    <color name="status_blue">#36dee9</color>
 </resources>
