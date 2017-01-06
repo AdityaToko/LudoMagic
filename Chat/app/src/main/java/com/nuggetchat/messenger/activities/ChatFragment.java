@@ -665,6 +665,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         hideFriendsAddCluster();
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
+        audioPlayer.playRingtone();
+        endCall.setVisibility(View.VISIBLE);
+        startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void startFriendCall(String facebookId) {
