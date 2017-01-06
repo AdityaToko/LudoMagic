@@ -513,7 +513,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         } else {
             Log.w(LOG_TAG, "Video tracks empty");
         }
-
     }
 
     @Override
@@ -633,7 +632,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private void sendPreCallHandshake(String facebookId) {
-        webRtcClient.setInitiator(true);
         application.setInitiator(true);
         targetUserId = facebookId;
         webRtcClient.addFriendForChat(facebookId, chatService.socket);
