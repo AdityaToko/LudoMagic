@@ -231,7 +231,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick(R.id.start_call_button)
     public void onStartCallBtnClick() {
-        showEndCallBtn();
         application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
                 null /* bundle */);
         Intent intent = new Intent(ChatFragment.this.getActivity(), FriendsManagerActivity.class);
