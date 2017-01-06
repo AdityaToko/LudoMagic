@@ -42,7 +42,9 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     }
 
     public void resetPeerConnection() {
+        Log.i(LOG_TAG, "MessageHandler reset Peer connection");
         if (peerConnection != null) {
+            Log.i(LOG_TAG, "MessageHandler reset Peer connection disposing");
             peerConnection.dispose();
             peerConnection = null;
         }
@@ -82,6 +84,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             payload.put("from", webRtcClient.getUserId1());
             payload.put("to", webRtcClient.getUserId2());
             payload.put("token", "abcd");
+            Log.i(LOG_TAG, "MessageHandler emit ice_candidates");
             socket.emit("ice_candidates", payload);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -176,6 +179,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             callData.put("to", webRtcClient.getUserId2());
             callData.put("offer", localDesc);
             callData.put("token", "abcd");
+            Log.i(LOG_TAG, "MessageHandler emit request_call");
             socket.emit("request_call", callData);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -194,7 +198,7 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             callData.put("to", webRtcClient.getUserId2());
             callData.put("token", "abcd");
             callData.put("answer", localDesc);
-            Log.e(LOG_TAG, "sendAnswerLocalDescription: " + callData.toString() );
+            Log.i(LOG_TAG, "MessageHandler emit accept_call " + callData.toString() );
             socket.emit("accept_call", callData);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage());

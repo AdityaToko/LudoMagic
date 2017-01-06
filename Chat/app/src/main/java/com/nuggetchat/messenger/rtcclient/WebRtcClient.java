@@ -52,19 +52,21 @@ public class WebRtcClient{
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
         addIceServers(iceServerUrls);
-        setCamera();
+        setCameraAndUpdateVideoViews();
     }
 
 
-    public void endCall() {
+    public void endCallAndRemoveRemoteStream() {
         Log.i(LOG_TAG, "End call - Incoming");
         setInitiator(false);
         application.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
+            Log.i(LOG_TAG, "peer reset done");
         }
+        Log.i(LOG_TAG, "rtc update video view");
         if (rtcListener != null) {
-            rtcListener.onRemoveRemoteStream(null);
+            rtcListener.onRemoveRemoteStream(null); // will also update video views
         }
     }
 
@@ -72,7 +74,6 @@ public class WebRtcClient{
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
-        //this.peer = newPeer;
         return newPeer;
     }
 
@@ -115,25 +116,27 @@ public class WebRtcClient{
         }
     }
 
-    public void setCamera() {
-        Log.i(LOG_TAG, "setCamera method");
+    public void setCameraAndUpdateVideoViews() {
+        Log.i(LOG_TAG, "setCameraAndUpdateVideoViews method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
-        if (params.videoCallEnabled) {
-            MediaConstraints videoConstraints = new MediaConstraints();
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(params.videoHeight)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-            if(videoSource == null){
-                videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            }
-            localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
-        }
 
+        MediaConstraints videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(params.videoHeight)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
+        if(videoSource == null){
+            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+        }
+        Log.i(LOG_TAG, "Adding video track");
+        localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
+
+        Log.i(LOG_TAG, "Adding audio track");
         AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
         localMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 
-        rtcListener.onLocalStream(localMediaStream);
+        Log.i(LOG_TAG, "Trigger local stream");
+        rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
     // Cycle through likely device names for the camera and return the first
@@ -157,7 +160,7 @@ public class WebRtcClient{
                 }
             }
         }
-        throw new RuntimeException("Failed to open capturer");
+        throw new IllegalStateException("Failed to open capturer");
     }
 
     public void disposePeerConnnectionFactory(){

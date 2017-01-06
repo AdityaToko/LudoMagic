@@ -37,6 +37,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import java.util.HashMap;
@@ -227,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                startService(new Intent(MainActivity.this, ChatService.class));
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
                 loginProgressBar.setVisibility(View.INVISIBLE);
@@ -236,7 +238,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void gotoGameChatActivity() {
-        Intent intent = new Intent(MainActivity.this, GamesChatActivity.class);
+        startService(new Intent(MainActivity.this, ChatService.class));
+        Intent intent = GamesChatActivity.getNewIntentGameChatActivity(MainActivity.this);
         startActivity(intent);
         finish();
     }

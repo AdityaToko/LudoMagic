@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -86,6 +85,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private static final int LOCAL_Y_CONNECTING = 0;
     private static final int LOCAL_WIDTH_CONNECTING = 100;
     private static final int LOCAL_HEIGHT_CONNECTING = 100;
+    public static final int INCOMING_CALL_CODE = 7890;
     Bundle bundle;
     ArrayList<FriendInfo> selectUsers = new ArrayList<>();
     UserFriendsAdapter adapter;
@@ -119,27 +119,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
             if(bundle != null && bundle.getBundle("requestBundle") != null){
-                acknowledgePreCallHandshake();
-            }
-        }
-
-        private void acknowledgePreCallHandshake() {
-            Log.e(LOG_TAG, "received pre call handshake, sending acknowledgement");
-            Bundle requestBundle = bundle.getBundle("requestBundle");
-            if (requestBundle == null) {
-                return;
-            }
-
-            JSONObject requestData = new JSONObject();
-            try {
-                targetUserId = requestBundle.getString("from");
-                requestData.put("from", requestBundle.get("from"));
-                requestData.put("to", requestBundle.get("to"));
-                requestData.put("token", requestBundle.get("token"));
-
-                sendPreCallHandshakeComplete(requestData);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage());
+                acknowledgePreCallHandshake(bundle);
             }
         }
 
@@ -159,6 +139,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private VideoRenderer remoteVideoRender;
     private String myUserId;
     private String targetUserId;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -247,6 +228,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick(R.id.end_call_button)
     public void onEndCallBtnClick() {
         Log.i(LOG_TAG, "end call Button clicked");
+        audioPlayer.stopRingtone();
         JSONObject payload = new JSONObject();
         application.logEvent(getContext(),FirebaseAnalyticsConstants.END_CALL_BUTTON_CLICKED,
                 null /* bundle */);
@@ -258,12 +240,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Log.i(LOG_TAG, "MessageHandler emit end_call");
         chatService.socket.emit("end_call", payload);
-        webRtcClient.endCall();
+        webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
-        updateVideoViews();
         showStartCallBtn();
-        audioPlayer.stopRingtone();
     }
 
     private void initVideoViews() {
@@ -498,6 +479,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Log.i(LOG_TAG, "MessageHandler emit game_link");
                 chatService.socket.emit("game_link", payload);
             } else {
                 Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
@@ -509,7 +491,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Point displaySize = new Point();
         gamesChatActivity.getWindowManager().getDefaultDisplay().getSize(displaySize);
         PeerConnectionParameters params = new PeerConnectionParameters(
-                true, false, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
+                false /*loopback*/, displaySize.x, displaySize.y, 30, 1, "VP9", true, 1, "opus", true
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(gamesChatActivity);
         webRtcClient = new WebRtcClient(this, params,
@@ -576,8 +558,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
             }
         });
-        updateVideoViews();
-        webRtcClient.setCamera();
+        if (webRtcClient != null) {
+            webRtcClient.setCameraAndUpdateVideoViews();
+        }
     }
 
     @Override
@@ -630,6 +613,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     e.printStackTrace();
                 }
                 if (chatService != null && chatService.socket != null) {
+                    Log.i(LOG_TAG, "MessageHandler emit end_call");
                     chatService.socket.emit("end_call", payload);
                 } else {
                     String errStr = "Chat service or socket null";
@@ -637,7 +621,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     throw new IllegalStateException(errStr);
                 }
             }
-            webRtcClient.endCall();
+            Log.i(LOG_TAG, "MessageHandler onDestroy");
+            webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
             undbindService();
         }
@@ -657,8 +642,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             payload.put("from", myUserId);
             payload.put("to", targetUserId);
             payload.put("token", "abcd");
+            Log.e(LOG_TAG, "MessageHandler emit pre_call_handshake " + payload.toString());
             chatService.socket.emit("pre_call_handshake", payload);
-            Log.e(LOG_TAG, "pre call handshake sent.." + payload.toString());
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage());
         }
@@ -775,12 +760,23 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "fragment onActivityResult");
-        if (requestCode == 1234 && data != null) {
-            Log.d(LOG_TAG, "before toast onActivityResult");
-            if (data != null) {
+        Log.i(LOG_TAG, "fragment onActivityResult");
+        if (data != null) {
+            if (requestCode == 1234) {
+                Log.i(LOG_TAG, "before toast onActivityResult");
                 showEndCallBtn();
                 sendPreCallHandshake(data.getStringExtra("user_id"));
+            } else if (requestCode == ChatFragment.INCOMING_CALL_CODE) {
+                Bundle receivedBundle = data.getExtras();
+                Bundle newReqBundle = new Bundle();
+                newReqBundle.putBundle("requestBundle", receivedBundle);
+                boolean accepted = receivedBundle.getBoolean(IncomingCallActivity.CALL_ACCEPTED);
+                if (accepted) {
+                    Log.i(LOG_TAG, "User call accepted");
+                    acknowledgePreCallHandshake(newReqBundle);
+                } else {
+                    Log.i(LOG_TAG, "User call rejected");
+                }
             }
         }
     }
@@ -799,9 +795,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     payload.put("from", myUserId);
                     payload.put("to", targetUserId);
                     payload.put("token", token);
+                    Log.e(LOG_TAG, "MessageHandler emit handshake_complete");
                     chatService.socket.emit("handshake_complete", payload);
                     showEndCallBtn();
-                    Log.e(LOG_TAG, "pre call handshake complete.. sending handshake_complete");
                 }
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage());
@@ -828,8 +824,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     bundle.putString("from", from);
                     bundle.putString("token", token);
                     bundle.putString("type", type);
+                    bundle.putString("from_activity", "chat_frag");
                     intent.putExtras(bundle);
-                    startActivity(intent);
+                    startActivityForResult(intent, INCOMING_CALL_CODE);
                 }
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage());
@@ -885,7 +882,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallEnd() {
-        webRtcClient.endCall();
+        Log.i(LOG_TAG, "MessageHandler onCallEnd");
+        webRtcClient.endCallAndRemoveRemoteStream();
         showStartCallBtn();
         showFriendsAddCluster();
     }
@@ -932,5 +930,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 startCallButton.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    private void acknowledgePreCallHandshake(Bundle bundle) {
+        Log.e(LOG_TAG, "acknowledgePreCallHandshake - received pre call handshake, sending acknowledgement");
+        Bundle requestBundle = bundle.getBundle("requestBundle");
+        if (requestBundle == null) {
+            return;
+        }
+
+        JSONObject requestData = new JSONObject();
+        try {
+            targetUserId = requestBundle.getString("from");
+            requestData.put("from", requestBundle.get("from"));
+            requestData.put("to", requestBundle.get("to"));
+            requestData.put("token", requestBundle.get("token"));
+
+            sendPreCallHandshakeComplete(requestData);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
     }
 }
