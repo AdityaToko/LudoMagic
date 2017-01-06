@@ -1,12 +1,7 @@
 package com.nuggetchat.messenger.chat;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.rtcclient.EventListener;

@@ -98,8 +98,8 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
     @Override
     public void onRemoveStream(MediaStream mediaStream) {
         Log.d(LOG_TAG, "onRemoveStream: " + mediaStream.label());
-        peerConnection.close();
         webRtcClient.rtcListener.onRemoveRemoteStream(mediaStream);
+        peerConnection.close();
     }
 
     @Override
