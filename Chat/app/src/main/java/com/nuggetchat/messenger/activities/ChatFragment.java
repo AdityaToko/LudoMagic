@@ -268,7 +268,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         webRtcClient.endCall();
         showFriendsAddCluster();
         updateVideoViews();
-        showStartCallBtn();
+       // showStartCallBtn();
         audioPlayer.stopRingtone();
     }
 
@@ -894,7 +894,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallEnd() {
         webRtcClient.endCall();
-        showStartCallBtn();
+        //showStartCallBtn();
         showFriendsAddCluster();
     }
 
