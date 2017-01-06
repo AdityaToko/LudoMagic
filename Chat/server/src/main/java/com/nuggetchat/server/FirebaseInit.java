@@ -3,6 +3,7 @@ package com.nuggetchat.server;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
+import com.nuggetchat.lib.Conf;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class FirebaseInit extends HttpServlet {
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setServiceAccount(new ByteArrayInputStream(accountJson.getBytes()))
-                    .setDatabaseUrl("https://nuggetplay-ceaaf.firebaseio.com")
+                    .setDatabaseUrl(Conf.firebaseDomainUri())
                     .setDatabaseAuthVariableOverride(auth)
                     .build();
             FirebaseApp.initializeApp(options);

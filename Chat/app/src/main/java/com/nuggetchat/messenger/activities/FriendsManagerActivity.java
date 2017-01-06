@@ -32,9 +32,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.lib.model.FriendInfo;
-import com.nuggetchat.messenger.AppConf;
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
@@ -184,11 +184,11 @@ public class FriendsManagerActivity extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = new StringRequest(
                 Request.Method.POST,
-                AppConf.GET_FRIENDS_API_URL,
+                Conf.GET_FRIENDS_API_URL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.d(LOG_TAG, "Request success " + response);
+                        Log.i(LOG_TAG, "Request success " + response);
                         getFriendsFromFirebase(firebaseUid);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
@@ -226,10 +226,11 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     private void getFriendsFromFirebase(String firebaseId) {
-        String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + firebaseId + "/friends";
+        String firebaseUri = Conf.firebaseUserFriends(firebaseId);
         Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
 
-        final DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(firebaseUri);
+        final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseUri);
         friendsManagerProgressBar.setVisibility(INVISIBLE);
         inviteFriendsText.setVisibility(VISIBLE);
         swipeContainer.setRefreshing(false);
@@ -249,8 +250,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 if (!newFriendList.isEmpty()) {
                     usersFriendList.clear();
                     usersFriendList.addAll(newFriendList);
-                    updateAdapterAndHideProgressBar();
                 }
+                updateAdapterAndHideProgressBar(usersFriendList.isEmpty());
             }
 
             @Override
@@ -260,12 +261,16 @@ public class FriendsManagerActivity extends AppCompatActivity {
         });
     }
 
-    private void updateAdapterAndHideProgressBar() {
+    private void updateAdapterAndHideProgressBar(final boolean friendListEmpty) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                if (friendListEmpty) {
+                    inviteFriendsText.setVisibility(VISIBLE);
+                } else {
+                    inviteFriendsText.setVisibility(INVISIBLE);
+                }
                 friendsManagerProgressBar.setVisibility(INVISIBLE);
-                inviteFriendsText.setVisibility(INVISIBLE);
                 adapter.notifyDataSetChanged();
             }
         });
