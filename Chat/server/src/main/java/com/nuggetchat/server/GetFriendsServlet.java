@@ -8,6 +8,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.internal.NonNull;
 import com.google.firebase.tasks.OnCompleteListener;
 import com.google.firebase.tasks.Task;
+import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
@@ -112,7 +113,7 @@ public class GetFriendsServlet extends HttpServlet {
 
 
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReferenceFromUrl(
-                "https://nuggetplay-ceaaf.firebaseio.com/users/" + userId);
+                Conf.firebaseUsersUri() + userId);
         dbReference.setValue(userInfo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
