@@ -1,11 +1,16 @@
 package com.nuggetchat.messenger.rtcclient;
 
+import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
 
 import io.socket.client.Socket;
 
 public interface EventListener {
+
+    void onPreCallHandshake(JSONObject data);
+
+    void onHandshakeComplete(JSONObject data);
 
     void onCall(String userId, Socket socket);
 

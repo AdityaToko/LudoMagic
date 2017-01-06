@@ -45,19 +45,26 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Intent intent = getIntent();
         bundle = intent.getExtras();
-        String from = bundle.getString("from");
-        Log.i(LOG_TAG, "facebook id of friend, " + from);
-        fetchFriendNameAndPic(from);
-        String to = bundle.getString("to");
+
         String type = bundle.getString("type");
-        String sdp = bundle.getString("sdp");
-        Log.e(LOG_TAG, from + " " + to + " " + " " + type + " " + sdp);
+        String from = bundle.getString("from");
+        String to = bundle.getString("to");
+        String token = bundle.getString("token");
+
+        Log.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
+
+        fetchFriendNameAndPic(from);
+
         setContentView(R.layout.activity_incoming_call);
         ButterKnife.bind(this);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         audioPlayer = new AudioPlayer(this);
         audioPlayer.playRingtone();
     }
