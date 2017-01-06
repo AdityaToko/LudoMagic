@@ -119,9 +119,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             chatService = ((ChatService.ChatBinder)iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
             if(bundle != null && bundle.getBundle("requestBundle") != null){
-                acknowledgePreCallHandshake(bundle);
+                Bundle requestBundle = bundle.getBundle("requestBundle");
+                if (requestBundle.getString("user_id") != null) {
+                    sendPreCallHandshake(bundle.getString("user_id"));
+                }
+                if ("pre_call_handshake".equals(requestBundle.getString("type"))) {
+                    acknowledgePreCallHandshake(bundle);
+                }
             }
         }
+
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
@@ -134,12 +141,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
-    @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
     private String targetUserId;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -216,15 +221,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         isBound = true;
     }
 
-    @OnClick(R.id.start_call_button)
-    public void onStartCallBtnClick() {
-        application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
-                null /* bundle */);
-        Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
-        intent.putExtra("user_id", "dummy");
-        startActivityForResult(intent, 1234);
-    }
-
     @OnClick(R.id.end_call_button)
     public void onEndCallBtnClick() {
         Log.i(LOG_TAG, "end call Button clicked");
@@ -244,7 +240,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         chatService.socket.emit("end_call", payload);
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
-        showStartCallBtn();
     }
 
     private void initVideoViews() {
@@ -430,7 +425,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
         LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
-        View view = LayoutInflater.from(gamesChatActivity).inflate(R.layout.grid_item, gamesList, false);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.multiplayer_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
@@ -550,7 +545,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 remoteStream.videoTracks.get(0).removeRenderer(remoteVideoRender);
                 remoteVideoRender = null;
             }
-            resetAudioManager();
         }
         mainHandler.post(new Runnable() {
             @Override
@@ -558,6 +552,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
             }
         });
+        resetAudioManager();
         if (webRtcClient != null) {
             webRtcClient.setCameraAndUpdateVideoViews();
         }
@@ -647,12 +642,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, e.getMessage());
         }
 
-        hideFriendsAddCluster();
+        //hideFriendsAddCluster();
+        linearLayout.setVisibility(View.INVISIBLE);
+
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
         audioPlayer.playRingtone();
         endCall.setVisibility(View.VISIBLE);
-        startCallButton.setVisibility(View.INVISIBLE);
+      //  startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void triggerImageChanges() {
@@ -691,7 +688,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                linearLayout.setVisibility(View.INVISIBLE);
+              //  linearLayout.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -703,7 +700,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 endCall.setVisibility(View.INVISIBLE);
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
                 Log.d(LOG_TAG, "START CALL SHOW FRIENDS CLUSTER");
-                startCallButton.setVisibility(View.VISIBLE);
+              //  startCallButton.setVisibility(View.VISIBLE);
                 linearLayout.setVisibility(View.VISIBLE);
             }
         });
@@ -896,7 +893,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.INVISIBLE);
-                startCallButton.setVisibility(View.VISIBLE);
+                //startCallButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -906,7 +903,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 endCall.setVisibility(View.VISIBLE);
-                startCallButton.setVisibility(View.INVISIBLE);
+                //startCallButton.setVisibility(View.INVISIBLE);
             }
         });
     }
