@@ -11,4 +11,6 @@
     <string name="one_extra_game_unlocked">One extra game unlocked for every two friends added</string>
     <string name="quick_play">Friends Available</string>
     <string name="add_other_friends">Invite Friends</string>
+    <string name="skip">skip</string>
+    <string name="add_friends_header">Add Friends</string>
 </resources>

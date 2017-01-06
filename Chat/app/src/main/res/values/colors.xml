@@ -13,5 +13,6 @@
     <color name="reject_btn_color">#B90006</color>
     <color name="game_web_view_background">#000000</color>
     <color name="colorBlue">#426599</color>
-    <color name="one_extra_game_unlocked_text_color">#696969</color>
+    <color name="one_extra_game_unlocked_text_color">#686868</color>
+    <color name="add_friends_background_color">#FFF2BB</color>
 </resources>
