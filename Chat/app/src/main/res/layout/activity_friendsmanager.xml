@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context=".activities.MainActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MainActivity">
 
     <TextView
         android:id="@+id/add_friends_header"
@@ -17,7 +17,7 @@
         android:paddingRight="15dp"
         android:paddingStart="15dp"
         android:paddingTop="7dp"
-        android:text="Add Friends"/>
+        android:text="Add Friends" />
 
     <TextView
         android:id="@+id/skip_friends_addition"
@@ -26,17 +26,57 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:padding="15dp"
-        android:text="skip"/>
+        android:text="skip" />
+
+    <TextView
+        android:id="@+id/add_your_facebook_friends_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/skip_friends_addition"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:text="@string/add_your_facebook_friends_to_unlock_more_games"
+        android:textColor="@color/colorBlue"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/send_share_intent"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/add_your_facebook_friends_text"
+        android:layout_centerHorizontal="true"
+        android:layout_marginEnd="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/rounded_fb_invite_button"
+        android:gravity="center"
+        android:onClick="sendMessagetoFriends"
+        android:text="@string/add_facebook_friends"
+        android:textColor="@color/colorWhite"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/one_extra_game_unlocked_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/send_share_intent"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="@string/one_extra_game_unlocked"
+        android:textColor="@color/one_extra_game_unlocked_text_color"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/quick_play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/add_friends_header"
+        android:layout_below="@id/one_extra_game_unlocked_text"
+        android:layout_marginTop="10dp"
         android:paddingLeft="15dp"
         android:paddingStart="15dp"
-        android:text="Quick Play"
-        android:textColor="#f24444"/>
+        android:text="@string/quick_play"
+        android:textColor="#f24444" />
 
     <View
         android:id="@+id/quick_play_underline"
@@ -48,14 +88,13 @@
         android:layout_marginRight="15dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="5dp"
-        android:background="#c0c0c0"/>
+        android:background="#c0c0c0" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swipeContainer"
-        android:layout_below="@id/quick_play_underline"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/quick_play_underline"
         android:layout_marginBottom="75dp">
 
         <ListView
@@ -67,58 +106,34 @@
 
     <TextView
         android:id="@+id/invite_friends_text"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_width="match_parent"
         android:gravity="center"
-        android:textSize="18dp"
         android:text="No friends yet. Invite friends "
-        android:visibility="gone"/>
+        android:textSize="18dp"
+        android:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/invite_buttons_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <Button
+        android:id="@+id/postMessagetoFBFriends"
+        android:layout_width="180dp"
         android:layout_alignParentBottom="true"
-        android:layout_margin="10dp"
-        android:orientation="horizontal"
-        android:weightSum="2">
-
-        <Button
-            android:id="@+id/send_share_intent"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_weight="1"
-            android:background="@drawable/rounded_fb_invite_button"
-            android:onClick="sendMessagetoFriends"
-            android:text="add facebook friends"
-            android:textColor="@color/colorWhite"
-            android:textSize="13sp"
-            android:textStyle="bold"/>
-
-        <Button
-            android:id="@+id/postMessagetoFBFriends"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginStart="5dp"
-            android:layout_weight="1"
-            android:background="@drawable/rounded_invite_button"
-            android:onClick="sendShareIntent"
-            android:text="add other friends"
-            android:textColor="@color/colorWhite"
-            android:textSize="13sp"
-            android:textStyle="bold"/>
-
-    </LinearLayout>
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
+        android:background="@drawable/rounded_invite_button"
+        android:onClick="sendShareIntent"
+        android:text="add other friends"
+        android:textColor="@color/first_tab_text_color"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <ProgressBar
         android:id="@+id/friends_manager_progress_bar"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
 </RelativeLayout>

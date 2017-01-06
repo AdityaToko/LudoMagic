@@ -6,4 +6,8 @@
     <string name="title_activity_game_web_view">GameWebViewActivity</string>
     <string name="play_with_friends">play with friends</string>
     <string name="calling">Calling</string>
+    <string name="add_your_facebook_friends_to_unlock_more_games">Add your Facebook Friends to unlock more games</string>
+    <string name="add_facebook_friends">add facebook friends</string>
+    <string name="one_extra_game_unlocked">One extra game unlocked for every two friends added</string>
+    <string name="quick_play">Quick Call &amp; Play</string>
 </resources>

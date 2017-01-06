@@ -130,7 +130,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.popular_friend_2) ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
-    @BindView(R.id.start_call_button) /* package-local */ ImageView startCallButton;
+    @BindView(R.id.add_friends_to_chat) /* package-local */ ImageView startCallButton;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
@@ -210,7 +210,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         isBound = true;
     }
 
-    @OnClick(R.id.start_call_button)
+    @OnClick(R.id.add_friends_to_chat)
     public void onStartCallBtnClick() {
         showEndCallBtn();
         application.logEvent(getContext(), FirebaseAnalyticsConstants.START_CALL_BUTTON_CLICKED,
