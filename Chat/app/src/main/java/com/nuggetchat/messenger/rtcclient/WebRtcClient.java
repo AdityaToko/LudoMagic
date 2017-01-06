@@ -65,37 +65,9 @@ public class WebRtcClient{
         Log.i(LOG_TAG, "End call - Incoming");
         application.setInitiator(false);
         if (peer != null) {
-
-            if (localMediaStream != null) {
-                if (videoTrack != null) {
-                    Log.i(LOG_TAG, "End call - Incoming 1");
-                    localMediaStream.removeTrack(videoTrack);
-                    videoTrack = null;
-                }
-                if (audioTrack != null) {
-                    Log.i(LOG_TAG, "End call - Incoming 2");
-                    localMediaStream.removeTrack(audioTrack);
-                    audioTrack = null;
-                }
-                if (videoSource != null) {
-                    Log.i(LOG_TAG, "End call - Incoming 3");
-                    videoSource.dispose();
-                    videoSource = null;
-                }
-                if (audioSource != null) {
-                    Log.i(LOG_TAG, "End call - Incoming 4");
-                    audioSource.dispose();
-                    audioSource = null;
-                }
-                Log.i(LOG_TAG, "End call - Incoming 5");
-                localMediaStream.dispose();
-                localMediaStream = null;
-            }
-            Log.i(LOG_TAG, "End call - Incoming 6");
             peer.resetPeerConnection();
             Log.i(LOG_TAG, "peer reset done");
         }
-        Log.i(LOG_TAG, "rtc update video view");
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null); // will also update video views
         }
