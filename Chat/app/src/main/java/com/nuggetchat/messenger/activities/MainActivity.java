@@ -2,6 +2,8 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,8 +34,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
-import com.nuggetchat.messenger.AppConf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -43,10 +45,13 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.nuggetchat.lib.Conf.firebaseDomainUri;
+
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     LoginButton loginButton;
     CallbackManager callbackManager;
+    Handler mainHandler;
 
     @BindView(R.id.login_progress_bar) /* package-local */ ProgressBar loginProgressBar;
 
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void OnTokenRefreshed(AccessToken accessToken) {
                                 AccessToken.setCurrentAccessToken(accessToken);
-                                gotoNextActivity();
+                                gotoGameChatActivity();
                             }
 
                             @Override
@@ -70,13 +75,14 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
             } else {
-                gotoNextActivity();
+                gotoGameChatActivity();
                 return;
             }
         }
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        mainHandler = new Handler(Looper.getMainLooper());
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("public_profile", "email", "user_friends");
@@ -106,18 +112,17 @@ public class MainActivity extends AppCompatActivity {
         // App code
         final String accessToken = loginResult.getAccessToken().getToken();
         Log.i(LOG_TAG, "Trying Login");
-//      Log.i(LOG_TAG, "firebase token " + accessToken);
         FirebaseAuth.getInstance()
                 .signInWithCredential(FacebookAuthProvider.getCredential(accessToken))
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        getFirebaseIdToken(task, loginResult.getAccessToken());
+                        getFirebaseIdTokenAndStartNextActivity(task, loginResult.getAccessToken());
                     }
                 });
     }
 
-    private void getFirebaseIdToken(final Task<AuthResult> task, final AccessToken accessToken) {
+    private void getFirebaseIdTokenAndStartNextActivity(final Task<AuthResult> task, final AccessToken accessToken) {
         if (!task.isSuccessful()) {
             Log.e(LOG_TAG, "Error in login.", task.getException());
             return;
@@ -127,32 +132,37 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
+                        String facebookToken = accessToken.getToken();
                         String firebaseIdToken = tokenTask.getResult().getToken();
                         String firebaseUid = task.getResult().getUser().getUid();
+                        String facebookName = task.getResult().getUser().getDisplayName();
 
-                        SharedPreferenceUtility.setFacebookAccessToken(accessToken.getToken(), MainActivity.this);
+                        SharedPreferenceUtility.setFacebookAccessToken(facebookToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
-                        SharedPreferenceUtility.setFacebookUserName(task.getResult().getUser().getDisplayName(), MainActivity.this);
-                        getUserFriends(SharedPreferenceUtility.getFacebookAccessToken(MainActivity.this), SharedPreferenceUtility.getFirebaseIdToken(MainActivity.this));
+                        SharedPreferenceUtility.setFacebookUserName(facebookName, MainActivity.this);
 
-                        String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
-                        saveDeviceRegistrationToken("devices", firebaseUid, deviceRegistrationToken);
+                        refreshUserFriendsAndStartNextActivity(facebookToken, firebaseIdToken);
                     }
                 });
 
     }
 
+    private void saveAllDeviceRegistrationToken(String firebaseId, String facebookId) {
+        String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+        saveDeviceRegistrationToken("devices", firebaseId, deviceRegistrationToken);
+        saveDeviceRegistrationToken("devices-facebook", facebookId, deviceRegistrationToken);
+    }
+
     private void saveDeviceRegistrationToken(String handle, String uid, String deviceRegistrationToken) {
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        if (firebaseDatabase == null) {
+        String userDeviceIDUrl = firebaseDomainUri() + handle + "/" + uid + "/";
+        Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(userDeviceIDUrl);
+        if (firebaseRef == null) {
             return;
         }
 
-        String userDeviceIDUrl = "https://nuggetplay-ceaaf.firebaseio.com/" + handle + "/" + uid + "/";
-        Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
-
-        firebaseDatabase.getReferenceFromUrl(userDeviceIDUrl)
+        firebaseRef
                 .setValue(deviceRegistrationToken)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -169,11 +179,22 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void setUserFacebookUserId() {
-        String firebaseUri = "https://nuggetplay-ceaaf.firebaseio.com/users/" + SharedPreferenceUtility.getFirebaseUid(this) + "/facebookId";
-        Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
+    private void saveFacebookToFirebaseMap(String facebookUserId, String firebaseId) {
+        String facebookToFirebaseMap = Conf.firebaseFbToFireidUri(facebookUserId);
+        Log.d(LOG_TAG, "Storing firebase id at: " + facebookToFirebaseMap);
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(facebookToFirebaseMap);
+        if (firebaseRef == null) {
+            return;
+        }
+        firebaseRef.setValue(firebaseId);
+    }
 
-        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+    private void saveFacebookIdAndStartNextActivity() {
+        final String firebaseId = SharedPreferenceUtility.getFirebaseUid(this);
+        String firebaseUri = Conf.firebaseUsersUri() + firebaseId + "/facebookId";
+        Log.i(LOG_TAG, "Fetching user's facebook id: " + firebaseUri);
+
+        final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
 
         if (firebaseRef == null) {
@@ -183,27 +204,38 @@ public class MainActivity extends AppCompatActivity {
         firebaseRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String facebookUserId = dataSnapshot.getValue().toString();
-                SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
-                Log.d(LOG_TAG, SharedPreferenceUtility.getFacebookUserId(MainActivity.this));
+                if (dataSnapshot.exists()) {
+                    String facebookUserId = dataSnapshot.getValue().toString();
+                    SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
+                    Log.i(LOG_TAG, "Facebook id " + facebookUserId);
+                    saveAllDeviceRegistrationToken(firebaseId, facebookUserId);
+                    saveFacebookToFirebaseMap(facebookUserId, firebaseId);
+                    startFriendManagerActivity();
+                } else {
+                    Log.i(LOG_TAG, "No firebase id yet in server");
+                }
+            }
 
-                String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
-                saveDeviceRegistrationToken("devices-facebook", facebookUserId, deviceRegistrationToken);
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(LOG_TAG, "Facebook id fetch cancelled");
+            }
+        });
+    }
 
+    private void startFriendManagerActivity() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
                 Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
                 startActivity(intent);
                 loginProgressBar.setVisibility(View.INVISIBLE);
                 finish();
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
     }
 
-    private void gotoNextActivity() {
+    private void gotoGameChatActivity() {
         Intent intent = new Intent(MainActivity.this, GamesChatActivity.class);
         startActivity(intent);
         finish();
@@ -215,24 +247,14 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        // Commented since full screen not required in Login - Check Duo.
-//        if (hasFocus) {
-//            ViewUtils.setWindowImmersive(getWindow());
-//        }
-    }
-
-    public void getUserFriends(final String accessToken, final String idToken) {
+    public void refreshUserFriendsAndStartNextActivity(final String facebookToken, final String firebaseToken) {
         RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest sr = new StringRequest(Request.Method.POST, AppConf.GET_FRIENDS_API_URL,
+        StringRequest sr = new StringRequest(Request.Method.POST, Conf.GET_FRIENDS_API_URL,
                 new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.i(LOG_TAG, "Facebook login success ");
-//                Log.i(LOG_TAG, "Facebook response " + response);
-                setUserFacebookUserId();
+                saveFacebookIdAndStartNextActivity();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -243,8 +265,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<>();
-                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, accessToken);
-                params.put(RequestParams.FIREBASE_ID_TOKEN, idToken);
+                params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, facebookToken);
+                params.put(RequestParams.FIREBASE_ID_TOKEN, firebaseToken);
                 return params;
             }
         };
