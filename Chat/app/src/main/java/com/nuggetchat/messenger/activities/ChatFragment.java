@@ -445,7 +445,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.i(LOG_TAG, "multiplayer game  " + i);
 
         LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.grid_item, gamesList, false);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.multiplayer_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
         Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));

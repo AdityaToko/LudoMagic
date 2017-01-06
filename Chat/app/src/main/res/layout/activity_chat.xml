@@ -62,7 +62,7 @@
         <TextView
             android:id="@+id/text_play_with_friends"
             android:layout_width="130dp"
-            android:layout_height="30dp"
+            android:layout_height="50dp"
             android:layout_above="@id/horizontal_scroll"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="-30dp"
@@ -108,6 +108,13 @@
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/video_icon" />
+
+        <TextView
+            android:id="@+id/video_calling_text"
+            android:text="calling.."
+            android:layout_marginTop="3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <ImageView
             android:id="@+id/popular_friend_1"

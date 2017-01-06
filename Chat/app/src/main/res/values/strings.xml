@@ -9,5 +9,6 @@
     <string name="add_your_facebook_friends_to_unlock_more_games">Add your Facebook Friends to unlock more games</string>
     <string name="add_facebook_friends">add facebook friends</string>
     <string name="one_extra_game_unlocked">One extra game unlocked for every two friends added</string>
-    <string name="quick_play">Quick Call &amp; Play</string>
+    <string name="quick_play">Friends Available</string>
+    <string name="add_other_friends">Invite Friends</string>
 </resources>
