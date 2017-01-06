@@ -35,8 +35,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
+import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -62,6 +64,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     ContentResolver resolver;
     UserFriendsAdapter adapter;
     CallbackManager callbackManager;
+    private NuggetApplication nuggetApplication;
     Intent intent;
     Handler mainHandler;
 
@@ -75,6 +78,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friendsmanager);
         ButterKnife.bind(this);
         intent = getIntent();
+        nuggetApplication = NuggetApplication.getInstance();
         getUserFriends();
         callbackManager = CallbackManager.Factory.create();
         mainHandler = new Handler(Looper.getMainLooper());
@@ -104,11 +108,14 @@ public class FriendsManagerActivity extends AppCompatActivity {
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget!");
+
         try {
             startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(this, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
         }
+        nuggetApplication.logEvent(this, FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
+                null /* bundle */ );
     }
 
     public void sendShareIntent(View v) {
@@ -116,6 +123,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
         intent.setType("text/plain");
         intent.putExtra(android.content.Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget!");
         startActivity(intent);
+        nuggetApplication.logEvent(this, FirebaseAnalyticsConstants.ADD_OTHER_FRIENDS_BUTTON_CLICKED,
+                null /* bundle */ );
     }
 
     @OnClick(R.id.skip_friends_addition)
@@ -124,6 +133,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
             Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
             startActivity(intent);
         }
+        nuggetApplication.logEvent(this, FirebaseAnalyticsConstants.SKIP_FRIENDS_ADDITION_BUTTON_CLICKED,
+                null /* bundle */);
         finish();
     }
 

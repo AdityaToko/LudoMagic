@@ -26,9 +26,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
-import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -53,9 +52,9 @@ public class GamesChatActivity extends AppCompatActivity {
 
     private LinearLayout tabView;
     private TextView textView;
-    private  ImageView imageView;
+    private ImageView imageView;
     private Intent intent;
-    private Bundle sdpbundle;
+    private Bundle requestBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,14 +64,11 @@ public class GamesChatActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         intent = getIntent();
-        sdpbundle = intent.getExtras();
-        if(sdpbundle != null && sdpbundle.getString("from") != null){
-            Log.d(LOG_TAG, sdpbundle.getString("from") + "");
+        requestBundle = intent.getExtras();
+        if (requestBundle != null && requestBundle.getString("from") != null) {
+            Log.d(LOG_TAG, requestBundle.getString("from") + "");
         }
-        String sdp = "";
-        if (sdpbundle != null && sdpbundle.getString("sdp") != null){
-            sdp = sdpbundle.getString("sdp");
-        }
+
         setUpToolbar();
 
         setUpTabLayout();
@@ -85,7 +81,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
         setUpTabItems();
 
-        if (intent.getStringExtra("user_id") != null || (sdp != null && !"".equals(sdp))) {
+        if (shouldShowChatTab()) {
             viewPager.setCurrentItem(1);
             tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
             tabView.setBackgroundResource(R.drawable.second_tab_background);
@@ -139,6 +135,12 @@ public class GamesChatActivity extends AppCompatActivity {
         });
     }
 
+    private boolean shouldShowChatTab() {
+        return intent.getStringExtra("user_id") != null
+                || (requestBundle != null
+                        && "pre_call_handshake".equals(requestBundle.getString("type")));
+    }
+
     private void setUpToolbar() {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
         Log.i(LOG_TAG, "the username, " + userName);
@@ -171,11 +173,11 @@ public class GamesChatActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "bundle set");
             Bundle bundle = new Bundle();
             String userId = intent.getStringExtra("user_id");
-            if (userId != null){
+            if (userId != null) {
                 bundle.putString("user_id", intent.getStringExtra("user_id"));
             }
-            if (sdpbundle != null){
-                bundle.putBundle("sdpBundle", sdpbundle);
+            if (requestBundle != null) {
+                bundle.putBundle("requestBundle", requestBundle);
             }
             chatFragment.setArguments(bundle);
         }
@@ -209,9 +211,9 @@ public class GamesChatActivity extends AppCompatActivity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         //   Disabled since not must - Check Duo
-//        if (hasFocus) {
-//            ViewUtils.setWindowImmersive(getWindow());
-//        }
+        if (hasFocus) {
+            ViewUtils.showWindowNavigation(getWindow());
+        }
     }
 
     @Override

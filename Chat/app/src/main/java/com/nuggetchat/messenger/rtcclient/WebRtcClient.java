@@ -63,10 +63,6 @@ public class WebRtcClient{
         if (peer != null) {
             peer.resetPeerConnection();
         }
-        if (factory != null) {
-            factory.dispose();
-            factory = null;
-        }
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null);
         }
@@ -76,7 +72,7 @@ public class WebRtcClient{
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
-        this.peer = newPeer;
+        //this.peer = newPeer;
         return newPeer;
     }
 
@@ -92,7 +88,7 @@ public class WebRtcClient{
     public void addFriendForChat(String userId, Socket socket) {
         userId1 = currentUserId;
         userId2 = userId;
-        addPeer(socket);
+        peer = addPeer(socket);
     }
 
     public String getUserId1() {
@@ -119,7 +115,7 @@ public class WebRtcClient{
         }
     }
 
-    private void setCamera() {
+    public void setCamera() {
         Log.i(LOG_TAG, "setCamera method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
         if (params.videoCallEnabled) {
@@ -161,6 +157,13 @@ public class WebRtcClient{
             }
         }
         throw new RuntimeException("Failed to open capturer");
+    }
+
+    public void disposePeerConnnectionFactory(){
+        if (factory != null) {
+            factory.dispose();
+            factory = null;
+        }
     }
 
     public boolean isInitiator() {
