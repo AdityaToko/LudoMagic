@@ -572,6 +572,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             resetAudioManager();
         }
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                multiplayerGamesView.setVisibility(View.INVISIBLE);
+            }
+        });
         updateVideoViews();
         webRtcClient.setCamera();
     }
