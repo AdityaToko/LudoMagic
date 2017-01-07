@@ -586,13 +586,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
-        resetAudioManager();
         super.onPause();
     }
 
     @Override
     public void onDestroyView() {
         destroyVideoViews();
+        resetAudioManager();
         super.onDestroyView();
     }
 
