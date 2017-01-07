@@ -21,4 +21,8 @@ public interface EventListener {
     void onCallEnd();
 
     void onFetchIceCandidates(IceCandidate candidate);
+
+    void onCallRejected();
+
+    void onCallOngoing();
 }

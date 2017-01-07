@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.rtcclient;
 
 public class PeerConnectionParameters {
-    public final boolean videoCallEnabled;
     public final boolean loopback;
     public final int videoWidth;
     public final int videoHeight;
@@ -13,13 +12,12 @@ public class PeerConnectionParameters {
     public final String audioCodec;
     public final boolean cpuOveruseDetection;
     public PeerConnectionParameters(
-            boolean videoCallEnabled, boolean loopback,
+            boolean loopback,
             int videoWidth, int videoHeight, int videoFps, int videoStartBitrate,
             String videoCodec, boolean videoCodecHwAcceleration,
             int audioStartBitrate, String audioCodec,
             boolean cpuOveruseDetection) {
-        this.videoCallEnabled = videoCallEnabled;
-        this.loopback = loopback;
+         this.loopback = loopback;
         this.videoWidth = videoWidth;
         this.videoHeight = videoHeight;
         this.videoFps = videoFps;

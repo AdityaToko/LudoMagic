@@ -9,15 +9,13 @@ import android.util.Log;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class ChatService extends Service {
-    private static final String HOST = "http://chat.nuggetkids.com/";
-//    private static final String HOST = "http://192.168.0.119:3000";
+//    private static final String HOST = "http://chat.nuggetkids.com/";
+    private static final String HOST = "http://192.168.0.119:3000";
     private static final String LOG_TAG = ChatService.class.getSimpleName();
     public Socket socket;
     MessageHandler messageHandler;
@@ -74,6 +72,7 @@ public class ChatService extends Service {
         messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("call_rejected", messageHandler.onCallRejected);
+        socket.on("call_ongoing", messageHandler.onCallOngoing);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);

@@ -1,11 +1,14 @@
 package com.nuggetchat.messenger.chat;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -21,8 +24,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
+import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
 
 import butterknife.BindView;
@@ -31,6 +36,7 @@ import butterknife.OnClick;
 
 public class IncomingCallActivity extends AppCompatActivity {
     private static final String LOG_TAG = IncomingCallActivity.class.getSimpleName();
+    public static final String CALL_ACCEPTED = "call_accepted";
     @BindView(R.id.accept_btn)
     public Button acceptButton;
     @BindView(R.id.reject_btn)
@@ -40,6 +46,8 @@ public class IncomingCallActivity extends AppCompatActivity {
     @BindView(R.id.caller_image)
     public ImageView callerImage;
     private AudioPlayer audioPlayer;
+    private boolean isActivityForResult;
+    private BroadcastReceiver broadcastReceiver;
 
     Bundle bundle;
     @Override
@@ -48,11 +56,16 @@ public class IncomingCallActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         bundle = intent.getExtras();
+        ((NuggetApplication)getApplication()).setIncomingCall(true);
 
         String type = bundle.getString("type");
         String from = bundle.getString("from");
         String to = bundle.getString("to");
         String token = bundle.getString("token");
+        isActivityForResult = false;
+        if ("chat_frag".equals(bundle.getString("from_activity"))) {
+            isActivityForResult = true;
+        }
 
         Log.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
 
@@ -67,6 +80,24 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         audioPlayer = new AudioPlayer(this);
         audioPlayer.playRingtone();
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY")) {
+                    unregisterReceiver(this);
+                    ((NuggetApplication)getApplication()).setIncomingCall(false);
+                    finish();
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     private void fetchFriendNameAndPic(final String from) {
@@ -130,16 +161,41 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
-        audioPlayer.stopRingtone();
-        Intent startChatIntent = new Intent(this, GamesChatActivity.class);
-        startChatIntent.putExtras(bundle);
-        startActivity(startChatIntent);
-        finish();
+        ((NuggetApplication)getApplication()).setIncomingCall(false);
+        triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
+        ((NuggetApplication)getApplication()).setIncomingCall(false);
+        triggerUserAction(false /*accepted*/);
+    }
+
+    private void triggerUserAction(boolean accepted) {
         audioPlayer.stopRingtone();
-        finishAffinity();
+        if (!isActivityForResult) {
+            Log.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
+            Intent startChatIntent = new Intent(this, GamesChatActivity.class);
+            bundle.putBoolean(CALL_ACCEPTED, accepted);
+            startChatIntent.putExtras(bundle);
+            startActivity(startChatIntent);
+        } else {
+            Log.i(LOG_TAG, "MessageHandler Trigger - Restart game chat activity ");
+            Intent startChatIntent = new Intent();
+            bundle.putBoolean(CALL_ACCEPTED, accepted);
+            startChatIntent.putExtras(bundle);
+            setResult(ChatFragment.INCOMING_CALL_CODE, startChatIntent);
+        }
+        finish();
+    }
+
+    @Override
+    protected void onPause() {
+        try {
+            unregisterReceiver(broadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.e(LOG_TAG, "Exception while unregistering");
+        }
+        super.onPause();
     }
 }
