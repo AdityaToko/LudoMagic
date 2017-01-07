@@ -139,13 +139,13 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
-        NuggetApplication.getInstance().setIncomingCall(false);
+        ((NuggetApplication)getApplication()).setIncomingCall(false);
         triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
-        NuggetApplication.getInstance().setIncomingCall(false);
+        ((NuggetApplication)getApplication()).setIncomingCall(false);
         triggerUserAction(false /*accepted*/);
     }
 
