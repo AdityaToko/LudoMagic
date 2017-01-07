@@ -14,8 +14,6 @@ import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
 
-import java.util.Locale;
-
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -154,6 +152,8 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "onCallRejected");
+
+            eventListener.onCallRejected();
         }
     };
 

@@ -124,7 +124,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     sendPreCallHandshake(bundle.getString("user_id"));
                 }
                 if ("pre_call_handshake".equals(requestBundle.getString("type"))) {
-                    acknowledgePreCallHandshake(bundle);
+                    if (requestBundle.getBoolean(IncomingCallActivity.CALL_ACCEPTED)) {
+                        acknowledgePreCallHandshake(bundle);
+                    } else {
+                        rejectCall(bundle);
+                    }
                 }
             }
         }
@@ -757,6 +761,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     acknowledgePreCallHandshake(newReqBundle);
                 } else {
                     Log.i(LOG_TAG, "User call rejected");
+                    rejectCall(newReqBundle);
                 }
             }
         }
@@ -867,7 +872,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallEnd() {
         Log.i(LOG_TAG, "MessageHandler onCallEnd");
         webRtcClient.endCallAndRemoveRemoteStream();
-        showStartCallBtn();
+        hideEndCallBtn();
         showFriendsAddCluster();
     }
 
@@ -888,11 +893,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
     }
 
-    private void showStartCallBtn() {
+    @Override
+    public void onCallRejected() {
+        showFriendsAddCluster();
+        hideEndCallBtn();
+    }
+
+    private void hideEndCallBtn() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
                 endCall.setVisibility(View.INVISIBLE);
+                audioPlayer.stopRingtone();
                 //startCallButton.setVisibility(View.VISIBLE);
             }
         });
@@ -923,6 +935,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             requestData.put("token", requestBundle.get("token"));
 
             sendPreCallHandshakeComplete(requestData);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage());
+        }
+    }
+
+    private void rejectCall(Bundle bundle) {
+        Log.e(LOG_TAG, "Reject Call - received pre call handshake, sending rejection");
+        Bundle requestBundle = bundle.getBundle("requestBundle");
+        if (requestBundle == null) {
+            return;
+        }
+
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("from", requestBundle.get("to"));
+            jsonObject.put("to", requestBundle.get("from"));
+            jsonObject.put("token", requestBundle.get("token"));
+
+            chatService.socket.emit("reject_call", jsonObject);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage());
         }

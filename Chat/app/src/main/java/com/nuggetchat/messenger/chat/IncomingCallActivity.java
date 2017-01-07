@@ -150,6 +150,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         if (!isActivityForResult) {
             Log.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
             Intent startChatIntent = new Intent(this, GamesChatActivity.class);
+            bundle.putBoolean(CALL_ACCEPTED, accepted);
             startChatIntent.putExtras(bundle);
             startActivity(startChatIntent);
         } else {
