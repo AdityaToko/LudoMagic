@@ -593,13 +593,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onDestroyView() {
         destroyVideoViews();
-        application.setInitiator(false);
-        application.setOngoingCall(false);
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
+        Log.i(LOG_TAG, "MessageHandler onDestroy" + application.isOngoingCall());
         if (webRtcClient != null) {
             if (application.isOngoingCall()) {
                 JSONObject payload = new JSONObject();
@@ -620,11 +619,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     throw new IllegalStateException(errStr);
                 }
             }
-            Log.i(LOG_TAG, "MessageHandler onDestroy");
+            Log.i(LOG_TAG, "MessageHandler onDestroy" + application.isOngoingCall());
             webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
             undbindService();
         }
+        application.setInitiator(false);
+        application.setOngoingCall(false);
         //eglBase.release();
         audioPlayer.stopRingtone();
         super.onDestroy();
