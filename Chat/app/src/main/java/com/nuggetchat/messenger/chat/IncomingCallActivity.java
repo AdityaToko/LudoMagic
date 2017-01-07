@@ -1,6 +1,9 @@
 package com.nuggetchat.messenger.chat;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -44,6 +47,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     public ImageView callerImage;
     private AudioPlayer audioPlayer;
     private boolean isActivityForResult;
+    private BroadcastReceiver broadcastReceiver;
 
     Bundle bundle;
     @Override
@@ -76,6 +80,24 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         audioPlayer = new AudioPlayer(this);
         audioPlayer.playRingtone();
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY")) {
+                    unregisterReceiver(this);
+                    ((NuggetApplication)getApplication()).setIncomingCall(false);
+                    finish();
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     private void fetchFriendNameAndPic(final String from) {
@@ -165,5 +187,15 @@ public class IncomingCallActivity extends AppCompatActivity {
             setResult(ChatFragment.INCOMING_CALL_CODE, startChatIntent);
         }
         finish();
+    }
+
+    @Override
+    protected void onPause() {
+        try {
+            unregisterReceiver(broadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.e(LOG_TAG, "Exception while unregistering");
+        }
+        super.onPause();
     }
 }

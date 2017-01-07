@@ -879,6 +879,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onCallEnd() {
         Log.i(LOG_TAG, "MessageHandler onCallEnd");
         webRtcClient.endCallAndRemoveRemoteStream();
+        Intent intent = new Intent("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
+        getActivity().sendBroadcast(intent);
         hideEndCallBtn();
         showFriendsAddCluster();
     }
