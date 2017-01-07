@@ -2,10 +2,10 @@ package com.nuggetchat.messenger.chat;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
@@ -51,6 +52,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         bundle = intent.getExtras();
+        ((NuggetApplication)getApplication()).setIncomingCall(true);
 
         String type = bundle.getString("type");
         String from = bundle.getString("from");
@@ -137,11 +139,13 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
+        NuggetApplication.getInstance().setIncomingCall(false);
         triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
+        NuggetApplication.getInstance().setIncomingCall(false);
         triggerUserAction(false /*accepted*/);
     }
 

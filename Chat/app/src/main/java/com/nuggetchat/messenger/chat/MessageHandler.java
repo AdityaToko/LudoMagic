@@ -224,4 +224,12 @@ public class MessageHandler {
             }
         }
     };
+
+    public Emitter.Listener onCallOngoing = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "onDisconnect");
+            eventListener.onCallOngoing();
+        }
+    };
 }

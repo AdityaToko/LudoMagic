@@ -72,6 +72,7 @@ public class ChatService extends Service {
         messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);
         socket.on("call_rejected", messageHandler.onCallRejected);
+        socket.on("call_ongoing", messageHandler.onCallOngoing);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);
