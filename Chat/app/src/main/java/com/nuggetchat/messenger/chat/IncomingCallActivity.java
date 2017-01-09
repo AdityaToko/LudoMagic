@@ -179,6 +179,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     private void triggerUserAction(boolean accepted) {
+        Log.i(LOG_TAG, "accepted or rejected, " + accepted);
         audioPlayer.stopRingtone();
         if(!accepted){
             audioPlayer.releaseAudioFocus();
