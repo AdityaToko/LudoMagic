@@ -6,6 +6,7 @@ import android.util.Log;
 import com.nuggetchat.messenger.NuggetApplication;
 
 import org.webrtc.AudioSource;
+import org.webrtc.AudioTrack;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -14,6 +15,7 @@ import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
+import org.webrtc.VideoTrack;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +30,7 @@ public class WebRtcClient{
     private String currentUserId;
     private boolean initiator = false;
     private NuggetApplication application;
-    public List<IceCandidate> queuedRemoteCandidates = new LinkedList<>();
+    public List<IceCandidate> queuedRemoteCandidates;
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
     private String userId2;
@@ -37,6 +39,9 @@ public class WebRtcClient{
     /* package-local */ MediaConstraints constraints = new MediaConstraints();
     /* package-local */ MediaStream localMediaStream;
     /* package-local */ RtcListener rtcListener;
+    private VideoTrack videoTrack;
+    private AudioTrack audioTrack;
+    private AudioSource audioSource;
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
@@ -52,27 +57,27 @@ public class WebRtcClient{
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
         addIceServers(iceServerUrls);
-        setCamera();
+        setCameraAndUpdateVideoViews();
     }
 
 
-    public void endCall() {
+    public void endCallAndRemoveRemoteStream() {
         Log.i(LOG_TAG, "End call - Incoming");
-        setInitiator(false);
         application.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
+            Log.i(LOG_TAG, "peer reset done");
         }
         if (rtcListener != null) {
-            rtcListener.onRemoveRemoteStream(null);
+            rtcListener.onRemoveRemoteStream(null); // will also update video views
         }
     }
 
     public Peer addPeer(Socket socket) {
+        queuedRemoteCandidates = new LinkedList<>();
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
-        //this.peer = newPeer;
         return newPeer;
     }
 
@@ -86,6 +91,7 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
+        Log.i(LOG_TAG, "addFriendForChat userId: " + userId);
         userId1 = currentUserId;
         userId2 = userId;
         peer = addPeer(socket);
@@ -115,25 +121,31 @@ public class WebRtcClient{
         }
     }
 
-    public void setCamera() {
-        Log.i(LOG_TAG, "setCamera method");
+    public void setCameraAndUpdateVideoViews() {
+        Log.i(LOG_TAG, "setCameraAndUpdateVideoViews method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
-        if (params.videoCallEnabled) {
-            MediaConstraints videoConstraints = new MediaConstraints();
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(params.videoHeight)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-            if(videoSource == null){
-                videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-            }
-            localMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
+
+        MediaConstraints videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(params.videoHeight)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
+        if(videoSource == null){
+            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
         }
+        Log.i(LOG_TAG, "Adding video track");
+        videoTrack = factory.createVideoTrack("ARDAMSv0", videoSource);
+        localMediaStream.addTrack(videoTrack);
 
-        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
-        localMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
+        if (audioSource == null) {
+            audioSource = factory.createAudioSource(new MediaConstraints());
+        }
+        Log.i(LOG_TAG, "Adding audio track");
+        audioTrack = factory.createAudioTrack("ARDAMSa0", audioSource);
+        localMediaStream.addTrack(audioTrack);
 
-        rtcListener.onLocalStream(localMediaStream);
+        Log.i(LOG_TAG, "Trigger local stream");
+        rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
     // Cycle through likely device names for the camera and return the first
@@ -157,7 +169,7 @@ public class WebRtcClient{
                 }
             }
         }
-        throw new RuntimeException("Failed to open capturer");
+        throw new IllegalStateException("Failed to open capturer");
     }
 
     public void disposePeerConnnectionFactory(){
@@ -168,11 +180,7 @@ public class WebRtcClient{
     }
 
     public boolean isInitiator() {
-        return initiator;
-    }
-
-    public void setInitiator(boolean initiator) {
-        this.initiator = initiator;
+        return application.isInitiator();
     }
 
     public void createOffer(Peer peer) {

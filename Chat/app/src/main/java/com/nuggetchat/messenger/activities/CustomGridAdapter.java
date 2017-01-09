@@ -17,22 +17,20 @@ import java.util.ArrayList;
 
 public class CustomGridAdapter extends BaseAdapter {
     private Context context;
-    private  final ArrayList<String> gamesName;
-    private final ArrayList<String> gamesImage;
+    private  final ArrayList<GamesItem> gameItemList;
 
-    public CustomGridAdapter(Context context, ArrayList<String> gamesName, ArrayList<String> gamesImage) {
+    public CustomGridAdapter(Context context, ArrayList<GamesItem> gameItemList) {
         this.context = context;
-        this.gamesName = gamesName;
-        this.gamesImage = gamesImage;
+        this.gameItemList = gameItemList;
     }
     @Override
     public int getCount() {
-        return gamesName.size();
+        return gameItemList.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return gamesName.get(i);
+        return gameItemList.get(i);
     }
 
     @Override
@@ -49,8 +47,19 @@ public class CustomGridAdapter extends BaseAdapter {
         }
         TextView textView = (TextView) convertView.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) convertView.findViewById(R.id.grid_image);
-        textView.setText(gamesName.get(position));
-        String imageURl = Conf.CLOUDINARY_PREFIX_URL + gamesImage.get(position);
+        ImageView lockIcon = (ImageView) convertView.findViewById(R.id.lock_icon);
+
+        textView.setText(gameItemList.get(position).getGamesName());
+
+        if(gameItemList.get(position).getLocked()) {
+            lockIcon.setVisibility(View.VISIBLE);
+            imageView.setAlpha(0.5f);
+        } else {
+            lockIcon.setVisibility(View.INVISIBLE);
+            imageView.setAlpha(1.0f);
+        }
+
+        String imageURl = Conf.CLOUDINARY_PREFIX_URL + gameItemList.get(position).getGamesImage();
         Log.d("The image uri " , imageURl);
         GlideUtils.loadImage(context, imageView, null, imageURl);
 

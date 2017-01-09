@@ -1,5 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,6 +26,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -59,7 +62,10 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startService(new Intent(this, ChatService.class));
+
+        Log.i(LOG_TAG, "onCreate GameChatActivity");
+        startService(new Intent(GamesChatActivity.this, ChatService.class));
+
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
 
@@ -82,13 +88,9 @@ public class GamesChatActivity extends AppCompatActivity {
         setUpTabItems();
 
         if (shouldShowChatTab()) {
-            viewPager.setCurrentItem(1);
-            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
-            tabView.setBackgroundResource(R.drawable.second_tab_background);
+            showChatTab();
         } else {
-            viewPager.setCurrentItem(0);
-            tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
-            tabView.setBackgroundResource(R.drawable.first_tab_background);
+            showGamesTab();
         }
         gamesChatTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -103,7 +105,7 @@ public class GamesChatActivity extends AppCompatActivity {
                     tabView.setBackgroundResource(R.drawable.first_tab_background);
                     textView.setTextColor(Color.parseColor("#F2830A"));
                 } else {
-                    imageView.setImageResource(R.drawable.chat_icon);
+                    imageView.setImageResource(R.drawable.video_icon);
                     tabView.setBackgroundResource(R.drawable.second_tab_background);
                     textView.setTextColor(Color.parseColor("#2290D3"));
                 }
@@ -122,7 +124,7 @@ public class GamesChatActivity extends AppCompatActivity {
                     tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#1cb1be"));
                 } else {
-                    imageView.setImageResource(R.drawable.chat_icon);
+                    imageView.setImageResource(R.drawable.video_icon);
                     tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
                     textView.setTextColor(Color.parseColor("#F9B21B"));
                 }
@@ -135,6 +137,20 @@ public class GamesChatActivity extends AppCompatActivity {
         });
     }
 
+    private void showGamesTab() {
+        viewPager.setCurrentItem(0);
+        tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
+        tabView.setBackgroundResource(R.drawable.first_tab_background);
+    }
+
+    private void showChatTab() {
+        viewPager.setCurrentItem(1);
+        tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
+        tabView.setBackgroundResource(R.drawable.second_tab_background);
+//        tabView.requestFocus();
+        Log.i(LOG_TAG, "chat view in focus " + tabView.hasFocus());
+    }
+
     private boolean shouldShowChatTab() {
         return intent.getStringExtra("user_id") != null
                 || (requestBundle != null
@@ -144,7 +160,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpToolbar() {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
         Log.i(LOG_TAG, "the username, " + userName);
-        String profilePicUrl = getProfilePicUrl(SharedPreferenceUtility.getFacebookUserId(this));
+        String profilePicUrl = UserInfo.getUserPic(SharedPreferenceUtility.getFacebookUserId(this));
         Glide.with(this).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(image) {
             @Override
             protected void setResource(Bitmap resource) {
@@ -162,7 +178,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpTabLayout() {
         // Add Tab
         gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("games"));
-        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("chat"));
+        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("call"));
     }
 
     private void setUpViewPager(ViewPager viewPager) {
@@ -199,11 +215,11 @@ public class GamesChatActivity extends AppCompatActivity {
         //set view for second tab
         LinearLayout tabSecondItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView secondTextView = (TextView) tabSecondItem.findViewById(R.id.tab_item_text);
-        secondTextView.setText("chat");
+        secondTextView.setText("call");
         //tabSecondItem.setBackgroundResource(R.drawable.second_tab_background);
         secondTextView.setTextColor(Color.parseColor("#2290D3"));
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
-        secondImageView.setImageResource(R.drawable.chat_icon);
+        secondImageView.setImageResource(R.drawable.video_icon);
         gamesChatTabLayout.getTabAt(1).setCustomView(tabSecondItem);
     }
 
@@ -219,11 +235,11 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "activity onActivityResult");
-    }
-
-    private String getProfilePicUrl(String facebookUserId) {
-        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
+        Log.i(LOG_TAG, "activity onActivityResult focus 1:" + this.hasWindowFocus() + " req:" + requestCode + " result" + resultCode);
+        if (resultCode == ChatFragment.INCOMING_CALL_CODE) {
+            Log.i(LOG_TAG, "Switch to chat tab");
+            viewPager.setCurrentItem(1);
+        }
     }
 
     private void refreshFirebaseToken() {
@@ -247,5 +263,13 @@ public class GamesChatActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+
+    public static Intent getNewIntentGameChatActivity(Context fromActivityContext) {
+        Intent intent = new Intent(fromActivityContext, GamesChatActivity.class);
+        intent.setFlags(Intent.FLAG_FROM_BACKGROUND
+                | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return intent;
     }
 }

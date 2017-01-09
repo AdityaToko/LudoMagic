@@ -2,16 +2,12 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -75,7 +71,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
     @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
     @BindView(R.id.swipeContainer) /* package-local */ SwipeRefreshLayout swipeContainer;
-    @BindView(R.id.add_your_facebook_friends_text) /* package-local */ TextView addFacebookFriendsText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,15 +99,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light);
-
-        Spannable wordOne  = new SpannableString(addFacebookFriendsText.getText().toString().substring(0,addFacebookFriendsText.getText().length()-10));
-        wordOne.setSpan(new ForegroundColorSpan(Color.parseColor("#426599")), 0, wordOne.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        Spannable wordSecond = new SpannableString(addFacebookFriendsText.getText().toString()
-                .substring(addFacebookFriendsText.getText().length()-10, addFacebookFriendsText.getText().length()));
-        wordSecond.setSpan(new ForegroundColorSpan(Color.parseColor("#EA476E")), 0, wordSecond.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        addFacebookFriendsText.setText(wordOne);
-        addFacebookFriendsText.append(wordSecond);
     }
 
     public void sendMessagetoFriends(View v) {
@@ -121,7 +107,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget!");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
 
         try {
             startActivity(intent);
@@ -135,7 +121,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     public void sendShareIntent(View v) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(android.content.Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget!");
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
         startActivity(intent);
         nuggetApplication.logEvent(this, FirebaseAnalyticsConstants.ADD_OTHER_FRIENDS_BUTTON_CLICKED,
                 null /* bundle */ );
@@ -207,7 +193,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                Intent resultIntent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
+                                Intent resultIntent = GamesChatActivity.getNewIntentGameChatActivity(FriendsManagerActivity.this);
                                 resultIntent.putExtra("user_id", ((FriendInfo) adapterView.getAdapter().getItem(i)).getFacebookId());
                                 if (intent.getStringExtra("user_id") == null) {
                                     startActivity(resultIntent);
@@ -264,6 +250,8 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 if (!newFriendList.isEmpty()) {
                     usersFriendList.clear();
                     usersFriendList.addAll(newFriendList);
+                    Log.d("FRIENDSMANAGER",String.valueOf(usersFriendList.size()));
+                    SharedPreferenceUtility.setNumberOfFriends(usersFriendList.size(),FriendsManagerActivity.this);
                 }
                 updateAdapterAndHideProgressBar(usersFriendList.isEmpty());
             }

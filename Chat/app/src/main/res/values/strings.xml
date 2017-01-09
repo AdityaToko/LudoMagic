@@ -6,12 +6,14 @@
     <string name="title_activity_game_web_view">GameWebViewActivity</string>
     <string name="play_with_friends">play with friends</string>
     <string name="calling">Calling</string>
+    <string name="start_call">Start Call</string>
     <string name="add_your_facebook_friends_to_unlock_more_games">Add your Facebook Friends to unlock more games</string>
     <string name="add_facebook_friends">add facebook friends</string>
-    <string name="one_extra_game_unlocked">One extra game unlocked for every two friends added</string>
+    <string name="one_extra_game_unlocked">One extra game unlocked for every two friends added!</string>
     <string name="quick_play">Friends Available</string>
     <string name="add_other_friends">Invite Friends</string>
     <string name="skip">skip</string>
     <string name="add_friends_header">Add Friends</string>
     <string name="play_50_games_n_free_video_calls_nmultiplayer_text">play 50+ games \n free video calls \n multiplayer with voice call</string>
+    <string name="new_friend">New Friend</string>
 </resources>

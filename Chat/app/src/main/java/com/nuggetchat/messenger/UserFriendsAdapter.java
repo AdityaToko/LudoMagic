@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.lib.model.UserInfo;
 
 import java.util.List;
 
@@ -68,7 +69,7 @@ public class UserFriendsAdapter extends BaseAdapter {
         try {
             String profilePicUrl;
             if (data.getFacebookId() != null) {
-                profilePicUrl = getProfilePicUrl(data.getFacebookId());
+                profilePicUrl = UserInfo.getUserPic(data.getFacebookId());
                 Glide.with(context).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(viewHolder.imageView) {
                     @Override
                     protected void setResource(Bitmap resource) {
@@ -97,7 +98,4 @@ public class UserFriendsAdapter extends BaseAdapter {
         TextView title;
     }
 
-    private String getProfilePicUrl(String facebookUserId) {
-        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
-    }
 }

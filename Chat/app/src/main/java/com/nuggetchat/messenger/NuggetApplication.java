@@ -22,6 +22,7 @@ public class NuggetApplication extends MultiDexApplication {
     private static boolean initialized = false;
     private boolean isInitiator = false;
     private boolean isOngoingCall = false;
+    private boolean isIncomingCall = false;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -55,6 +56,14 @@ public class NuggetApplication extends MultiDexApplication {
 
     public void setOngoingCall(boolean ongoingCall) {
         isOngoingCall = ongoingCall;
+    }
+
+    public boolean isIncomingCall() {
+        return isIncomingCall;
+    }
+
+    public void setIncomingCall(boolean incomingCall) {
+        isIncomingCall = incomingCall;
     }
 
     public static NuggetApplication getInstance() {
