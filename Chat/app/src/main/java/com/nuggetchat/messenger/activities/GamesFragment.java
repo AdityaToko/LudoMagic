@@ -232,12 +232,12 @@ public class GamesFragment extends Fragment {
                                     Intent intent = new Intent(Intent.ACTION_SEND);
                                     intent.setPackage("com.facebook.orca");
                                     intent.setType("text/plain");
-                                    intent.putExtra(Intent.EXTRA_TEXT, "");
+                                    intent.putExtra(Intent.EXTRA_TEXT, "Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http://bit.ly/2iTz71P");
 
                                     try {
                                         startActivity(intent);
                                     } catch (android.content.ActivityNotFoundException ex) {
-                                        Toast.makeText(context, R.string.fb_messenger_not_found, Toast.LENGTH_LONG).show();
+                                        Toast.makeText(context, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
                                     }
                                     nuggetApplication.logEvent(context, FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
                                             null /* bundle */ );
