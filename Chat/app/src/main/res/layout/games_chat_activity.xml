@@ -82,7 +82,6 @@
         android:background="#F7F3E2"
         android:clipToPadding="false"
         app:tabGravity="fill"
-        app:tabIndicatorColor="@color/colorWhite"
         app:tabIndicatorHeight="1dp"
         app:tabMaxWidth="0dp"
         app:tabMinWidth="50dp"

@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -113,26 +112,10 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView()
-                        .setBackgroundColor(Color.parseColor("#FEFCFF"));
-                int position = tab.getPosition();
-                LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
-                TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);
-                ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
-                if (position == 0) {
-                    imageView.setImageResource(R.drawable.games_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
-                    textView.setTextColor(Color.parseColor("#1cb1be"));
-                } else {
-                    imageView.setImageResource(R.drawable.video_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
-                    textView.setTextColor(Color.parseColor("#F9B21B"));
-                }
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-
             }
         });
     }
