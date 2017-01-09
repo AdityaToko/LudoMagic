@@ -28,6 +28,7 @@ import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -232,20 +233,21 @@ public class GamesChatActivity extends AppCompatActivity {
             Log.w(LOG_TAG, "Unable to authenticate firebase");
             return;
         }
+        final String firebaseUid = SharedPreferenceUtility.getFirebaseUid(this);
+        final String facebookUid = SharedPreferenceUtility.getFacebookUserId(this);
         user.getToken(false /* forceRefresh */)
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
                         String firebaseIdToken = tokenTask.getResult().getToken();
                         if (firebaseIdToken != null) {
-                            SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken,
-                                    GamesChatActivity.this);
+                            FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseUid,
+                                    facebookUid, GamesChatActivity.this);
                         } else {
                             Log.e(LOG_TAG, "Firebase returned null token ");
                         }
                     }
                 });
-
     }
 
     public static Intent getNewIntentGameChatActivity(Context fromActivityContext) {

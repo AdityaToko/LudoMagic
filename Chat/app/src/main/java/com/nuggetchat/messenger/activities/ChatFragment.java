@@ -807,7 +807,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
             if (!webRtcClient.isInitiator() && myUserId.equals(to) && "abcd".equals(token)) {
                 targetUserId = data.getString("from");
-                Intent intent = new Intent(this.getActivity(), IncomingCallActivity.class);
+                Intent intent = new Intent(getActivity(), IncomingCallActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("to", to);
                 bundle.putString("from", from);

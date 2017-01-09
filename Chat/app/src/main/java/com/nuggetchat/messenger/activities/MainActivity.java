@@ -33,11 +33,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
-import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import java.util.HashMap;
@@ -45,8 +44,6 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.nuggetchat.lib.Conf.firebaseDomainUri;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -123,7 +120,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void getFirebaseIdTokenAndStartNextActivity(final Task<AuthResult> task, final AccessToken accessToken) {
+    private void getFirebaseIdTokenAndStartNextActivity(final Task<AuthResult> task,
+                                                        final AccessToken accessToken) {
         if (!task.isSuccessful()) {
             Log.e(LOG_TAG, "Error in login.", task.getException());
             return;
@@ -139,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
                         String facebookName = task.getResult().getUser().getDisplayName();
 
                         SharedPreferenceUtility.setFacebookAccessToken(facebookToken, MainActivity.this);
-                        SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
                         SharedPreferenceUtility.setFacebookUserName(facebookName, MainActivity.this);
 
@@ -147,37 +144,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-    }
-
-    private void saveAllDeviceRegistrationToken(String firebaseId, String facebookId) {
-        String deviceRegistrationToken = FirebaseInstanceId.getInstance().getToken();
-        saveDeviceRegistrationToken("devices", firebaseId, deviceRegistrationToken);
-        saveDeviceRegistrationToken("devices-facebook", facebookId, deviceRegistrationToken);
-    }
-
-    private void saveDeviceRegistrationToken(String handle, String uid, String deviceRegistrationToken) {
-        String userDeviceIDUrl = firebaseDomainUri() + handle + "/" + uid + "/";
-        Log.d(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
-        DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(userDeviceIDUrl);
-        if (firebaseRef == null) {
-            return;
-        }
-
-        firebaseRef
-                .setValue(deviceRegistrationToken)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(LOG_TAG, "Firebase Device Id stored successfully!");
-                        } else {
-                            Exception exception = task.getException();
-                            if (exception != null) {
-                                Log.e(LOG_TAG, "Unable to update friends." + exception);
-                            }
-                        }
-                    }
-                });
     }
 
     private void saveFacebookToFirebaseMap(String facebookUserId, String firebaseId) {
@@ -209,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                     String facebookUserId = dataSnapshot.getValue().toString();
                     SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
                     Log.i(LOG_TAG, "Facebook id " + facebookUserId);
-                    saveAllDeviceRegistrationToken(firebaseId, facebookUserId);
+                    FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseId, facebookUserId, MainActivity.this);
                     saveFacebookToFirebaseMap(facebookUserId, firebaseId);
                     startFriendManagerActivity();
                 } else {
