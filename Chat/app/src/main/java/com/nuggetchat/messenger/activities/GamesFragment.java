@@ -130,12 +130,12 @@ public class GamesFragment extends Fragment {
 
                 if (gamesItemList.size() >= numberLocked) {
                     GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false);
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false, false, gamesData.getValueScore());
                     gamesItemList.add(0, gamesItem);
                     Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "false");
                 } else {
                     GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), true);
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), true, false, gamesData.getValueScore());
                     gamesItemList.add(0, gamesItem);
                     Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "true");
                 }
