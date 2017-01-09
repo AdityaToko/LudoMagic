@@ -15,7 +15,8 @@
     <string name="add_other_friends">INVITE FRIENDS</string>
     <string name="skip">skip</string>
     <string name="add_friends_header">Add Friends</string>
-    <string name="play_50_games_n_free_video_calls_multiplayer_text">play 50+ games \n free video calls \n multiplayer with voice call</string>
+    <string name="no_ads">NO ADS!</string>
+    <string name="play_50_games_n_free_video_calls_multiplayer_text">play 50+ games \n make free video calls \n play with friends on call</string>
     <string name="new_friend">New Friend</string>
     <string name="unlock_games_dialog_title">You\'ve unlocked new games!!</string>
     <string name="unlock_games_dialog_message">By adding more friends you\'ve unlocked some new games. Try them out</string>

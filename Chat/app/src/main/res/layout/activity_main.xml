@@ -47,7 +47,7 @@
         android:gravity="center"
         android:text="@string/play_50_games_n_free_video_calls_multiplayer_text"
         android:lineSpacingExtra="3dp"
-        android:layout_width="165dp"
+        android:layout_width="185dp"
         android:layout_height="wrap_content" />
 
     <ProgressBar
@@ -57,4 +57,18 @@
         android:layout_centerInParent="true"
         android:visibility="invisible" />
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/no_ads"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:text="@string/no_ads"
+        android:lineSpacingExtra="4dp"
+        android:layout_width="165dp"
+        android:layout_height="20dp"
+        android:layout_marginBottom="15dp"
+        android:textSize="16sp"
+        android:textColor="#ff706a" />
+
 </RelativeLayout>
