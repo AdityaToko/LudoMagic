@@ -17,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 public class NuggetApplication extends MultiDexApplication {
     @SuppressLint("StaticFieldLeak")
     private static NuggetApplication nuggetApplication;
-    private FirebaseAnalytics firebaseAnalytics;
 
     private static boolean initialized = false;
     private boolean isInitiator = false;
@@ -74,7 +73,7 @@ public class NuggetApplication extends MultiDexApplication {
     }
 
     public void logEvent(Context appContext, String event, Bundle bundle) {
-        firebaseAnalytics= FirebaseAnalytics.getInstance(appContext);
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(appContext);
         firebaseAnalytics.setAnalyticsCollectionEnabled(true);
         firebaseAnalytics.logEvent(event, bundle);
     }
