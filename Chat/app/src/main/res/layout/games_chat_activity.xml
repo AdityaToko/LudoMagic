@@ -82,7 +82,7 @@
         android:background="#F7F3E2"
         android:clipToPadding="false"
         app:tabGravity="fill"
-        app:tabIndicatorHeight="1dp"
+        app:tabIndicatorHeight="2dp"
         app:tabMaxWidth="0dp"
         app:tabMinWidth="50dp"
         app:tabMode="fixed"
