@@ -16,6 +16,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -182,7 +183,25 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
         Log.i(LOG_TAG, "onCreate - call update View");
+        localRender.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                localRender.surfaceCreated(surfaceHolder);
+                remoteRender.surfaceCreated(surfaceHolder);
+            }
 
+            @Override
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+                localRender.surfaceChanged(surfaceHolder, i, i1, i2);
+                remoteRender.surfaceChanged(surfaceHolder, i, i1, i2);
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+                localRender.surfaceDestroyed(surfaceHolder);
+                remoteRender.surfaceDestroyed(surfaceHolder);
+            }
+        });
         initWebRtc(myUserId);
         bindChatService();
         return view;
