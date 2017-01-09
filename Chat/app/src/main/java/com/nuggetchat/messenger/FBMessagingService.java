@@ -9,8 +9,6 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.nuggetchat.messenger.chat.IncomingCallActivity;
 
-import org.json.JSONObject;
-
 import java.util.Map;
 
 public class FBMessagingService extends FirebaseMessagingService {
@@ -21,11 +19,11 @@ public class FBMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        Log.d(LOG_TAG, "FBMessagingService onMessageReceived() invoked!");
+        Log.i(LOG_TAG, "onMessageReceived() invoked!");
 
         Map<String, String> data = remoteMessage.getData();
         if (data.size() > 0) {
-            Log.d(LOG_TAG, "Received data" + data);
+            Log.i(LOG_TAG, "Received data" + data);
 
             if (data.containsKey("type") && "pre_call_handshake".equals(data.get("type"))) {
                 // invoke incoming call activity
