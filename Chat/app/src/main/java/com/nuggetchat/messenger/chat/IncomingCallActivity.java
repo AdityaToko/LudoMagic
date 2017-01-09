@@ -85,6 +85,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         audioPlayer = new AudioPlayer(this);
+        audioPlayer.requestAudioFocus();
         audioPlayer.playRingtone();
 
         broadcastReceiver = new BroadcastReceiver() {
@@ -178,6 +179,9 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     private void triggerUserAction(boolean accepted) {
         audioPlayer.stopRingtone();
+        if(!accepted){
+            audioPlayer.releaseAudioFocus();
+        }
         if (!isActivityForResult) {
             Log.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
             Intent startChatIntent = new Intent(this, GamesChatActivity.class);

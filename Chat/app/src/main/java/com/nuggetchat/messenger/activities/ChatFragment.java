@@ -111,6 +111,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
     private GamesChatActivity gamesChatActivity;
     private AudioPlayer audioPlayer;
+    private boolean hasAudioFocus;
 
     private boolean isBound;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -543,6 +544,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, "onRemove activity game chat destroyed");
             return;
         }
+        resetAudioManager();
+        Log.d(LOG_TAG, "onRemoveRemoteStream: abandon audio focus");
+        audioManager.abandonAudioFocus(null);
         ViewUtils.showWindowNavigation(gamesChatActivity.getWindow(), mainHandler);
         application.setOngoingCall(false);
         if (remoteStream != null && !remoteStream.videoTracks.isEmpty()) {
@@ -557,7 +561,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
             }
         });
-        resetAudioManager();
         if (webRtcClient != null) {
             webRtcClient.setCameraAndUpdateVideoViews();
         }
