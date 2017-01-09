@@ -21,7 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
-import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
@@ -41,7 +41,7 @@ public class GamesFragment extends Fragment {
     private static final int UNLOCK_INCENTIVE = 2;
 
     private ArrayList<GamesItem> gamesItemList;
-    private NuggetApplication nuggetApplication;
+    private NuggetInjector nuggetInjector;
     private View view;
     private int numberOfFriends;
     private int numberLocked;
@@ -57,7 +57,7 @@ public class GamesFragment extends Fragment {
         ButterKnife.bind(this, view);
 
         gamesItemList = new ArrayList<>();
-        nuggetApplication = NuggetApplication.getInstance();
+        nuggetInjector = NuggetInjector.getInstance();
 
         numberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
         Log.d("GAMESFRAGMENT", ">>>>NUM OF FRIENDS: " + String.valueOf(numberOfFriends));
@@ -246,7 +246,7 @@ public class GamesFragment extends Fragment {
                 } else {
                     Toast.makeText(getActivity(), "Starting " + gamesItemList.get(position).getGamesName(),
                             Toast.LENGTH_SHORT).show();
-                    nuggetApplication.logEvent(getContext(), FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
+                    nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
                             null /* bundle */);
                     Log.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
 

@@ -3,7 +3,7 @@ package com.nuggetchat.messenger.chat;
 import android.content.Context;
 import android.util.Log;
 
-import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -22,7 +22,7 @@ public class MessageHandler {
     private Socket socket;
     private Context context;
     private EventListener eventListener;
-    private NuggetApplication application;
+    private NuggetInjector nuggetInjector;
     private String userId;
     private String username;
 
@@ -30,7 +30,7 @@ public class MessageHandler {
         this.socket = socket;
         Log.e(LOG_TAG, "MessageHandler: " + socket + " " + "context " + context.getPackageCodePath());
         this.context = context;
-        application = (NuggetApplication) context.getApplicationContext();
+        nuggetInjector = NuggetInjector.getInstance();
         userId = SharedPreferenceUtility.getFacebookUserId(context);
         username = SharedPreferenceUtility.getFacebookUserName(context);
         if("".equals(username)){
@@ -125,7 +125,7 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             Log.i(LOG_TAG, "onCallAccepted");
-            if (application.isOngoingCall()) {
+            if (nuggetInjector.isOngoingCall()) {
                 Log.w(LOG_TAG, "onCallAccepted Ignore other incoming calls");
                 return;
             }

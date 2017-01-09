@@ -11,6 +11,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -20,6 +21,7 @@ public class GameWebViewActivity extends AppCompatActivity {
     public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
+    private NuggetInjector nuggetInjector;
 
 
     @Override
@@ -30,6 +32,7 @@ public class GameWebViewActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         String gameUrl = bundle.getString(EXTRA_GAME_URL);
+        nuggetInjector = NuggetInjector.getInstance();
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
