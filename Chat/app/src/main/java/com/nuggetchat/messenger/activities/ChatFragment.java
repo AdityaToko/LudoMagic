@@ -98,12 +98,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
     private View view;
-    private ArrayList<String> multiPlayerGamesName;
-    private ArrayList<String> multiPlayerGamesImage;
-    private ArrayList<String> multiPlayerGamesUrl;
     private ArrayList<GamesItem> gamesItemList;
-    ArrayList<String> gamesName;
-    ArrayList<String> gamesImage;
+    private ArrayList<GamesItem> multiPlayerItemList;
     private NuggetInjector nuggetInjector;
     private ChatService chatService;
     private Handler mainHandler;
@@ -171,12 +167,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         bundle = getArguments();
         nuggetInjector = NuggetInjector.getInstance();
-        multiPlayerGamesName = new ArrayList<>();
-        multiPlayerGamesImage = new ArrayList<>();
-        multiPlayerGamesUrl = new ArrayList<>();
-        gamesName = new ArrayList<>();
-        gamesImage = new ArrayList<>();
         gamesItemList = new ArrayList<>();
+        multiPlayerItemList = new ArrayList<>();
         fetchData();
 
         linearLayout.setVisibility(View.VISIBLE);
@@ -342,8 +334,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-                gamesName.add(gamesDate.getTitle());
-                gamesImage.add(gamesDate.getFeaturedImage());
                 GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
                         gamesDate.getFeaturedImage(), gamesDate.getUrl(), gamesDate.getPortrait());
                 gamesItemList.add(gamesItem);
@@ -391,14 +381,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                         Log.i(LOG_TAG, "dataSnapshot games key " + dataSnapshot.getKey());
                         Log.i(LOG_TAG, "games name, " + gamesItemList.get(i).getGamesName());
                         Log.i(LOG_TAG, "games Image, " + gamesItemList.get(i).getGamesImage());
-                        multiPlayerGamesName.add(gamesItemList.get(i).getGamesName());
-                        multiPlayerGamesImage.add(gamesItemList.get(i).getGamesImage());
-                        multiPlayerGamesUrl.add(gamesItemList.get(i).getGamesUrl());
-                        Log.i(LOG_TAG, "the size , " + multiPlayerGamesName.size());
+                        GamesItem gamesItem = new GamesItem(gamesItemList.get(i).getGameKey(),
+                                gamesItemList.get(i).getGamesName(), gamesItemList.get(i).getGamesImage(),
+                                gamesItemList.get(i).getGamesUrl(), gamesItemList.get(i).getPortrait());
+                        multiPlayerItemList.add(gamesItem);
+                        Log.i(LOG_TAG, "the size , " + multiPlayerItemList.size());
                     }
                 }
 
-                for (int i = 0 ; i < multiPlayerGamesName.size(); i++) {
+                for (int i = 0 ; i < multiPlayerItemList.size(); i++) {
                     setUpListView(i);
                 }
             }
@@ -432,11 +423,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.multiplayer_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
-        Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerGamesName.get(i));
-        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerGamesImage.get(i));
+        Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerItemList.get(i).getGamesName());
+        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerItemList.get(i).getGamesImage());
 
-        textView.setText(multiPlayerGamesName.get(i));
-        String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerGamesImage.get(i);
+        textView.setText(multiPlayerItemList.get(i).getGamesName());
+        String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerItemList.get(i).getGamesImage();
         Log.d("The image uri " , imageURl);
         GlideUtils.loadImage(gamesChatActivity, imageView, null, imageURl);
 
@@ -456,15 +447,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             if (nuggetInjector.isOngoingCall()) {
                 nuggetInjector.logEvent(FirebaseAnalyticsConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
                         null /* bundle */);
-                String thisGameUrl = multiPlayerGamesUrl.get(index)
+                String thisGameUrl = multiPlayerItemList.get(index).getGamesUrl()
                         + "?room=" + myUserId
                         + "&user=" + myUserId;
-                String peerGameUrl = multiPlayerGamesUrl.get(index)
+                String peerGameUrl = multiPlayerItemList.get(index).getGamesUrl()
                         + "?room=" + myUserId
                         + "&user=" + targetUserId;
                 // launch the WebView
                 Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
                 gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
+                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
                 startActivity(gameIntent);
 
                 // emit to peer
