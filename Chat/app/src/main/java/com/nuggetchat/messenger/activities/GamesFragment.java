@@ -97,7 +97,7 @@ public class GamesFragment extends Fragment {
                         numberLocked = newNumberLocked;
                     }
                 })
-                .setIcon(R.drawable.unlock_dialog_icon)
+                .setIcon(R.drawable.games_icon)
                 .show();
     }
 
@@ -240,7 +240,7 @@ public class GamesFragment extends Fragment {
 
                                 }
                             })
-                            .setIcon(R.drawable.unlock_dialog_icon)
+                            .setIcon(R.drawable.child_pic_one_icon)
                             .show();
 
                 } else {
