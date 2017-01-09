@@ -167,6 +167,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
         (NuggetInjector.getInstance()).setIncomingCall(false);
+        (NuggetInjector.getInstance()).setOngoingCall(true);
         triggerUserAction(true /*accepted*/);
     }
 
