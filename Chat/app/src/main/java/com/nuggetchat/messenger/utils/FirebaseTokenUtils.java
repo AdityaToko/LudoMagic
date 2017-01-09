@@ -9,8 +9,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.nuggetchat.lib.common.Utils;
 
-import static com.nuggetchat.lib.Conf.firebaseDomainUri;
+import static com.nuggetchat.lib.Conf.FACEBOOK_DEVICE_TOKEN;
+import static com.nuggetchat.lib.Conf.FIREBASE_DEVICE_TOKEN;
+import static com.nuggetchat.lib.Conf.facebookDeviceToken;
+import static com.nuggetchat.lib.Conf.firebaseDeviceToken;
 
 public class FirebaseTokenUtils {
     public static final String LOG_TAG = FirebaseTokenUtils.class.getSimpleName();
@@ -26,7 +30,18 @@ public class FirebaseTokenUtils {
     }
 
     private static void saveDeviceRegistrationToken(String handle, String uid, String deviceRegistrationToken) {
-        String userDeviceIDUrl = firebaseDomainUri() + handle + "/" + uid + "/";
+        String userDeviceIDUrl;
+        if (FIREBASE_DEVICE_TOKEN.equals(handle)) {
+            userDeviceIDUrl = firebaseDeviceToken(uid);
+        } else if (FACEBOOK_DEVICE_TOKEN.equals(handle)) {
+            userDeviceIDUrl = facebookDeviceToken(uid);
+        } else {
+            return;
+        }
+        if (Utils.isNullOrEmpty(userDeviceIDUrl)) {
+            Log.w(LOG_TAG, "user device id not set");
+            return;
+        }
         Log.i(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(userDeviceIDUrl);

@@ -13,6 +13,8 @@ public final class Conf {
     private static final String FIREBASE_USERS_URI = "users/"; //users URI
     public static final String CLOUDINARY_PREFIX_URL = "http://res.cloudinary.com/tokoimages1/image/upload/";
     public static final String FB_TO_FIRE_USER_MAP = "fb-to-fire/"; // Map of users from facebook id to firebase
+    public static final String FIREBASE_DEVICE_TOKEN = "devices";
+    public static final String FACEBOOK_DEVICE_TOKEN = "devices-facebook";
     public static final String GAME_SESSION = "game-session/";
     public static final String CHAT_WEBRTC_SERVER = "http://chat.nuggetkids.com/";
 
@@ -74,5 +76,19 @@ public final class Conf {
 
     public static String firebaseGameSession() {
         return firebaseDomainUri() + GAME_SESSION;
+    }
+
+    public static String firebaseDeviceToken(String firebaseId) {
+        if (Utils.isNullOrEmpty(firebaseId)) {
+            return "";
+        }
+        return firebaseDomainUri() + FIREBASE_DEVICE_TOKEN + "/" + firebaseId + "/";
+    }
+
+    public static String facebookDeviceToken(String firebaseId) {
+        if (Utils.isNullOrEmpty(firebaseId)) {
+            return "";
+        }
+        return firebaseDomainUri() + FACEBOOK_DEVICE_TOKEN + "/" + firebaseId + "/";
     }
 }
