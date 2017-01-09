@@ -45,7 +45,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:gravity="center"
-        android:text="@string/play_50_games_n_free_video_calls_nmultiplayer_text"
+        android:text="@string/play_50_games_n_free_video_calls_multiplayer_text"
         android:lineSpacingExtra="3dp"
         android:layout_width="165dp"
         android:layout_height="wrap_content" />

@@ -87,8 +87,8 @@ public class GamesFragment extends Fragment {
 
     private void processUnlockGames(int toBeUnlocked, final int newNumberOfFriends, final int newNumberLocked) {
         new AlertDialog.Builder(this.getContext())
-                .setTitle("You've unlocked new games!!")
-                .setMessage("By adding more friends you've unlocked some new games. Try them out")
+                .setTitle(R.string.unlock_games_dialog_title)
+                .setMessage(R.string.unlock_games_dialog_message)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // continue with unlock
@@ -224,14 +224,23 @@ public class GamesFragment extends Fragment {
                 if(gamesItemList.get(position).getLocked()) {
 
                     new AlertDialog.Builder(context)
-                            .setTitle("Add friends to unlock these games!")
-                            .setMessage("Would you like to invite some friends now?")
+                            .setTitle(R.string.add_friends_dialog_title)
+                            .setMessage(R.string.add_friends_dialog_message)
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // continue with add friends
-                                    Intent intent = new Intent(context, FriendsManagerActivity.class);
-                                    intent.putExtra("user_id", "dummy");
-                                    startActivityForResult(intent, 1234);
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    intent.setPackage("com.facebook.orca");
+                                    intent.setType("text/plain");
+                                    intent.putExtra(Intent.EXTRA_TEXT, "");
+
+                                    try {
+                                        startActivity(intent);
+                                    } catch (android.content.ActivityNotFoundException ex) {
+                                        Toast.makeText(context, R.string.fb_messenger_not_found, Toast.LENGTH_LONG).show();
+                                    }
+                                    nuggetApplication.logEvent(context, FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
+                                            null /* bundle */ );
                                 }
                             })
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
