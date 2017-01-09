@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -159,7 +160,7 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpToolbar() {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
         Log.i(LOG_TAG, "the username, " + userName);
-        String profilePicUrl = getProfilePicUrl(SharedPreferenceUtility.getFacebookUserId(this));
+        String profilePicUrl = UserInfo.getUserPic(SharedPreferenceUtility.getFacebookUserId(this));
         Glide.with(this).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(image) {
             @Override
             protected void setResource(Bitmap resource) {
@@ -239,10 +240,6 @@ public class GamesChatActivity extends AppCompatActivity {
             Log.i(LOG_TAG, "Switch to chat tab");
             viewPager.setCurrentItem(1);
         }
-    }
-
-    private String getProfilePicUrl(String facebookUserId) {
-        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=150&height=150";
     }
 
     private void refreshFirebaseToken() {

@@ -1,5 +1,7 @@
 package com.nuggetchat.lib;
 
+import com.nuggetchat.lib.common.Utils;
+
 public final class Conf {
     public static final String CHAT_SERVER_HOST = "http://server.nuggetchat.com:8080/";
     public static final String GET_FRIENDS_API_URL = CHAT_SERVER_HOST + "getFriends";
@@ -12,6 +14,7 @@ public final class Conf {
     public static final String CLOUDINARY_PREFIX_URL = "http://res.cloudinary.com/tokoimages1/image/upload/";
     public static final String FB_TO_FIRE_USER_MAP = "fb-to-fire/"; // Map of users from facebook id to firebase
     public static final String GAME_SESSION = "game-session/";
+    public static final String CHAT_WEBRTC_SERVER = "http://chat.nuggetkids.com/";
 
 
     public static String firebaseDomainUri() {
@@ -34,12 +37,39 @@ public final class Conf {
         return firebaseDomainUri() + FIREBASE_USERS_URI;
     }
 
+    public static String firebaseUsersUri(String firebaseId) {
+        if (Utils.isNullOrEmpty(firebaseId)) {
+            return "";
+        }
+        return firebaseUsersUri() + firebaseId +"/";
+    }
+
+    public static String firebaseUserNameUri(String firebaseId) {
+        String uriPrefix = firebaseUsersUri(firebaseId);
+        if (Utils.isNullOrEmpty(uriPrefix)) {
+            return "";
+        }
+        return uriPrefix + "name/";
+    }
+
+
     public static String firebaseFbToFireidUri(String facebookId) {
+        if (Utils.isNullOrEmpty(facebookId)) {
+            return "";
+        }
         return firebaseDomainUri() + FB_TO_FIRE_USER_MAP + facebookId + "/";
     }
 
     public static String firebaseUserFriends(String userFirebaseId) {
-        return firebaseUsersUri() + userFirebaseId + "/friends";
+        return firebaseUsersUri() + userFirebaseId + "/friends/";
+    }
+
+    public static String firebaseUserFriend(String userFirebaseId, String friendFacebookId) {
+        String userFriendsUri = firebaseUserFriends(userFirebaseId);
+        if (Utils.isNullOrEmpty(userFriendsUri) || Utils.isNullOrEmpty(friendFacebookId)) {
+            return "";
+        }
+        return userFriendsUri + friendFacebookId + "/";
     }
 
     public static String firebaseGameSession() {

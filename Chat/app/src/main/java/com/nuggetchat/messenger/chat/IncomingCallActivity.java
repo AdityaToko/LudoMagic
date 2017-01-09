@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
@@ -17,18 +19,20 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.common.Utils;
+import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
+import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,12 +52,14 @@ public class IncomingCallActivity extends AppCompatActivity {
     private AudioPlayer audioPlayer;
     private boolean isActivityForResult;
     private BroadcastReceiver broadcastReceiver;
+    private Handler mainHandler;
 
     Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mainHandler = new Handler(Looper.getMainLooper());
         Intent intent = getIntent();
         bundle = intent.getExtras();
         ((NuggetApplication)getApplication()).setIncomingCall(true);
@@ -100,51 +106,31 @@ public class IncomingCallActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    private void fetchFriendNameAndPic(final String from) {
-        String firebaseUri = Conf.firebaseUsersUri();
-        Log.i(LOG_TAG, "firebaseURI, " + firebaseUri);
-        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
-                .getReferenceFromUrl(firebaseUri);
+    private void fetchFriendNameAndPic(final String callerFacebookId) {
 
-        if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
+        String userFirebaseId = SharedPreferenceUtility.getFirebaseUid(IncomingCallActivity.this);
+        String usersFriendUri = Conf.firebaseUserFriend(userFirebaseId, callerFacebookId);
+        if (Utils.isNullOrEmpty(usersFriendUri)) {
+            Log.w(LOG_TAG, "No Caller facebook url");
             return;
         }
-
-        firebaseRef.addChildEventListener(new ChildEventListener() {
+        FirebaseDatabase.getInstance().getReferenceFromUrl(usersFriendUri)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getValue());
-                UserInfo  userInfo = dataSnapshot.getValue(UserInfo.class);
-               if (userInfo.getFacebookId().equals(from)) {
-                   String userName = userInfo.getName();
-                   callerName.setText(userName);
-                   final String callerPic = getPicForCaller(userInfo.getFacebookId());
-                   Glide.with(getApplicationContext()).load(callerPic).asBitmap().centerCrop().into(new BitmapImageViewTarget(callerImage) {
-                       @Override
-                       protected void setResource(Bitmap resource) {
-                           RoundedBitmapDrawable circularBitmapDrawable =
-                                   RoundedBitmapDrawableFactory.create(getApplicationContext().getResources(), resource);
-                           circularBitmapDrawable.setCircular(true);
-                           callerImage.setImageDrawable(circularBitmapDrawable);
-                       }
-                   });
-               }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    String friendName = getString(R.string.new_friend);
+                    FriendInfo friendInfo = dataSnapshot.getValue(FriendInfo.class);
+                    if (friendInfo != null) {
+                        friendName = friendInfo.getName();
+                        if (Utils.isNullOrEmpty(friendName)) {
+                            Log.w(LOG_TAG, "Friend name not set " + friendName);
+                        }
+                    } else {
+                        Log.w(LOG_TAG, "Caller not in user friends");
+                    }
+                    updateUIWithPicAndName(friendName, UserInfo.getUserPic(callerFacebookId));
+                }
             }
 
             @Override
@@ -154,10 +140,29 @@ public class IncomingCallActivity extends AppCompatActivity {
         });
     }
 
-    private String getPicForCaller(String facebookUserId) {
-        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=200&height=150";
+    private void updateUIWithPicAndName(final String userName, final String callerPic) {
+        Log.i(LOG_TAG, "Updating name:" + userName + " pic:" + callerPic);
+        if (mainHandler == null) {
+            return;
+        }
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                callerName.setText(userName);
+                Glide.with(getApplicationContext()).load(callerPic).asBitmap()
+                        .centerCrop().into(new BitmapImageViewTarget(callerImage) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        RoundedBitmapDrawable circularBitmapDrawable =
+                                RoundedBitmapDrawableFactory
+                                        .create(getApplicationContext().getResources(), resource);
+                        circularBitmapDrawable.setCircular(true);
+                        callerImage.setImageDrawable(circularBitmapDrawable);
+                    }
+                });
+            }
+        });
     }
-
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){

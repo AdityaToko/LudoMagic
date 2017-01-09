@@ -1,5 +1,7 @@
 package com.nuggetchat.lib.model;
 
+import com.nuggetchat.lib.common.Utils;
+
 import java.util.Map;
 
 /**
@@ -41,5 +43,12 @@ public class UserInfo {
 
     public void setFriends(Map<String, FriendInfo> friends) {
         this.friends = friends;
+    }
+
+    public static String getUserPic(String facebookUserId) {
+        if (Utils.isNullOrEmpty(facebookUserId)) {
+            return "";
+        }
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?width=150&height=150";
     }
 }

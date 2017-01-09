@@ -37,6 +37,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
+import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.NuggetApplication;
 import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
@@ -661,7 +662,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         String friend1 = SharedPreferenceUtility.getFavFriend1(getActivity());
         String friend2 = SharedPreferenceUtility.getFavFriend2(getActivity());
         if (!friend1.equals("")) {
-            String friendOnePicUrl = "https://graph.facebook.com/" + friend1 + "/picture?width=200&height=150";
+            String friendOnePicUrl = UserInfo.getUserPic(friend1);
             Glide.with(getActivity()).load(friendOnePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(popularFriend1) {
                 @Override
                 protected void setResource(Bitmap resource) {
@@ -674,7 +675,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             popularFriend1.setVisibility(View.VISIBLE);
         }
         if (!friend2.equals("")) {
-            String friendTwoPicUrl = "https://graph.facebook.com/" + friend2 + "/picture?width=200&height=150";
+            String friendTwoPicUrl = UserInfo.getUserPic(friend2);
             Glide.with(getActivity()).load(friendTwoPicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(popularFriend2) {
                 @Override
                 protected void setResource(Bitmap resource) {
