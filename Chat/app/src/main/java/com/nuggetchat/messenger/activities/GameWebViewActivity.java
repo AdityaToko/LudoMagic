@@ -33,9 +33,6 @@ public class GameWebViewActivity extends AppCompatActivity {
         Bundle bundle = intent.getExtras();
         String gameUrl = bundle.getString(EXTRA_GAME_URL);
         nuggetInjector = NuggetInjector.getInstance();
-        if (nuggetInjector.isOngoingCall()) {
-            finish();
-        }
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);

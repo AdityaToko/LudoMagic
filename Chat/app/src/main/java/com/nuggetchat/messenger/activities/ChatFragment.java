@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -561,7 +560,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
-        getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -755,11 +753,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 newReqBundle.putBundle("requestBundle", receivedBundle);
                 boolean accepted = receivedBundle.getBoolean(IncomingCallActivity.CALL_ACCEPTED);
                 if (accepted) {
-                    getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
                     Log.i(LOG_TAG, "User call accepted");
                     acknowledgePreCallHandshake(newReqBundle);
                 } else {
-                    getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
                     Log.i(LOG_TAG, "User call rejected");
                     rejectCall(newReqBundle);
                 }
@@ -910,6 +906,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallOngoing() {
+        Log.i(LOG_TAG, "on call ongoing");
         showFriendsAddCluster();
         hideEndCallBtn();
         userBusyToast();
