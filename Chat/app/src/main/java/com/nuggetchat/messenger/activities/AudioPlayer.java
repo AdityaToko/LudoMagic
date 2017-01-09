@@ -26,14 +26,16 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     private AudioTrack mProgressTone;
 
     private final static int SAMPLE_RATE = 16000;
+    private AudioManager audioManager;
 
     public AudioPlayer(Context context) {
         this.mContext = context.getApplicationContext();
+        audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         Log.d(LOG_TAG, "AUDIOPLAYER setup");
     }
 
     public void playRingtone() {
-        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        /*audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);*/
         Log.d(LOG_TAG, "AUDIOPLAYER Playing");
 
         // Honour silent mode
@@ -125,5 +127,20 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
         mPlayer.release();
         mediaPlayer.release();
         return true;
+    }
+
+    public void requestAudioFocus() {
+        int result = audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
+                AudioManager.AUDIOFOCUS_GAIN);
+        if (result ==  AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+            Log.d(LOG_TAG, "audio focus granted");
+        } else {
+            Log.d(LOG_TAG, "audio focus not granted");
+        }
+    }
+
+    public void releaseAudioFocus(){
+        audioManager.abandonAudioFocus(null);
+        Log.d(LOG_TAG, "audio focus released");
     }
 }

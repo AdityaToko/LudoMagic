@@ -222,6 +222,6 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             Log.i(LOG_TAG, "Drain remote candidate " + candidate + " set succesful");
             peerConnection.addIceCandidate(candidate);
         }
-        webRtcClient.queuedRemoteCandidates.clear();
+        webRtcClient.queuedRemoteCandidates = null;
     }
 }
