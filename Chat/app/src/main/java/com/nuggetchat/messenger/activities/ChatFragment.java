@@ -647,7 +647,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        audioPlayer.playRingtone();
+        audioPlayer.playRingtone(AudioPlayer.RINGTONE);
         endCall.setVisibility(View.VISIBLE);
       //  startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -936,6 +936,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                audioPlayer.playRingtone(AudioPlayer.BUSYTONE);
                 endCall.setVisibility(View.VISIBLE);
                 //startCallButton.setVisibility(View.INVISIBLE);
             }
