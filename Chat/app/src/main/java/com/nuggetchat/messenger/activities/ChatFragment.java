@@ -61,6 +61,7 @@ import org.json.JSONObject;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.PeerConnection;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceViewRenderer;
@@ -579,6 +580,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
+        Log.i(LOG_TAG, "the on resume of chatfragment is called");
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -902,17 +904,21 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
         Log.i(LOG_TAG, "onFetchIceCandidates");
-        Peer peer = webRtcClient.getPeer();
-        if ( peer == null) {
-            return;
-        }
         Log.i(LOG_TAG, "onFetchIceCandidates peer not null");
         if (webRtcClient.queuedRemoteCandidates != null) {
             Log.i(LOG_TAG, "Queueing ice candidates before connection");
             webRtcClient.queuedRemoteCandidates.add(candidate);
         } else {
             Log.i(LOG_TAG, "Directly add to peer ice candidates after connection");
-            peer.getPeerConnection().addIceCandidate(candidate);
+            Peer peer = webRtcClient.getPeer();
+            if ( peer == null) {
+                return;
+            }
+            PeerConnection peerConnection = peer.getPeerConnection();
+            if (peerConnection == null) {
+                return;
+            }
+            peerConnection.addIceCandidate(candidate);
         }
     }
 
@@ -925,6 +931,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallOngoing() {
+        Log.i(LOG_TAG, "on call ongoing");
         showFriendsAddCluster();
         hideEndCallBtn();
         userBusyToast();
