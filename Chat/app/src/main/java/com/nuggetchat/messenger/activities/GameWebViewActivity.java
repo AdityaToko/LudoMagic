@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -74,26 +75,12 @@ public class GameWebViewActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (gameWebView != null) {
-            gameWebView.destroy();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (gameWebView != null) {
-            gameWebView.pauseTimers();
-            gameWebView.onPause();
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
+        Log.i(LOG_TAG, "On resume - game webview");
+        // Finish only on solo games. TODO
         if (nuggetInjector.isOngoingCall()) {
+            Log.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
         }
 
@@ -102,6 +89,24 @@ public class GameWebViewActivity extends AppCompatActivity {
             gameWebView.onResume();
         }
     }
+
+    @Override
+    public void onPause() {
+        if (gameWebView != null) {
+            gameWebView.pauseTimers();
+            gameWebView.onPause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (gameWebView != null) {
+            gameWebView.destroy();
+        }
+        super.onDestroy();
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
