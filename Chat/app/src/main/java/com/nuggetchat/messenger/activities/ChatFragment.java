@@ -16,7 +16,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -168,7 +167,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if ("".equals(SharedPreferenceUtility.getFavFriend2(gamesChatActivity))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
-        audioPlayer = new AudioPlayer(getActivity());
+        audioPlayer = AudioPlayer.getInstance(getActivity());
 
         bundle = getArguments();
         nuggetInjector = NuggetInjector.getInstance();
