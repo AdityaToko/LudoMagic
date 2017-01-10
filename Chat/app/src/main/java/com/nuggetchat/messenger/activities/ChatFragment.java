@@ -16,6 +16,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -758,6 +759,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (data != null) {
             if (requestCode == 1234) {
                 Log.i(LOG_TAG, "before toast onActivityResult");
+                audioPlayer.requestAudioFocus();
                 showEndCallBtn();
                 sendPreCallHandshake(data.getStringExtra("user_id"));
             } else if (requestCode == ChatFragment.INCOMING_CALL_CODE) {
