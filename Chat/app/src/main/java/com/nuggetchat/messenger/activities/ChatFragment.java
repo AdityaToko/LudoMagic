@@ -107,6 +107,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
     private GamesChatActivity gamesChatActivity;
     private AudioPlayer audioPlayer;
+    private Handler handler;
     private boolean hasAudioFocus;
 
     private boolean isBound;
@@ -144,6 +145,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
+    @BindView(R.id.fake_end_call_button) /* package-local */ ImageView fakeEndBtn;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
     private String targetUserId;
@@ -171,6 +173,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesItemList = new ArrayList<>();
         multiPlayerItemList = new ArrayList<>();
         fetchData();
+        handler = new Handler();
 
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
@@ -237,6 +240,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         chatService.socket.emit("end_call", payload);
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
+    }
+
+    @OnClick(R.id.fake_end_call_button)
+    public void onFakeEndCallBtnClick() {
+        audioPlayer.stopRingtone();
+        showFriendsAddCluster();
+        hideFakeEndCallBtn();
     }
 
     private void initVideoViews() {
@@ -588,6 +598,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onDestroyView() {
         destroyVideoViews();
         resetAudioManager();
+        handler.removeCallbacksAndMessages(null);
         super.onDestroyView();
     }
 
@@ -906,10 +917,27 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallOngoing() {
-        showFriendsAddCluster();
         hideEndCallBtn();
+        showFakeEndCallBtn();
         userBusyToast();
-        webRtcClient.endCallAndRemoveRemoteStream();
+    }
+
+    private void showFakeEndCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                fakeEndBtn.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void hideFakeEndCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                fakeEndBtn.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     public void userBusyToast() {
@@ -917,6 +945,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 audioPlayer.playRingtone(AudioPlayer.BUSYTONE);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        audioPlayer.stopRingtone();
+                        hideFakeEndCallBtn();
+                        showFriendsAddCluster();
+                        webRtcClient.endCallAndRemoveRemoteStream();
+                    }
+                }, 3000);
                 Toast.makeText(ChatFragment.this.getActivity(), "User is busy.", Toast.LENGTH_LONG).show();
             }
         });
@@ -937,7 +974,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                //audioPlayer.playRingtone(AudioPlayer.BUSYTONE);
                 endCall.setVisibility(View.VISIBLE);
                 //startCallButton.setVisibility(View.INVISIBLE);
             }
