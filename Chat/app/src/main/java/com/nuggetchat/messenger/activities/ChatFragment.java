@@ -792,7 +792,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (data != null) {
             if (requestCode == 1234) {
                 Log.i(LOG_TAG, "before toast onActivityResult");
-                audioPlayer.requestAudioFocus();
+                requestAudioFocus();
                 showEndCallBtn();
                 sendPreCallHandshake(data.getStringExtra("user_id"));
             } else if (requestCode == ChatFragment.INCOMING_CALL_CODE) {
@@ -808,6 +808,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     rejectCall(newReqBundle);
                 }
             }
+        }
+    }
+
+    private void requestAudioFocus() {
+        int result = audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
+                AudioManager.AUDIOFOCUS_GAIN);
+        if (result ==  AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+            Log.d(LOG_TAG, "audio focus granted");
+        } else {
+            Log.d(LOG_TAG, "audio focus not granted");
         }
     }
 
