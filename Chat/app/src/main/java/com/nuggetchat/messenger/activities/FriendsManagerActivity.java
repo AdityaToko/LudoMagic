@@ -101,6 +101,17 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 android.R.color.holo_orange_light);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i(LOG_TAG, "On resume - friend activity");
+        if (nuggetInjector.isOngoingCall()) {
+            Log.i(LOG_TAG, "On resume - friend activity");
+            finish();
+            return;
+        }
+    }
+
     public void sendMessagetoFriends(View v) {
         Log.d(LOG_TAG, "Message to friends called");
 

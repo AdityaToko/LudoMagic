@@ -870,6 +870,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         // launch the WebView
         Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
         gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
         startActivity(gameIntent);
     }
 
