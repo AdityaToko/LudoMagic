@@ -101,13 +101,24 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 android.R.color.holo_orange_light);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i(LOG_TAG, "On resume - friend activity");
+        if (nuggetInjector.isOngoingCall()) {
+            Log.i(LOG_TAG, "On resume - friend activity");
+            finish();
+            return;
+        }
+    }
+
     public void sendMessagetoFriends(View v) {
         Log.d(LOG_TAG, "Message to friends called");
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http://bit.ly/2iTz71P");
 
         try {
             startActivity(intent);
@@ -130,6 +141,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @OnClick(R.id.skip_friends_addition)
     /* package-local */ void skipFriendsAddition() {
         if (intent.getStringExtra("user_id") == null) {
+            Log.i(LOG_TAG, "the skip button is clicked");
             Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
             startActivity(intent);
         }
@@ -175,10 +187,10 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void getUserFriends() {
-        Log.i(LOG_TAG, "Refreshing - getUserFriends");
         final String facebookToken = SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this);
         final String firebaseToken =  SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this);
         final String firebaseUid =  SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this);
+        Log.i(LOG_TAG, "Refreshing - getUserFriends token:" + firebaseToken +" user:" + firebaseUid);
 
         friendsManagerProgressBar.setVisibility(VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);

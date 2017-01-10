@@ -26,6 +26,7 @@ public class FirebaseTokenUtils {
         saveDeviceRegistrationToken("devices-facebook", facebookId, deviceRegistrationToken);
         if (context != null) {
             SharedPreferenceUtility.setFirebaseIdToken(deviceRegistrationToken, context);
+            Log.i(LOG_TAG, "Saved firebase device token in shared pref ");
         }
     }
 

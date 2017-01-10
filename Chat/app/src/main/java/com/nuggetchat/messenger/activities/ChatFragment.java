@@ -38,6 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
@@ -60,6 +61,7 @@ import org.json.JSONObject;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
+import org.webrtc.PeerConnection;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
 import org.webrtc.SurfaceViewRenderer;
@@ -72,7 +74,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.socket.client.Socket;
 
-public class ChatFragment extends Fragment implements RtcListener, EventListener {
+public class ChatFragment extends Fragment implements RtcListener, EventListener, FragmentChangeListener {
     private static final String LOG_TAG = ChatFragment.class.getSimpleName();
     private static final int LOCAL_X = 3;
     private static final int LOCAL_Y = 3;
@@ -107,6 +109,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private int defaultAudioManagerMode = AudioManager.MODE_NORMAL;
     private GamesChatActivity gamesChatActivity;
     private AudioPlayer audioPlayer;
+    private Handler handler;
     private boolean hasAudioFocus;
 
     private boolean isBound;
@@ -144,6 +147,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
+    @BindView(R.id.end_busy_call_button) /* package-local */ ImageView endBusyCallBtn;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
     private String targetUserId;
@@ -164,13 +168,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if ("".equals(SharedPreferenceUtility.getFavFriend2(gamesChatActivity))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
-        audioPlayer = new AudioPlayer(getActivity());
+        audioPlayer = AudioPlayer.getInstance(getActivity());
 
         bundle = getArguments();
         nuggetInjector = NuggetInjector.getInstance();
         gamesItemList = new ArrayList<>();
         multiPlayerItemList = new ArrayList<>();
         fetchData();
+        handler = new Handler();
 
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
@@ -237,6 +242,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         chatService.socket.emit("end_call", payload);
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
+    }
+
+    @OnClick(R.id.end_busy_call_button)
+    public void onEndBusyCallBtnClick() {
+        audioPlayer.stopRingtone();
+        webRtcClient.endCallAndRemoveRemoteStream();
+        showFriendsAddCluster();
+        hideEndBusyCallBtn();
     }
 
     private void initVideoViews() {
@@ -436,6 +449,37 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         gamesList.addView(view);
     }
 
+    @Override
+    public void onShowFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
+        if(webRtcClient != null){
+            webRtcClient.onResume();
+        }
+        if(localRender != null){
+            localRender.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onHideFragment() {
+        Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
+        if (webRtcClient != null){
+            webRtcClient.onPause();
+        }
+    }
+
+    @Override
+    public void onScrollFragment(int position) {
+        if(localRender != null){
+            if (position == 0){
+                localRender.setVisibility(View.GONE);
+            }
+            else {
+                localRender.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     private class MultiPlayerClickListener implements View.OnClickListener {
         private int index;
 
@@ -458,6 +502,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
                 gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
                 gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
+                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
                 startActivity(gameIntent);
 
                 // emit to peer
@@ -589,6 +634,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onDestroyView() {
         destroyVideoViews();
         resetAudioManager();
+        handler.removeCallbacksAndMessages(null);
         super.onDestroyView();
     }
 
@@ -616,9 +662,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 }
             }
             Log.i(LOG_TAG, "MessageHandler onDestroy" + nuggetInjector.isOngoingCall());
+            undbindService();
             webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
-            undbindService();
+            if (localRender != null){
+                localRender.release();
+            }
+            if (remoteRender != null){
+                remoteRender.release();
+            }
+            if(eglBase != null){
+                eglBase.release();
+            }
         }
         nuggetInjector.setInitiator(false);
         nuggetInjector.setOngoingCall(false);
@@ -648,7 +703,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        audioPlayer.playRingtone();
+        audioPlayer.playRingtone(AudioPlayer.RINGTONE);
         endCall.setVisibility(View.VISIBLE);
       //  startCallButton.setVisibility(View.INVISIBLE);
     }
@@ -746,6 +801,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (data != null) {
             if (requestCode == 1234) {
                 Log.i(LOG_TAG, "before toast onActivityResult");
+                requestAudioFocus();
                 showEndCallBtn();
                 sendPreCallHandshake(data.getStringExtra("user_id"));
             } else if (requestCode == ChatFragment.INCOMING_CALL_CODE) {
@@ -761,6 +817,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     rejectCall(newReqBundle);
                 }
             }
+        }
+    }
+
+    private void requestAudioFocus() {
+        int result = audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
+                AudioManager.AUDIOFOCUS_GAIN);
+        if (result ==  AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+            Log.d(LOG_TAG, "audio focus granted");
+        } else {
+            Log.d(LOG_TAG, "audio focus not granted");
         }
     }
 
@@ -868,6 +934,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         // launch the WebView
         Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
         gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
         startActivity(gameIntent);
     }
 
@@ -884,17 +952,21 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
         Log.i(LOG_TAG, "onFetchIceCandidates");
-        Peer peer = webRtcClient.getPeer();
-        if ( peer == null) {
-            return;
-        }
         Log.i(LOG_TAG, "onFetchIceCandidates peer not null");
         if (webRtcClient.queuedRemoteCandidates != null) {
             Log.i(LOG_TAG, "Queueing ice candidates before connection");
             webRtcClient.queuedRemoteCandidates.add(candidate);
         } else {
             Log.i(LOG_TAG, "Directly add to peer ice candidates after connection");
-            peer.getPeerConnection().addIceCandidate(candidate);
+            Peer peer = webRtcClient.getPeer();
+            if ( peer == null) {
+                return;
+            }
+            PeerConnection peerConnection = peer.getPeerConnection();
+            if (peerConnection == null) {
+                return;
+            }
+            peerConnection.addIceCandidate(candidate);
         }
     }
 
@@ -908,16 +980,43 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallOngoing() {
         Log.i(LOG_TAG, "on call ongoing");
-        showFriendsAddCluster();
         hideEndCallBtn();
+        showEndBusyCallBtn();
         userBusyToast();
-        webRtcClient.endCallAndRemoveRemoteStream();
+    }
+
+    private void showEndBusyCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endBusyCallBtn.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void hideEndBusyCallBtn() {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                endBusyCallBtn.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     public void userBusyToast() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
+                audioPlayer.playRingtone(AudioPlayer.BUSYTONE);
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        audioPlayer.stopRingtone();
+                        hideEndBusyCallBtn();
+                        showFriendsAddCluster();
+                        webRtcClient.endCallAndRemoveRemoteStream();
+                    }
+                }, 3000);
                 Toast.makeText(ChatFragment.this.getActivity(), "User is busy.", Toast.LENGTH_LONG).show();
             }
         });

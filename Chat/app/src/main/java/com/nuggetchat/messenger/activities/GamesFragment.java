@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
@@ -32,10 +33,11 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
 
-public class GamesFragment extends Fragment {
+public class GamesFragment extends Fragment implements FragmentChangeListener {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
     private static final int TOTAL_NUMBER_LOCKED = 20;
     private static final int UNLOCK_INCENTIVE = 2;
@@ -60,10 +62,7 @@ public class GamesFragment extends Fragment {
         nuggetInjector = NuggetInjector.getInstance();
 
         numberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
-        Log.d("GAMESFRAGMENT", ">>>>NUM OF FRIENDS: " + String.valueOf(numberOfFriends));
         numberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * numberOfFriends;
-        Log.d("GAMESFRAGMENT", ">>>>NUM LOCKED: " + String.valueOf(numberLocked));
-
         fetchDataForGames(this.getContext());
 
         return view;
@@ -77,18 +76,14 @@ public class GamesFragment extends Fragment {
             int newNumberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
             int newNumberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * newNumberOfFriends;
             int toBeUnlocked = newNumberLocked - numberLocked;
-
-            Log.d("GAMESFRAGMENT", ">>>>NEW NUM OF FRIENDS: " + String.valueOf(newNumberOfFriends));
-            Log.d("GAMESFRAGMENT", ">>>>NEW NUM LOCKED: " + String.valueOf(newNumberLocked));
-
             processUnlockGames(toBeUnlocked, newNumberOfFriends, newNumberLocked);
         }
     }
 
     private void processUnlockGames(int toBeUnlocked, final int newNumberOfFriends, final int newNumberLocked) {
         new AlertDialog.Builder(this.getContext())
-                .setTitle("You've unlocked new games!!")
-                .setMessage("By adding more friends you've unlocked some new games. Try them out")
+                .setTitle(R.string.unlock_games_dialog_title)
+                .setMessage(R.string.unlock_games_dialog_message)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // continue with unlock
@@ -97,7 +92,7 @@ public class GamesFragment extends Fragment {
                         numberLocked = newNumberLocked;
                     }
                 })
-                .setIcon(R.drawable.unlock_dialog_icon)
+                .setIcon(R.drawable.games_icon)
                 .show();
     }
 
@@ -130,12 +125,12 @@ public class GamesFragment extends Fragment {
 
                 if (gamesItemList.size() >= numberLocked) {
                     GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false);
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false, false, gamesData.getValueScore());
                     gamesItemList.add(0, gamesItem);
                     Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "false");
                 } else {
                     GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesData.getTitle(),
-                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), true);
+                            gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), true, false, gamesData.getValueScore());
                     gamesItemList.add(0, gamesItem);
                     Log.d("GAMEFRAGMENT", gamesItemList.size() + " " + "true");
                 }
@@ -224,14 +219,23 @@ public class GamesFragment extends Fragment {
                 if(gamesItemList.get(position).getLocked()) {
 
                     new AlertDialog.Builder(context)
-                            .setTitle("Add friends to unlock these games!")
-                            .setMessage("Would you like to invite some friends now?")
+                            .setTitle(R.string.add_friends_dialog_title)
+                            .setMessage(R.string.add_friends_dialog_message)
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // continue with add friends
-                                    Intent intent = new Intent(context, FriendsManagerActivity.class);
-                                    intent.putExtra("user_id", "dummy");
-                                    startActivityForResult(intent, 1234);
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    intent.setPackage("com.facebook.orca");
+                                    intent.setType("text/plain");
+                                    intent.putExtra(Intent.EXTRA_TEXT, "Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http://bit.ly/2iTz71P");
+
+                                    try {
+                                        startActivity(intent);
+                                    } catch (android.content.ActivityNotFoundException ex) {
+                                        Toast.makeText(context, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
+                                    }
+                                    NuggetInjector.getInstance().logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
+                                            null /* bundle */ );
                                 }
                             })
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -240,7 +244,7 @@ public class GamesFragment extends Fragment {
 
                                 }
                             })
-                            .setIcon(R.drawable.unlock_dialog_icon)
+                            .setIcon(R.drawable.child_pic_one_icon)
                             .show();
 
                 } else {
@@ -254,9 +258,25 @@ public class GamesFragment extends Fragment {
                     gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
                     Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
                     gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                    gameIntent.putExtra(EXTRA_GAME_IS_MULTIPLAYER, false);
                     startActivity(gameIntent);
                 }
             }
         });
+    }
+
+    @Override
+    public void onShowFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Games Fragment shown");
+    }
+
+    @Override
+    public void onHideFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Games Fragment hidden");
+    }
+
+    @Override
+    public void onScrollFragment(int position) {
+
     }
 }

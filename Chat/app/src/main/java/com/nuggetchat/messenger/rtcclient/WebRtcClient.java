@@ -14,6 +14,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.VideoCapturer;
+import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
@@ -42,6 +43,7 @@ public class WebRtcClient{
     private VideoTrack videoTrack;
     private AudioTrack audioTrack;
     private AudioSource audioSource;
+    private VideoCapturerAndroid videoCapturer;
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
@@ -130,8 +132,9 @@ public class WebRtcClient{
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
+        videoCapturer = getVideoCapturer();
         if(videoSource == null){
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            videoSource = factory.createVideoSource(videoCapturer, videoConstraints);
         }
         Log.i(LOG_TAG, "Adding video track");
         videoTrack = factory.createVideoTrack("ARDAMSv0", videoSource);
@@ -150,18 +153,50 @@ public class WebRtcClient{
 
     // Cycle through likely device names for the camera and return the first
     // capturer that works, or crash if none do.
-    private VideoCapturer getVideoCapturer() {
+    private VideoCapturerAndroid getVideoCapturer() {
         String[] cameraFacing = { "front", "back" };
 //        int[] cameraIndex = { 0, 1 };
         int[] cameraIndex = { 1 };
 //        int[] cameraOrientation = { 0, 90, 180, 270 };
         int[] cameraOrientation = { 270 };
+        VideoCapturerAndroid.CameraEventsHandler handler = new VideoCapturerAndroid.CameraEventsHandler() {
+            @Override
+            public void onCameraError(String s) {
+                Log.e(LOG_TAG, "onCameraError: " + s );
+                if(videoCapturer != null){
+                    videoCapturer.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCameraFreezed(String s) {
+                Log.e(LOG_TAG, "onCameraFreezed: " + s );
+                if(videoCapturer != null){
+                    videoCapturer.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCameraOpening(int i) {
+                Log.d(LOG_TAG, "onCameraOpening: " + i);
+            }
+
+            @Override
+            public void onFirstFrameAvailable() {
+                
+            }
+
+            @Override
+            public void onCameraClosed() {
+                Log.d(LOG_TAG, "onCameraClosed called ");
+            }
+        };
         for (String facing : cameraFacing) {
             for (int index : cameraIndex) {
                 for (int orientation : cameraOrientation) {
                     String name = "Camera " + index + ", Facing " + facing +
                             ", Orientation " + orientation;
-                    VideoCapturer capturer = VideoCapturer.create(name);
+                    VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name, handler);
                     if (capturer != null) {
                         Log.i(LOG_TAG, "Using camera: " + name);
                         return capturer;

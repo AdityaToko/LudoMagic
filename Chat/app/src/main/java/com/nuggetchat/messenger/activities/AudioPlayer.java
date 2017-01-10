@@ -18,55 +18,80 @@ import java.io.IOException;
 public class AudioPlayer implements MediaPlayer.OnErrorListener{
 
     static final String LOG_TAG = AudioPlayer.class.getSimpleName();
+    public static final String BUSYTONE = "busy_tone";
+    public static final String RINGTONE = "ringtone";
+    private static AudioPlayer audioPlayer;
 
-    private Context mContext;
+    private Context context;
 
-    private MediaPlayer mPlayer;
+    private MediaPlayer mediaPlayer;
 
-    private AudioTrack mProgressTone;
+    private AudioTrack audioTrack;
 
     private final static int SAMPLE_RATE = 16000;
     private AudioManager audioManager;
 
-    public AudioPlayer(Context context) {
-        this.mContext = context.getApplicationContext();
-        audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+    private AudioPlayer(Context context) {
+        this.context = context.getApplicationContext();
+        audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
         Log.d(LOG_TAG, "AUDIOPLAYER setup");
     }
 
-    public void playRingtone() {
-        /*audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);*/
+    public static AudioPlayer getInstance(Context context) {
+        if (audioPlayer == null) {
+            audioPlayer = new AudioPlayer(context);
+        }
+        return audioPlayer;
+    }
+
+    public void playRingtone(String type) {
+        stopRingtone();
+        /*audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);*/
         Log.d(LOG_TAG, "AUDIOPLAYER Playing");
+        int tone;
+        boolean looping = false;
+        if (type.equals(BUSYTONE)) {
+            tone = R.raw.busy_tone;
+        } else {
+            tone = R.raw.progress_tone;
+            looping = true;
+        }
 
         // Honour silent mode
         switch (audioManager.getRingerMode()) {
             case AudioManager.RINGER_MODE_NORMAL:
                 Log.d(LOG_TAG, "AUDIOPLAYER Normal mode");
-                mPlayer = new MediaPlayer();
-                mPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
 
                 try {
-                    mPlayer.setDataSource(mContext,
-                            Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.raw.progress_tone));
-                    mPlayer.prepare();
+                    mediaPlayer.setDataSource(context,
+                            Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + tone));
+                    mediaPlayer.prepare();
                 } catch (IOException e) {
                     Log.e(LOG_TAG, "Could not setup media player for ringtone");
-                    mPlayer = null;
+                    mediaPlayer = null;
                     return;
                 }
-                mPlayer.setLooping(true);
-                mPlayer.start();
+                mediaPlayer.setLooping(looping);
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        stopRingtone();
+                    }
+                });
+                mediaPlayer.start();
                 break;
         }
     }
 
     public void stopRingtone() {
         Log.d(LOG_TAG, "AUDIOPLAYER Stop called");
-        if (mPlayer != null) {
+        if (mediaPlayer != null) {
             Log.d(LOG_TAG, "AUDIOPLAYER player not null while stopping");
-            mPlayer.stop();
-            mPlayer.release();
-            mPlayer = null;
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
         }
     }
 
@@ -74,8 +99,8 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
         Log.d(LOG_TAG, "AUDIOPLAYER Play Progress Tone");
         stopProgressTone();
         try {
-            mProgressTone = createProgressTone(mContext);
-            mProgressTone.play();
+            audioTrack = createProgressTone(context);
+            audioTrack.play();
         } catch (Exception e) {
             Log.e(LOG_TAG, "Could not play progress tone", e);
         }
@@ -83,10 +108,10 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
 
     public void stopProgressTone() {
         Log.d(LOG_TAG, "AUDIOPLAYER Stop progress tone");
-        if (mProgressTone != null) {
-            mProgressTone.stop();
-            mProgressTone.release();
-            mProgressTone = null;
+        if (audioTrack != null) {
+            audioTrack.stop();
+            audioTrack.release();
+            audioTrack = null;
         }
     }
 
@@ -123,8 +148,8 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
         Log.e(LOG_TAG, "AUDIOPLAYER Error in media player what-" + i + " extra-" + i1);
-        mPlayer.stop();
-        mPlayer.release();
+        this.mediaPlayer.stop();
+        this.mediaPlayer.release();
         mediaPlayer.release();
         return true;
     }

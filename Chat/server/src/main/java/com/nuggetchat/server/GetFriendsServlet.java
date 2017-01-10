@@ -41,7 +41,9 @@ public class GetFriendsServlet extends HttpServlet {
         final String requestUid = UUID.randomUUID().toString();
         myLog(requestUid, "GetFriend request");
         final String facebookAccessToken = req.getParameter(RequestParams.FACEBOOK_ACCESS_TOKEN);
+        myLog(requestUid, "facebook token:" + facebookAccessToken);
         final String firebaseIdToken = req.getParameter(RequestParams.FIREBASE_ID_TOKEN);
+        myLog(requestUid, "firebase token:" + firebaseIdToken);
         if (facebookAccessToken == null || facebookAccessToken.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Facebook access token required. Request id: " + requestUid);

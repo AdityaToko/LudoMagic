@@ -11,6 +11,8 @@ import org.webrtc.PeerConnection;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 
+import java.util.Iterator;
+
 import io.socket.client.Socket;
 
 public class Peer implements PeerConnection.Observer, SdpObserver {
@@ -218,10 +220,13 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         if (webRtcClient.queuedRemoteCandidates == null) {
             return;
         }
-        for (IceCandidate candidate : webRtcClient.queuedRemoteCandidates) {
-            Log.i(LOG_TAG, "Drain remote candidate " + candidate + " set succesful");
+
+        Iterator<IceCandidate> candidatesIterator = webRtcClient.queuedRemoteCandidates.iterator();
+        while(candidatesIterator.hasNext()) {
+            IceCandidate candidate = candidatesIterator.next();
             peerConnection.addIceCandidate(candidate);
         }
+
         webRtcClient.queuedRemoteCandidates = null;
     }
 }

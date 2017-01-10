@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
@@ -121,6 +122,12 @@ public class GamesChatActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(LOG_TAG, "onResume GamesChatActivity");
+    }
+
     private void showGamesTab() {
         viewPager.setCurrentItem(0);
         tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();
@@ -162,11 +169,11 @@ public class GamesChatActivity extends AppCompatActivity {
     private void setUpTabLayout() {
         // Add Tab
         gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("games"));
-        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("call"));
+        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("call & play"));
     }
 
     private void setUpViewPager(ViewPager viewPager) {
-        ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
+        final ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
         ChatFragment chatFragment = new ChatFragment();
         if (intent != null) {
@@ -183,6 +190,33 @@ public class GamesChatActivity extends AppCompatActivity {
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
+        ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
+            int currentPosition = 0;
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
+                FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(1);
+                fragmentShown.onScrollFragment(position);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.d(LOG_TAG, "onPageSelected called");
+                FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(position);
+                fragmentShown.onShowFragment();
+
+                FragmentChangeListener fragmentHidden = (FragmentChangeListener) viewPagerAdapter.getItem(currentPosition);
+                fragmentHidden.onHideFragment();
+
+                currentPosition = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Log.d(LOG_TAG, "onPageScrollStateChanged called");
+            }
+        };
+        viewPager.addOnPageChangeListener(onPageChangeListener);
     }
 
     private void setUpTabItems() {
@@ -199,7 +233,7 @@ public class GamesChatActivity extends AppCompatActivity {
         //set view for second tab
         LinearLayout tabSecondItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView secondTextView = (TextView) tabSecondItem.findViewById(R.id.tab_item_text);
-        secondTextView.setText("call");
+        secondTextView.setText("call & play");
         //tabSecondItem.setBackgroundResource(R.drawable.second_tab_background);
         secondTextView.setTextColor(Color.parseColor("#2290D3"));
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);

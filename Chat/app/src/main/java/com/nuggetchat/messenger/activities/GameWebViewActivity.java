@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -19,9 +20,11 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 public class GameWebViewActivity extends AppCompatActivity {
     public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
     public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
+    public static final String EXTRA_GAME_IS_MULTIPLAYER = GameWebViewActivity.class.getName() + ".game_is_multiplayer";
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
     private NuggetInjector nuggetInjector;
+    private Boolean gameIsMultiplayer ;
 
 
     @Override
@@ -36,6 +39,9 @@ public class GameWebViewActivity extends AppCompatActivity {
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
+        }
+        if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
+            gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -74,27 +80,14 @@ public class GameWebViewActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (gameWebView != null) {
-            gameWebView.destroy();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (gameWebView != null) {
-            gameWebView.pauseTimers();
-            gameWebView.onPause();
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        if (nuggetInjector.isOngoingCall()) {
+        Log.i(LOG_TAG, "On resume - game webview");
+        // Finish only on solo games. TODO
+        if (nuggetInjector.isOngoingCall() && !gameIsMultiplayer) {
+            Log.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
+            return;
         }
 
         if (gameWebView != null) {
@@ -102,6 +95,24 @@ public class GameWebViewActivity extends AppCompatActivity {
             gameWebView.onResume();
         }
     }
+
+    @Override
+    public void onPause() {
+        if (gameWebView != null) {
+            gameWebView.pauseTimers();
+            gameWebView.onPause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (gameWebView != null) {
+            gameWebView.destroy();
+        }
+        super.onDestroy();
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);

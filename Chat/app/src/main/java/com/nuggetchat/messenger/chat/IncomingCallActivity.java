@@ -59,6 +59,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(LOG_TAG, "onCreate IncomingCallActivity");
         mainHandler = new Handler(Looper.getMainLooper());
         Intent intent = getIntent();
         bundle = intent.getExtras();
@@ -84,15 +85,16 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        audioPlayer = new AudioPlayer(this);
+        audioPlayer = AudioPlayer.getInstance(this);
         audioPlayer.requestAudioFocus();
-        audioPlayer.playRingtone();
+        audioPlayer.playRingtone(AudioPlayer.RINGTONE);
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY")) {
                     unregisterReceiver(this);
+                    audioPlayer.stopRingtone();
                     (NuggetInjector.getInstance()).setIncomingCall(false);
                     finish();
                 }
@@ -103,6 +105,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(LOG_TAG, "onResume IncomingCallActivit");
         IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
         registerReceiver(broadcastReceiver, intentFilter);
     }
