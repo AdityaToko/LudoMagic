@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
 
@@ -256,6 +257,7 @@ public class GamesFragment extends Fragment {
                     gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
                     Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
                     gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                    gameIntent.putExtra(EXTRA_GAME_IS_MULTIPLAYER, false);
                     startActivity(gameIntent);
                 }
             }

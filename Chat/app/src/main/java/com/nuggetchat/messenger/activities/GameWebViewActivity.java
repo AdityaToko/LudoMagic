@@ -20,9 +20,11 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 public class GameWebViewActivity extends AppCompatActivity {
     public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
     public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
+    public static final String EXTRA_GAME_IS_MULTIPLAYER = GameWebViewActivity.class.getName() + ".game_is_multiplayer";
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
     private NuggetInjector nuggetInjector;
+    private Boolean gameIsMultiplayer ;
 
 
     @Override
@@ -37,6 +39,9 @@ public class GameWebViewActivity extends AppCompatActivity {
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
+        }
+        if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
+            gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -79,9 +84,10 @@ public class GameWebViewActivity extends AppCompatActivity {
         super.onResume();
         Log.i(LOG_TAG, "On resume - game webview");
         // Finish only on solo games. TODO
-        if (nuggetInjector.isOngoingCall()) {
+        if (nuggetInjector.isOngoingCall() && !gameIsMultiplayer) {
             Log.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
+            return;
         }
 
         if (gameWebView != null) {

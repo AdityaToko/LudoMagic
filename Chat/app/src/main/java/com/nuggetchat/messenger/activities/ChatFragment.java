@@ -459,6 +459,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
                 gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
                 gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
+                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
                 startActivity(gameIntent);
 
                 // emit to peer
