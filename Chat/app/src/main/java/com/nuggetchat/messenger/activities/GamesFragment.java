@@ -272,4 +272,9 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     public void onHideFragment() {
         Log.d(LOG_TAG, "onShowFragment: Games Fragment hidden");
     }
+
+    @Override
+    public void onScrollFragment(int position) {
+
+    }
 }

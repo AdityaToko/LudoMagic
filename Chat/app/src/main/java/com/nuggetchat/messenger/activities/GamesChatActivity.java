@@ -188,7 +188,9 @@ public class GamesChatActivity extends AppCompatActivity {
             int currentPosition = 0;
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.d(LOG_TAG, "onPageScrolled called");
+                Log.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
+                FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(1);
+                fragmentShown.onScrollFragment(position);
             }
 
             @Override

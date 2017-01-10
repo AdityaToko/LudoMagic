@@ -452,13 +452,32 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onShowFragment() {
         Log.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
-        webRtcClient.onResume();
+        if(webRtcClient != null){
+            webRtcClient.onResume();
+        }
+        if(localRender != null){
+            localRender.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void onHideFragment() {
-        Log.d(LOG_TAG, "onHideFragment: Chat Fragment hidden");
-        webRtcClient.onPause();
+        Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
+        if(webRtcClient != null){
+            webRtcClient.onPause();
+        }
+    }
+
+    @Override
+    public void onScrollFragment(int position) {
+        if(localRender != null){
+            if (position == 0){
+                localRender.setVisibility(View.GONE);
+            }
+            else {
+                localRender.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     private class MultiPlayerClickListener implements View.OnClickListener {
