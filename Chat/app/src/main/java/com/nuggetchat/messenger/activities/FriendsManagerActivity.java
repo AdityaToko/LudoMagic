@@ -27,6 +27,9 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.CallbackManager;
 import com.facebook.login.LoginManager;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -64,13 +67,13 @@ public class FriendsManagerActivity extends AppCompatActivity {
     ContentResolver resolver;
     UserFriendsAdapter adapter;
     CallbackManager callbackManager;
-    private NuggetInjector nuggetInjector;
     Intent intent;
     Handler mainHandler;
-
-    @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar friendsManagerProgressBar;
+    @BindView(R.id.friends_manager_progress_bar) /* package-local */ ProgressBar
+            friendsManagerProgressBar;
     @BindView(R.id.invite_friends_text) /* package-local */ TextView inviteFriendsText;
     @BindView(R.id.swipeContainer) /* package-local */ SwipeRefreshLayout swipeContainer;
+    private NuggetInjector nuggetInjector;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,24 +110,29 @@ public class FriendsManagerActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
+        intent.putExtra(Intent.EXTRA_TEXT,
+                "Hey! How are you? I just found this awesome app where we can chat and play "
+                        + "simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
 
         try {
             startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG)
+                    .show();
         }
         nuggetInjector.logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
-                null /* bundle */ );
+                null /* bundle */);
     }
 
     public void sendShareIntent(View v) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(android.content.Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
+        intent.putExtra(android.content.Intent.EXTRA_TEXT,
+                "Hey! How are you? I just found this awesome app where we can chat and play "
+                        + "simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
         startActivity(intent);
         nuggetInjector.logEvent(FirebaseAnalyticsConstants.ADD_OTHER_FRIENDS_BUTTON_CLICKED,
-                null /* bundle */ );
+                null /* bundle */);
     }
 
     @OnClick(R.id.skip_friends_addition)
@@ -145,6 +153,21 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            ViewUtils.showWindowNavigation(getWindow());
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar actions click
         switch (item.getItemId()) {
@@ -159,29 +182,26 @@ public class FriendsManagerActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            ViewUtils.showWindowNavigation(getWindow());
-        }
-    }
-
     public void getUserFriends() {
         Log.i(LOG_TAG, "Refreshing - getUserFriends");
-        final String facebookToken = SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this);
-        final String firebaseToken =  SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this);
-        final String firebaseUid =  SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this);
+        final String facebookToken =
+                SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this);
+        final String firebaseUid =
+                SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this);
+        FirebaseAuth.getInstance().getCurrentUser().getToken(true)
+                .addOnSuccessListener(new OnSuccessListener<GetTokenResult>() {
+                    @Override
+                    public void onSuccess(GetTokenResult getTokenResult) {
+                        final String firebaseToken = getTokenResult.getToken();
+                        updateFriendsList(firebaseUid, firebaseToken, facebookToken);
+                    }
+                });
+    }
 
+    private void updateFriendsList(final String firebaseUid, final String firebaseToken,
+            final String facebookToken) {
         friendsManagerProgressBar.setVisibility(VISIBLE);
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = Volley.newRequestQueue(FriendsManagerActivity.this);
         StringRequest sr = new StringRequest(
                 Request.Method.POST,
                 Conf.GET_FRIENDS_API_URL,
@@ -192,9 +212,12 @@ public class FriendsManagerActivity extends AppCompatActivity {
                         getFriendsFromFirebase(firebaseUid);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                Intent resultIntent = GamesChatActivity.getNewIntentGameChatActivity(FriendsManagerActivity.this);
-                                resultIntent.putExtra("user_id", ((FriendInfo) adapterView.getAdapter().getItem(i)).getFacebookId());
+                            public void onItemClick(
+                                    AdapterView<?> adapterView, View view, int i, long l) {
+                                Intent resultIntent = GamesChatActivity
+                                        .getNewIntentGameChatActivity(FriendsManagerActivity.this);
+                                resultIntent.putExtra("user_id", ((FriendInfo) adapterView
+                                        .getAdapter().getItem(i)).getFacebookId());
                                 if (intent.getStringExtra("user_id") == null) {
                                     startActivity(resultIntent);
                                     finish();
@@ -212,17 +235,18 @@ public class FriendsManagerActivity extends AppCompatActivity {
                         Log.d(LOG_TAG, "Error in making friends request", error);
                         friendsManagerProgressBar.setVisibility(INVISIBLE);
                     }
-                })
-        {
+                }) {
             @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
                 params.put(RequestParams.FACEBOOK_ACCESS_TOKEN, facebookToken);
                 params.put(RequestParams.FIREBASE_ID_TOKEN, firebaseToken);
                 return params;
             }
         };
         queue.add(sr);
+
+
     }
 
     private void getFriendsFromFirebase(String firebaseId) {
@@ -250,8 +274,9 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 if (!newFriendList.isEmpty()) {
                     usersFriendList.clear();
                     usersFriendList.addAll(newFriendList);
-                    Log.d("FRIENDSMANAGER",String.valueOf(usersFriendList.size()));
-                    SharedPreferenceUtility.setNumberOfFriends(usersFriendList.size(),FriendsManagerActivity.this);
+                    Log.d("FRIENDSMANAGER", String.valueOf(usersFriendList.size()));
+                    SharedPreferenceUtility.setNumberOfFriends(usersFriendList.size(),
+                            FriendsManagerActivity.this);
                 }
                 updateAdapterAndHideProgressBar(usersFriendList.isEmpty());
             }
