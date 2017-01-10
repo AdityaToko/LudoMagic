@@ -121,6 +121,12 @@ public class GamesChatActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(LOG_TAG, "onResume GamesChatActivity");
+    }
+
     private void showGamesTab() {
         viewPager.setCurrentItem(0);
         tabView = (LinearLayout) gamesChatTabLayout.getTabAt(0).getCustomView();

@@ -59,6 +59,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(LOG_TAG, "onCreate IncomingCallActivity");
         mainHandler = new Handler(Looper.getMainLooper());
         Intent intent = getIntent();
         bundle = intent.getExtras();
@@ -104,6 +105,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(LOG_TAG, "onResume IncomingCallActivit");
         IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
         registerReceiver(broadcastReceiver, intentFilter);
     }
