@@ -7,6 +7,7 @@ public class GamesItem {
     private String gamesUrl;
     private Boolean portrait;
     private Boolean locked;
+    private int value;
     private Boolean newlyUnlocked = false;
 
     public Boolean getNewlyUnlocked() {
@@ -34,6 +35,21 @@ public class GamesItem {
         this(gameKey, gamesName,gamesImage,gamesUrl,portrait);
         this.locked = locked;
         this.newlyUnlocked = newlyUnlocked;
+    }
+
+    public GamesItem(String gameKey, String gamesName, String gamesImage, String gamesUrl, Boolean portrait, Boolean locked, Boolean newlyUnlocked, int value) {
+        this(gameKey, gamesName,gamesImage,gamesUrl,portrait);
+        this.locked = locked;
+        this.newlyUnlocked = newlyUnlocked;
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
     }
 
     public String getGameKey() {

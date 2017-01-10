@@ -30,6 +30,9 @@
         android:visibility="invisible"/>
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
     <TextView
         android:id="@+id/grid_text"
         android:layout_marginLeft="15dp"
@@ -40,4 +43,28 @@
         android:textColor="@color/darkWriting"
         android:textSize="14sp" />
 
+    <ImageView
+        android:id="@+id/stars"
+        android:layout_width="52dp"
+        android:layout_height="10dp"
+        android:layout_below="@id/grid_text"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp" />
+
+    <ImageView
+        android:id="@+id/featured"
+        android:layout_width="58dp"
+        android:layout_height="13dp"
+        android:layout_below="@id/grid_text"
+        android:layout_toRightOf="@id/stars"
+        android:layout_toEndOf="@id/stars"
+        android:background="@drawable/featured"
+        android:visibility="invisible"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="4dp" />
+
+    </RelativeLayout>
 </LinearLayout>
