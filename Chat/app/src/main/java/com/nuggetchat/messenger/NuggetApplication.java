@@ -12,6 +12,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class NuggetApplication extends MultiDexApplication {
     private static boolean initialized = false;
+    private static final String LOG_TAG = NuggetApplication.class.getSimpleName();
 
     @Override
     public void onCreate() {
@@ -19,6 +20,7 @@ public class NuggetApplication extends MultiDexApplication {
 
         handleUncaughtExceptions();
         if (initialized) {
+            Log.w(LOG_TAG, "Activity initialized again.");
             return;
         }
 
@@ -37,7 +39,7 @@ public class NuggetApplication extends MultiDexApplication {
 
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
-                Log.e("MyApplication", ex.getMessage());
+                Log.e(LOG_TAG, "Uncaught exception", ex);
                 AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
                 audioManager.setMode(AudioManager.MODE_NORMAL);
                 audioManager.setSpeakerphoneOn(false);
