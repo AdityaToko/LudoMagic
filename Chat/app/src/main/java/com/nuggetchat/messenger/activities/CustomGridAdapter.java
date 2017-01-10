@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Context;
+import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,8 @@ public class CustomGridAdapter extends BaseAdapter {
         TextView textView = (TextView) convertView.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) convertView.findViewById(R.id.grid_image);
         ImageView lockIcon = (ImageView) convertView.findViewById(R.id.lock_icon);
+        ImageView stars = (ImageView) convertView.findViewById(R.id.stars);
+        ImageView featured = (ImageView) convertView.findViewById(R.id.featured);
 
         textView.setText(gameItemList.get(position).getGamesName());
 
@@ -57,6 +60,25 @@ public class CustomGridAdapter extends BaseAdapter {
         } else {
             lockIcon.setVisibility(View.INVISIBLE);
             imageView.setAlpha(1.0f);
+        }
+
+        int value = gameItemList.get(position).getValue();
+        if(value >=5) {
+            stars.setBackgroundResource(R.drawable.five_stars);
+        } else if(value==4) {
+            stars.setBackgroundResource(R.drawable.four_stars);
+        } else if(value==3) {
+            stars.setBackgroundResource(R.drawable.three_stars);
+        } else if(value==2) {
+            stars.setBackgroundResource(R.drawable.two_stars);
+        } else if(value==1) {
+            stars.setBackgroundResource(R.drawable.one_stars);
+        }
+
+        if(value==6) {
+            featured.setVisibility(View.VISIBLE);
+        } else {
+            featured.setVisibility(View.INVISIBLE);
         }
 
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + gameItemList.get(position).getGamesImage();

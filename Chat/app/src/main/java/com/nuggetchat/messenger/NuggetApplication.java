@@ -1,9 +1,6 @@
 package com.nuggetchat.messenger;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.media.AudioManager;
-import android.os.Bundle;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
@@ -11,7 +8,6 @@ import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class NuggetApplication extends MultiDexApplication {
