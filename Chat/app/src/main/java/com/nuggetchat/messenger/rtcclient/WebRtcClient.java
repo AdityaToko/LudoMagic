@@ -112,14 +112,12 @@ public class WebRtcClient{
 
     public void onPause() {
         if (videoSource != null) {
-            videoCapturer.dispose();
             videoSource.stop();
         }
     }
 
     public void onResume() {
         if (videoSource != null) {
-            videoCapturer = getVideoCapturer();
             videoSource.restart();
         }
     }
