@@ -175,10 +175,10 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void getUserFriends() {
-        Log.i(LOG_TAG, "Refreshing - getUserFriends");
         final String facebookToken = SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this);
         final String firebaseToken =  SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this);
         final String firebaseUid =  SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this);
+        Log.i(LOG_TAG, "Refreshing - getUserFriends token:" + firebaseToken +" user:" + firebaseUid);
 
         friendsManagerProgressBar.setVisibility(VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);
