@@ -16,7 +16,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -39,6 +38,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
@@ -74,7 +74,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.socket.client.Socket;
 
-public class ChatFragment extends Fragment implements RtcListener, EventListener {
+public class ChatFragment extends Fragment implements RtcListener, EventListener, FragmentChangeListener {
     private static final String LOG_TAG = ChatFragment.class.getSimpleName();
     private static final int LOCAL_X = 3;
     private static final int LOCAL_Y = 3;
@@ -168,7 +168,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if ("".equals(SharedPreferenceUtility.getFavFriend2(gamesChatActivity))) {
             popularFriend2.setVisibility(View.INVISIBLE);
         }
-        audioPlayer = new AudioPlayer(getActivity());
+        audioPlayer = AudioPlayer.getInstance(getActivity());
 
         bundle = getArguments();
         nuggetInjector = NuggetInjector.getInstance();
@@ -247,6 +247,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick(R.id.end_busy_call_button)
     public void onEndBusyCallBtnClick() {
         audioPlayer.stopRingtone();
+        webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
         hideEndBusyCallBtn();
     }
@@ -446,6 +447,48 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         view.setOnClickListener(new MultiPlayerClickListener(i));
         gamesList.addView(view);
+    }
+
+    @Override
+    public void onShowFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
+        if(webRtcClient != null){
+            webRtcClient.onResume();
+        }
+        if(localRender != null){
+            localRender.setVisibility(View.VISIBLE);
+        }
+        if(remoteRender != null){
+            remoteRender.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onHideFragment() {
+        Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
+        if (webRtcClient != null){
+            webRtcClient.onPause();
+        }
+    }
+
+    @Override
+    public void onScrollFragment(int position) {
+        if(localRender != null){
+            if (position == 0){
+                localRender.setVisibility(View.GONE);
+            }
+            else {
+                localRender.setVisibility(View.VISIBLE);
+            }
+        }
+        if(remoteRender != null){
+            if (position == 0){
+                remoteRender.setVisibility(View.GONE);
+            }
+            else {
+                remoteRender.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     private class MultiPlayerClickListener implements View.OnClickListener {

@@ -20,6 +20,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     static final String LOG_TAG = AudioPlayer.class.getSimpleName();
     public static final String BUSYTONE = "busy_tone";
     public static final String RINGTONE = "ringtone";
+    private static AudioPlayer audioPlayer;
 
     private Context context;
 
@@ -30,10 +31,17 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     private final static int SAMPLE_RATE = 16000;
     private AudioManager audioManager;
 
-    public AudioPlayer(Context context) {
+    private AudioPlayer(Context context) {
         this.context = context.getApplicationContext();
         audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
         Log.d(LOG_TAG, "AUDIOPLAYER setup");
+    }
+
+    public static AudioPlayer getInstance(Context context) {
+        if (audioPlayer == null) {
+            audioPlayer = new AudioPlayer(context);
+        }
+        return audioPlayer;
     }
 
     public void playRingtone(String type) {

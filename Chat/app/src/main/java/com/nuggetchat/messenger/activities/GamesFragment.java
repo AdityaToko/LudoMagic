@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
@@ -36,7 +37,7 @@ import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
 import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
 
-public class GamesFragment extends Fragment {
+public class GamesFragment extends Fragment implements FragmentChangeListener {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
     private static final int TOTAL_NUMBER_LOCKED = 20;
     private static final int UNLOCK_INCENTIVE = 2;
@@ -262,5 +263,20 @@ public class GamesFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onShowFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Games Fragment shown");
+    }
+
+    @Override
+    public void onHideFragment() {
+        Log.d(LOG_TAG, "onShowFragment: Games Fragment hidden");
+    }
+
+    @Override
+    public void onScrollFragment(int position) {
+
     }
 }
