@@ -145,7 +145,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
-    @BindView(R.id.fake_end_call_button) /* package-local */ ImageView fakeEndBtn;
+    @BindView(R.id.end_busy_call_button) /* package-local */ ImageView endBusyCallBtn;
     private VideoRenderer remoteVideoRender;
     private String myUserId;
     private String targetUserId;
@@ -242,11 +242,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         showFriendsAddCluster();
     }
 
-    @OnClick(R.id.fake_end_call_button)
-    public void onFakeEndCallBtnClick() {
+    @OnClick(R.id.end_busy_call_button)
+    public void onEndBusyCallBtnClick() {
         audioPlayer.stopRingtone();
         showFriendsAddCluster();
-        hideFakeEndCallBtn();
+        hideEndBusyCallBtn();
     }
 
     private void initVideoViews() {
@@ -918,24 +918,24 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallOngoing() {
         hideEndCallBtn();
-        showFakeEndCallBtn();
+        showEndBusyCallBtn();
         userBusyToast();
     }
 
-    private void showFakeEndCallBtn() {
+    private void showEndBusyCallBtn() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                fakeEndBtn.setVisibility(View.VISIBLE);
+                endBusyCallBtn.setVisibility(View.VISIBLE);
             }
         });
     }
 
-    private void hideFakeEndCallBtn() {
+    private void hideEndBusyCallBtn() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                fakeEndBtn.setVisibility(View.INVISIBLE);
+                endBusyCallBtn.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -949,7 +949,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     @Override
                     public void run() {
                         audioPlayer.stopRingtone();
-                        hideFakeEndCallBtn();
+                        hideEndBusyCallBtn();
                         showFriendsAddCluster();
                         webRtcClient.endCallAndRemoveRemoteStream();
                     }
