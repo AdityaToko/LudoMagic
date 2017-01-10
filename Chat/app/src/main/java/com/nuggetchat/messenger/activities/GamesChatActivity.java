@@ -114,6 +114,17 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+
+                tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
+                textView = (TextView) tabView.findViewById(R.id.tab_item_text);
+                imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
+                if (position == 0) {
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
+                } else {
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
+                }
+
             }
 
             @Override

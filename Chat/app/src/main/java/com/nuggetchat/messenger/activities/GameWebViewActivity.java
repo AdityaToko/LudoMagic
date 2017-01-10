@@ -42,6 +42,7 @@ public class GameWebViewActivity extends AppCompatActivity {
         }
         if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
             gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
+            Log.i(LOG_TAG,"Game is multiplayer" + gameIsMultiplayer);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -84,7 +85,8 @@ public class GameWebViewActivity extends AppCompatActivity {
         super.onResume();
         Log.i(LOG_TAG, "On resume - game webview");
         // Finish only on solo games. TODO
-        if (nuggetInjector.isOngoingCall() && !gameIsMultiplayer) {
+        Log.i(LOG_TAG, "is on going call, " +nuggetInjector.isOngoingCall());
+        if (nuggetInjector.isOngoingCall() && (!gameIsMultiplayer)) {
             Log.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
             return;
@@ -120,5 +122,4 @@ public class GameWebViewActivity extends AppCompatActivity {
             ViewUtils.setWindowImmersive(getWindow());
         }
     }
-
 }
