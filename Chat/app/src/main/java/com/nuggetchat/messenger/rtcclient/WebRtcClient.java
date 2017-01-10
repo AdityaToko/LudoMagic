@@ -42,6 +42,7 @@ public class WebRtcClient{
     private VideoTrack videoTrack;
     private AudioTrack audioTrack;
     private AudioSource audioSource;
+    private VideoCapturer videoCapturer;
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
@@ -130,8 +131,9 @@ public class WebRtcClient{
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
+        videoCapturer = getVideoCapturer();
         if(videoSource == null){
-            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            videoSource = factory.createVideoSource(videoCapturer, videoConstraints);
         }
         Log.i(LOG_TAG, "Adding video track");
         videoTrack = factory.createVideoTrack("ARDAMSv0", videoSource);
