@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -29,6 +28,7 @@ import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -113,26 +113,10 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                gamesChatTabLayout.getTabAt(tab.getPosition()).getCustomView()
-                        .setBackgroundColor(Color.parseColor("#FEFCFF"));
-                int position = tab.getPosition();
-                LinearLayout tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
-                TextView textView = (TextView) tabView.findViewById(R.id.tab_item_text);
-                ImageView imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
-                if (position == 0) {
-                    imageView.setImageResource(R.drawable.games_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
-                    textView.setTextColor(Color.parseColor("#1cb1be"));
-                } else {
-                    imageView.setImageResource(R.drawable.video_icon);
-                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
-                    textView.setTextColor(Color.parseColor("#F9B21B"));
-                }
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-
             }
         });
     }
@@ -249,20 +233,21 @@ public class GamesChatActivity extends AppCompatActivity {
             Log.w(LOG_TAG, "Unable to authenticate firebase");
             return;
         }
+        final String firebaseUid = SharedPreferenceUtility.getFirebaseUid(this);
+        final String facebookUid = SharedPreferenceUtility.getFacebookUserId(this);
         user.getToken(false /* forceRefresh */)
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
                         String firebaseIdToken = tokenTask.getResult().getToken();
                         if (firebaseIdToken != null) {
-                            SharedPreferenceUtility.setFirebaseIdToken(firebaseIdToken,
-                                    GamesChatActivity.this);
+                            FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseUid,
+                                    facebookUid, GamesChatActivity.this);
                         } else {
                             Log.e(LOG_TAG, "Firebase returned null token ");
                         }
                     }
                 });
-
     }
 
     public static Intent getNewIntentGameChatActivity(Context fromActivityContext) {

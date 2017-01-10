@@ -15,20 +15,13 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class NuggetApplication extends MultiDexApplication {
-    @SuppressLint("StaticFieldLeak")
-    private static NuggetApplication nuggetApplication;
-    private FirebaseAnalytics firebaseAnalytics;
-
     private static boolean initialized = false;
-    private boolean isInitiator = false;
-    private boolean isOngoingCall = false;
-    private boolean isIncomingCall = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         handleUncaughtExceptions();
-
         if (initialized) {
             return;
         }
@@ -39,44 +32,8 @@ public class NuggetApplication extends MultiDexApplication {
             FirebaseApp.initializeApp(this, FirebaseOptions.fromResource(this));
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        NuggetInjector.getInstance().setAppContext(this);
         AppEventsLogger.activateApp(this);
-    }
-
-    public boolean isInitiator() {
-        return isInitiator;
-    }
-
-    public void setInitiator(boolean initiator) {
-        isInitiator = initiator;
-    }
-
-    public boolean isOngoingCall() {
-        return isOngoingCall;
-    }
-
-    public void setOngoingCall(boolean ongoingCall) {
-        isOngoingCall = ongoingCall;
-    }
-
-    public boolean isIncomingCall() {
-        return isIncomingCall;
-    }
-
-    public void setIncomingCall(boolean incomingCall) {
-        isIncomingCall = incomingCall;
-    }
-
-    public static NuggetApplication getInstance() {
-        if (nuggetApplication == null) {
-            nuggetApplication = new NuggetApplication();
-        }
-        return nuggetApplication;
-    }
-
-    public void logEvent(Context appContext, String event, Bundle bundle) {
-        firebaseAnalytics= FirebaseAnalytics.getInstance(appContext);
-        firebaseAnalytics.setAnalyticsCollectionEnabled(true);
-        firebaseAnalytics.logEvent(event, bundle);
     }
 
     private void handleUncaughtExceptions() {

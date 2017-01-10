@@ -27,7 +27,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.Utils;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
-import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
@@ -62,7 +62,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         mainHandler = new Handler(Looper.getMainLooper());
         Intent intent = getIntent();
         bundle = intent.getExtras();
-        ((NuggetApplication)getApplication()).setIncomingCall(true);
+        (NuggetInjector.getInstance()).setIncomingCall(true);
 
         String type = bundle.getString("type");
         String from = bundle.getString("from");
@@ -93,7 +93,7 @@ public class IncomingCallActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY")) {
                     unregisterReceiver(this);
-                    ((NuggetApplication)getApplication()).setIncomingCall(false);
+                    (NuggetInjector.getInstance()).setIncomingCall(false);
                     finish();
                 }
             }
@@ -167,17 +167,19 @@ public class IncomingCallActivity extends AppCompatActivity {
 
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
-        ((NuggetApplication)getApplication()).setIncomingCall(false);
+        (NuggetInjector.getInstance()).setIncomingCall(false);
+        (NuggetInjector.getInstance()).setOngoingCall(true);
         triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
-        ((NuggetApplication)getApplication()).setIncomingCall(false);
+        (NuggetInjector.getInstance()).setIncomingCall(false);
         triggerUserAction(false /*accepted*/);
     }
 
     private void triggerUserAction(boolean accepted) {
+        Log.i(LOG_TAG, "accepted or rejected, " + accepted);
         audioPlayer.stopRingtone();
         if(!accepted){
             audioPlayer.releaseAudioFocus();

@@ -3,7 +3,7 @@ package com.nuggetchat.messenger.rtcclient;
 import android.content.Context;
 import android.util.Log;
 
-import com.nuggetchat.messenger.NuggetApplication;
+import com.nuggetchat.messenger.NuggetInjector;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
@@ -29,7 +29,7 @@ public class WebRtcClient{
     private PeerConnectionParameters params;
     private String currentUserId;
     private boolean initiator = false;
-    private NuggetApplication application;
+    private NuggetInjector nuggetInjector;
     public List<IceCandidate> queuedRemoteCandidates;
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
@@ -51,7 +51,7 @@ public class WebRtcClient{
                 true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
         factory.setVideoHwAccelerationOptions(mEGLcontext, mEGLcontext);
-        application = (NuggetApplication) context.getApplicationContext();
+        nuggetInjector = NuggetInjector.getInstance();
         this.currentUserId = currentUserId;
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
@@ -63,7 +63,7 @@ public class WebRtcClient{
 
     public void endCallAndRemoveRemoteStream() {
         Log.i(LOG_TAG, "End call - Incoming");
-        application.setInitiator(false);
+        nuggetInjector.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
             Log.i(LOG_TAG, "peer reset done");
@@ -180,7 +180,7 @@ public class WebRtcClient{
     }
 
     public boolean isInitiator() {
-        return application.isInitiator();
+        return nuggetInjector.isInitiator();
     }
 
     public void createOffer(Peer peer) {
