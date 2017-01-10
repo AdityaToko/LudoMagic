@@ -247,6 +247,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @OnClick(R.id.end_busy_call_button)
     public void onEndBusyCallBtnClick() {
         audioPlayer.stopRingtone();
+        webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddCluster();
         hideEndBusyCallBtn();
     }
