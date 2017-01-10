@@ -93,6 +93,7 @@ public class IncomingCallActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY")) {
                     unregisterReceiver(this);
+                    audioPlayer.stopRingtone();
                     (NuggetInjector.getInstance()).setIncomingCall(false);
                     finish();
                 }
