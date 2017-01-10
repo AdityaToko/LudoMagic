@@ -38,7 +38,7 @@ public class GameWebViewActivity extends AppCompatActivity {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             /*Disabling hardware acceleration*/
             gameWebView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
@@ -93,6 +93,10 @@ public class GameWebViewActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        if (nuggetInjector.isOngoingCall()) {
+            finish();
+        }
+
         if (gameWebView != null) {
             gameWebView.resumeTimers();
             gameWebView.onResume();

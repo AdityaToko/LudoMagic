@@ -107,7 +107,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, "Hey! How are you? I just found this awesome app where we can chat and play simultaneously. Lets play Nugget! http://bit.ly/2iTz71P");
+        intent.putExtra(Intent.EXTRA_TEXT, "Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http://bit.ly/2iTz71P");
 
         try {
             startActivity(intent);
@@ -175,10 +175,10 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void getUserFriends() {
-        Log.i(LOG_TAG, "Refreshing - getUserFriends");
         final String facebookToken = SharedPreferenceUtility.getFacebookAccessToken(FriendsManagerActivity.this);
         final String firebaseToken =  SharedPreferenceUtility.getFirebaseIdToken(FriendsManagerActivity.this);
         final String firebaseUid =  SharedPreferenceUtility.getFirebaseUid(FriendsManagerActivity.this);
+        Log.i(LOG_TAG, "Refreshing - getUserFriends token:" + firebaseToken +" user:" + firebaseUid);
 
         friendsManagerProgressBar.setVisibility(VISIBLE);
         RequestQueue queue = Volley.newRequestQueue(this);

@@ -6,18 +6,18 @@
         android:id="@+id/grid_image"
         android:layout_height="wrap_content"
         android:layout_width="100dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:scaleType="fitCenter" />
 
     <TextView
         android:id="@+id/grid_text"
-        android:textStyle="bold"
+        android:textColor="@color/darkWriting"
+        android:textSize="14sp"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="15sp" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
