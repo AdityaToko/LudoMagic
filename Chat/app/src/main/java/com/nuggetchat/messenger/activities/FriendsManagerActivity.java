@@ -141,6 +141,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @OnClick(R.id.skip_friends_addition)
     /* package-local */ void skipFriendsAddition() {
         if (intent.getStringExtra("user_id") == null) {
+            Log.i(LOG_TAG, "the skip button is clicked");
             Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
             startActivity(intent);
         }
