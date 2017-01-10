@@ -458,9 +458,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if(localRender != null){
             localRender.setVisibility(View.VISIBLE);
         }
-        if(remoteRender != null){
-            remoteRender.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
@@ -479,14 +476,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             else {
                 localRender.setVisibility(View.VISIBLE);
-            }
-        }
-        if(remoteRender != null){
-            if (position == 0){
-                remoteRender.setVisibility(View.GONE);
-            }
-            else {
-                remoteRender.setVisibility(View.VISIBLE);
             }
         }
     }
