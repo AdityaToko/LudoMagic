@@ -168,6 +168,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     @OnClick(R.id.accept_btn)
     public void acceptButtonClick(){
         (NuggetInjector.getInstance()).setIncomingCall(false);
+        (NuggetInjector.getInstance()).setOngoingCall(true);
         triggerUserAction(true /*accepted*/);
     }
 
@@ -178,6 +179,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     private void triggerUserAction(boolean accepted) {
+        Log.i(LOG_TAG, "accepted or rejected, " + accepted);
         audioPlayer.stopRingtone();
         if(!accepted){
             audioPlayer.releaseAudioFocus();

@@ -561,6 +561,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
+        Log.i(LOG_TAG, "the on resume of chatfragment is called");
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -911,6 +912,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onCallOngoing() {
+        Log.i(LOG_TAG, "on call ongoing");
         showFriendsAddCluster();
         hideEndCallBtn();
         userBusyToast();
