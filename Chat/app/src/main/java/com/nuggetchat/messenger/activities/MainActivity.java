@@ -215,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void refreshUserFriendsAndStartNextActivity(final String facebookToken, final String firebaseToken) {
+        Log.i(LOG_TAG, "Refresh friends Firebase token " + firebaseToken);
         RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = new StringRequest(Request.Method.POST, Conf.GET_FRIENDS_API_URL,
                 new Response.Listener<String>() {

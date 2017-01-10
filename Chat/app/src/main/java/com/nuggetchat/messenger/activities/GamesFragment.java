@@ -60,10 +60,7 @@ public class GamesFragment extends Fragment {
         nuggetInjector = NuggetInjector.getInstance();
 
         numberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
-        Log.d("GAMESFRAGMENT", ">>>>NUM OF FRIENDS: " + String.valueOf(numberOfFriends));
         numberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * numberOfFriends;
-        Log.d("GAMESFRAGMENT", ">>>>NUM LOCKED: " + String.valueOf(numberLocked));
-
         fetchDataForGames(this.getContext());
 
         return view;
@@ -77,10 +74,6 @@ public class GamesFragment extends Fragment {
             int newNumberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
             int newNumberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * newNumberOfFriends;
             int toBeUnlocked = newNumberLocked - numberLocked;
-
-            Log.d("GAMESFRAGMENT", ">>>>NEW NUM OF FRIENDS: " + String.valueOf(newNumberOfFriends));
-            Log.d("GAMESFRAGMENT", ">>>>NEW NUM LOCKED: " + String.valueOf(newNumberLocked));
-
             processUnlockGames(toBeUnlocked, newNumberOfFriends, newNumberLocked);
         }
     }
