@@ -184,7 +184,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         audioManagerInit();
         localRender.setZOrderMediaOverlay(true);
         Log.i(LOG_TAG, "onCreate - call update View");
-        
+
         initWebRtc(myUserId);
         bindChatService();
         return view;
@@ -748,6 +748,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (data != null) {
             if (requestCode == 1234) {
                 Log.i(LOG_TAG, "before toast onActivityResult");
+                audioPlayer.requestAudioFocus();
                 showEndCallBtn();
                 sendPreCallHandshake(data.getStringExtra("user_id"));
             } else if (requestCode == ChatFragment.INCOMING_CALL_CODE) {
