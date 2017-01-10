@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
@@ -166,7 +167,7 @@ public class GamesChatActivity extends AppCompatActivity {
     }
 
     private void setUpViewPager(ViewPager viewPager) {
-        ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
+        final ViewPageAdapter viewPagerAdapter = new ViewPageAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
         ChatFragment chatFragment = new ChatFragment();
         if (intent != null) {
@@ -183,6 +184,31 @@ public class GamesChatActivity extends AppCompatActivity {
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
+        ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
+            int currentPosition = 0;
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.d(LOG_TAG, "onPageScrolled called");
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.d(LOG_TAG, "onPageSelected called");
+                FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(position);
+                fragmentShown.onShowFragment();
+
+                FragmentChangeListener fragmentHidden = (FragmentChangeListener) viewPagerAdapter.getItem(currentPosition);
+                fragmentHidden.onHideFragment();
+
+                currentPosition = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Log.d(LOG_TAG, "onPageScrollStateChanged called");
+            }
+        };
+        viewPager.addOnPageChangeListener(onPageChangeListener);
     }
 
     private void setUpTabItems() {
