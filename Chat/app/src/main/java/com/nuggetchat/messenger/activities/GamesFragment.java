@@ -239,7 +239,7 @@ public class GamesFragment extends Fragment {
                                     } catch (android.content.ActivityNotFoundException ex) {
                                         Toast.makeText(context, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
                                     }
-                                    nuggetApplication.logEvent(context, FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
+                                    NuggetInjector.getInstance().logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
                                             null /* bundle */ );
                                 }
                             })
