@@ -11,8 +11,6 @@ import org.webrtc.PeerConnection;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 
-import java.util.Iterator;
-
 import io.socket.client.Socket;
 
 public class Peer implements PeerConnection.Observer, SdpObserver {
@@ -146,20 +144,20 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
             public void run() {
                 if (webRtcClient.isInitiator() ) {
                     if (peerConnection.getRemoteDescription() != null) {
-                        Log.i(LOG_TAG, "initiator + remote desc done");
-                        drainRemoteCandidates();
+                        Log.i(LOG_TAG, "initiator + remote desc done step 4");
+                        webRtcClient.lockAndDrainRemoteCandidates(peerConnection, false /*retry*/);
                     } else {
-                        Log.i(LOG_TAG, "Offer generated sending offer");
+                        Log.i(LOG_TAG, "Offer generated sending offer step 1");
                         sendOfferLocalDescription();
                     }
                 } else {
                     if (peerConnection.getLocalDescription() == null) {
-                        Log.i(LOG_TAG, "local desc not set. Create answer");
+                        Log.i(LOG_TAG, "local desc not set. Create answer step 2");
                         peerConnection.createAnswer(Peer.this, webRtcClient.constraints);
                     } else {
-                        Log.i(LOG_TAG, "Answer generated sending answer");
+                        Log.i(LOG_TAG, "Answer generated sending answer step 3");
                         sendAnswerLocalDescription();
-                        drainRemoteCandidates();
+                        webRtcClient.lockAndDrainRemoteCandidates(peerConnection, false /*retry*/);
                     }
                 }
 
@@ -215,18 +213,4 @@ public class Peer implements PeerConnection.Observer, SdpObserver {
         Log.i(LOG_TAG, "Failed to set something in peer" + s);
     }
 
-    private void drainRemoteCandidates() {
-        Log.i(LOG_TAG, "Drain remote candidate");
-        if (webRtcClient.queuedRemoteCandidates == null) {
-            return;
-        }
-
-        Iterator<IceCandidate> candidatesIterator = webRtcClient.queuedRemoteCandidates.iterator();
-        while(candidatesIterator.hasNext()) {
-            IceCandidate candidate = candidatesIterator.next();
-            peerConnection.addIceCandidate(candidate);
-        }
-
-        webRtcClient.queuedRemoteCandidates = null;
-    }
 }

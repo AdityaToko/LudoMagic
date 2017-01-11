@@ -13,7 +13,6 @@ import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
-import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -21,6 +20,7 @@ import org.webrtc.VideoTrack;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.socket.client.Socket;
 
@@ -29,9 +29,10 @@ public class WebRtcClient{
     private VideoSource videoSource;
     private PeerConnectionParameters params;
     private String currentUserId;
-    private boolean initiator = false;
     private NuggetInjector nuggetInjector;
-    public List<IceCandidate> queuedRemoteCandidates;
+    private boolean isQueueDrainedOnce;
+    private AtomicBoolean queueLock;
+    public List<IceCandidate> queuedRemoteCandidates = null;
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
     private String userId2;
@@ -49,6 +50,7 @@ public class WebRtcClient{
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
         rtcListener = listener;
         this.params = params;
+        isQueueDrainedOnce = false;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
@@ -58,6 +60,7 @@ public class WebRtcClient{
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+        queueLock = new AtomicBoolean(false);
         addIceServers(iceServerUrls);
         setCameraAndUpdateVideoViews();
     }
@@ -73,13 +76,18 @@ public class WebRtcClient{
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null); // will also update video views
         }
+        queuedRemoteCandidates = null;
+        isQueueDrainedOnce = false;
+        queueLock.set(false);
     }
 
     public Peer addPeer(Socket socket) {
-        queuedRemoteCandidates = new LinkedList<>();
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
+        queuedRemoteCandidates = new LinkedList<>();
+        isQueueDrainedOnce = false;
+        queueLock.set(false);
         return newPeer;
     }
 
@@ -231,5 +239,76 @@ public class WebRtcClient{
             sb.append(c);
         }
         return sb.toString();
+    }
+
+    /*package local*/ void lockAndDrainRemoteCandidates(PeerConnection peerConnection, boolean retry) {
+        if (!queueLock.getAndSet(true)) {
+            Log.i(LOG_TAG, "Got lock for draining. retry:" + retry);
+            try {
+                drainRemoteCandidates(peerConnection);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Draining failed", e);
+            } finally {
+                queueLock.set(false);
+            }
+        } else if (!retry) {
+            Log.i(LOG_TAG, "Retrying for lock draining");
+            try {
+                Thread.sleep(200);
+                lockAndDrainRemoteCandidates(peerConnection, true /*retry*/);
+            } catch (InterruptedException e) {
+                Log.e(LOG_TAG, "Sleep & drain interrupted ", e);
+            }
+        } else {
+            Log.e(LOG_TAG, "Retry for lock failed draining");
+        }
+    }
+
+    private void drainRemoteCandidates(PeerConnection peerConnection) {
+        Log.i(LOG_TAG, "Drain remote candidate");
+        if (queuedRemoteCandidates == null) {
+            Log.w(LOG_TAG, "Queue null");
+            return;
+        }
+        if (peerConnection == null) {
+            Log.w(LOG_TAG, "Peer connection null");
+            return;
+        }
+        for (IceCandidate candidate : queuedRemoteCandidates) {
+            peerConnection.addIceCandidate(candidate);
+        }
+        queuedRemoteCandidates = null;
+        isQueueDrainedOnce = true;
+    }
+
+    public boolean lockAndQueueRemoteCandidates(IceCandidate candidate) {
+        boolean isQueued = false;
+        if (!queueLock.getAndSet(true)){
+            Log.i(LOG_TAG, "Got lock for queuing");
+            isQueued = queueRemoteCandidates(candidate);
+            queueLock.set(false);
+        }
+        Log.i(LOG_TAG, "Tried lock for queuing queued:" + isQueued );
+        return isQueued;
+    }
+
+    private boolean queueRemoteCandidates(IceCandidate candidate) {
+        Log.i(LOG_TAG, "Adding remote candidate to queue");
+        if (!isQueueDrainedOnce) {
+            queuedRemoteCandidates.add(candidate);
+            return true;
+        }
+        return false;
+    }
+
+    public void addIceCandidateToPeerConnection(IceCandidate candidate) {
+        if ( peer == null) {
+            return;
+        }
+        PeerConnection peerConnection = peer.getPeerConnection();
+        if (peerConnection == null) {
+            return;
+        }
+        peerConnection.addIceCandidate(candidate);
     }
 }
