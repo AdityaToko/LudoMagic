@@ -621,9 +621,18 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 }
             }
             Log.i(LOG_TAG, "MessageHandler onDestroy" + nuggetInjector.isOngoingCall());
+            undbindService();
             webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
-            undbindService();
+            if (localRender != null){
+                localRender.release();
+            }
+            if (remoteRender != null){
+                remoteRender.release();
+            }
+            if(eglBase != null){
+                eglBase.release();
+            }
         }
         nuggetInjector.setInitiator(false);
         nuggetInjector.setOngoingCall(false);
