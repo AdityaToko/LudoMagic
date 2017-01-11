@@ -1,14 +1,13 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
-import android.hardware.camera2.CameraManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
-import org.webrtc.CameraEnumerator;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
@@ -50,6 +49,7 @@ public class WebRtcClient{
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
+        Log.i(LOG_TAG, "Init");
         rtcListener = listener;
         this.params = params;
         isQueueDrainedOnce = false;
@@ -69,7 +69,7 @@ public class WebRtcClient{
 
 
     public void endCallAndRemoveRemoteStream() {
-        Log.i(LOG_TAG, "End call - Incoming");
+        Log.i(LOG_TAG, "End call");
         nuggetInjector.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
@@ -84,6 +84,7 @@ public class WebRtcClient{
     }
 
     public Peer addPeer(Socket socket) {
+        Log.i(LOG_TAG, "Add peer");
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
@@ -94,7 +95,7 @@ public class WebRtcClient{
     }
 
     public void addIceServers(String iceServersUrl){
-        Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
+        Log.e(LOG_TAG, "Add Ice Service Urls: " + iceServersUrl);
         if(iceServersUrl != null && !"".equals(iceServersUrl)){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
@@ -121,15 +122,17 @@ public class WebRtcClient{
         return peer;
     }
 
-    public void onPause() {
+    public void onResume() {
+        Log.i(LOG_TAG, "onResume");
         if (videoSource != null) {
-            videoSource.stop();
+            videoSource.restart();
         }
     }
 
-    public void onResume() {
+    public void onPause() {
+        Log.i(LOG_TAG, "onPause");
         if (videoSource != null) {
-            videoSource.restart();
+            videoSource.stop();
         }
     }
 
@@ -142,7 +145,10 @@ public class WebRtcClient{
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-        videoCapturer = getVideoCapturer();
+        videoCapturer = getNewVideoCapturer();
+        if (videoCapturer == null) {
+            return;
+        }
         if(videoSource == null){
             videoSource = factory.createVideoSource(videoCapturer, videoConstraints);
         }
@@ -161,63 +167,84 @@ public class WebRtcClient{
         rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
-    // Cycle through likely device names for the camera and return the first
-    // capturer that works, or crash if none do.
-    private VideoCapturerAndroid getVideoCapturer() {
-        String[] cameraFacing = { "front", "back" };
-//        int[] cameraIndex = { 0, 1 };
-        int[] cameraIndex = { 1 };
-//        int[] cameraOrientation = { 0, 90, 180, 270 };
-        int[] cameraOrientation = { 270 };
-        VideoCapturerAndroid.CameraEventsHandler handler = new VideoCapturerAndroid.CameraEventsHandler() {
-            @Override
-            public void onCameraError(String s) {
-                Log.e(LOG_TAG, "onCameraError: " + s );
-                if(videoCapturer != null){
-                    videoCapturer.printStackTrace();
-                }
-            }
+    private void releaseLocalMediaOnDestrory() {
+        if (rtcListener != null) {
+            rtcListener.onRemoveLocalStream(localMediaStream);
+        }
 
-            @Override
-            public void onCameraFreezed(String s) {
-                Log.e(LOG_TAG, "onCameraFreezed: " + s );
-                if(videoCapturer != null){
-                    videoCapturer.printStackTrace();
-                }
+        if (localMediaStream != null) {
+            if (audioTrack != null) {
+                localMediaStream.removeTrack(audioTrack);
             }
-
-            @Override
-            public void onCameraOpening(int i) {
-                Log.d(LOG_TAG, "onCameraOpening: " + i);
-            }
-
-            @Override
-            public void onFirstFrameAvailable() {
-                
-            }
-
-            @Override
-            public void onCameraClosed() {
-                Log.d(LOG_TAG, "onCameraClosed called ");
-            }
-        };
-        for (String facing : cameraFacing) {
-            for (int index : cameraIndex) {
-                for (int orientation : cameraOrientation) {
-                    String name = "Camera " + index + ", Facing " + facing +
-                            ", Orientation " + orientation;
-                    VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name, handler);
-                    if (capturer != null) {
-                        Log.i(LOG_TAG, "Using camera: " + name);
-                        return capturer;
-                    }
-                }
+            if (videoTrack != null) {
+                localMediaStream.removeTrack(videoTrack);
             }
         }
-        throw new IllegalStateException("Failed to open capturer");
+
+        if (videoCapturer != null && !videoCapturer.isReleased()) {
+            Log.i(LOG_TAG, "Video capturer dispose");
+            videoCapturer.dispose();
+        }
+
+        if (videoSource != null) {
+            Log.i(LOG_TAG, "Video source null");
+            videoSource = null;
+        }
+    }
+
+
+    // Cycle through likely device names for the camera and return the first
+    // capturer that works, or crash if none do.
+    private VideoCapturerAndroid getNewVideoCapturer() {
+        String name = "Camera " + 1 + ", Facing " + "front" + ", Orientation " + 270;
+        VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name,  getNewCameraEventsHandler());
+        if (capturer != null) {
+            Log.i(LOG_TAG, "Using camera: " + name);
+            return capturer;
+        }
+        Log.e(LOG_TAG, "Camera not found: " + name);
+        return null;
+    }
+
+    @NonNull
+    private VideoCapturerAndroid.CameraEventsHandler getNewCameraEventsHandler() {
+        return new VideoCapturerAndroid.CameraEventsHandler() {
+                @Override
+                public void onCameraError(String s) {
+                    Log.e(LOG_TAG, "onCameraError: " + s );
+                    if(videoCapturer != null){
+                        videoCapturer.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCameraFreezed(String s) {
+                    Log.e(LOG_TAG, "onCameraFreezed: " + s );
+                    if(videoCapturer != null){
+                        videoCapturer.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCameraOpening(int i) {
+                    Log.i(LOG_TAG, "onCameraOpening: " + i);
+                }
+
+                @Override
+                public void onFirstFrameAvailable() {
+                    Log.i(LOG_TAG, "onFirstFrameAvailable");
+                }
+
+                @Override
+                public void onCameraClosed() {
+                    Log.i(LOG_TAG, "onCameraClosed");
+                }
+            };
     }
 
     public void disposePeerConnnectionFactory(){
+        Log.i(LOG_TAG, "disposePeerConnection");
+        releaseLocalMediaOnDestrory();
         if (factory != null) {
             factory.dispose();
             factory = null;
@@ -296,7 +323,7 @@ public class WebRtcClient{
 
     private boolean queueRemoteCandidates(IceCandidate candidate) {
         Log.i(LOG_TAG, "Adding remote candidate to queue");
-        if (!isQueueDrainedOnce) {
+        if (!isQueueDrainedOnce && queuedRemoteCandidates != null) {
             queuedRemoteCandidates.add(candidate);
             return true;
         }

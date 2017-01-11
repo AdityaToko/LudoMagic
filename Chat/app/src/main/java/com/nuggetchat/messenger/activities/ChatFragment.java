@@ -120,8 +120,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private boolean hasAudioFocus;
     private boolean isBound;
     private VideoRenderer remoteVideoRender;
+    private VideoRenderer localRenderer;
     private String myUserId;
     private String targetUserId;
+
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -449,9 +452,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onShowFragment() {
         Log.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
-        if (webRtcClient != null) {
-            webRtcClient.onResume();
-        }
         if (videoCallView != null) {
             videoCallView.setVisibility(View.VISIBLE);
         }
@@ -460,9 +460,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onHideFragment() {
         Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
-        if (webRtcClient != null) {
-            webRtcClient.onPause();
-        }
     }
 
     @Override
@@ -497,10 +494,19 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onLocalStream(MediaStream localStream) {
         Log.i(LOG_TAG, "onLocalStream");
         if (!localStream.videoTracks.isEmpty()) {
-            localStream.videoTracks.get(0).addRenderer(new VideoRenderer(local));
+            localRenderer = new VideoRenderer(local);
+            localStream.videoTracks.get(0).addRenderer(localRenderer);
             updateVideoViews();
         } else {
             Log.w(LOG_TAG, "Video tracks empty");
+        }
+    }
+
+    @Override
+    public void onRemoveLocalStream(MediaStream localStream) {
+        Log.i(LOG_TAG, "onRemoveLocalStream");
+        if (localStream != null && localStream.videoTracks != null && !localStream.videoTracks.isEmpty() && localRenderer != null) {
+            localStream.videoTracks.get(0).removeRenderer(localRenderer);
         }
     }
 
@@ -620,7 +626,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             Log.i(LOG_TAG, "MessageHandler onDestroy" + nuggetInjector.isOngoingCall());
             undbindService();
-            webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
         }
         nuggetInjector.setInitiator(false);
