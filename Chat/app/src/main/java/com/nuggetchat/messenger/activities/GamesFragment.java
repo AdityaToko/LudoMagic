@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -41,15 +43,13 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
     private static final int TOTAL_NUMBER_LOCKED = 20;
     private static final int UNLOCK_INCENTIVE = 2;
-
+    @BindView(R.id.loading_icon)
+    ProgressBar loadingIcon;
     private ArrayList<GamesItem> gamesItemList;
     private NuggetInjector nuggetInjector;
     private View view;
     private int numberOfFriends;
     private int numberLocked;
-
-    @BindView(R.id.loading_icon)
-    ProgressBar loadingIcon;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,7 +72,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     public void onResume() {
         super.onResume();
 
-        if(numberOfFriends < SharedPreferenceUtility.getNumberOfFriends(this.getContext())) {
+        if (numberOfFriends < SharedPreferenceUtility.getNumberOfFriends(this.getContext())) {
             int newNumberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
             int newNumberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * newNumberOfFriends;
             int toBeUnlocked = newNumberLocked - numberLocked;
@@ -97,7 +97,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     }
 
     private void unlockGames(int newNumberLocked) {
-        for(int i = gamesItemList.size()-numberLocked; i<= gamesItemList.size()-numberLocked; i++) {
+        for (int i = gamesItemList.size() - numberLocked; i <= gamesItemList.size() - numberLocked; i++) {
             Log.d("GAMESFRAGMENT", ">>>>UNLOCKING: " + String.valueOf(i) + "  " + gamesItemList.get(i).getGamesName());
             gamesItemList.get(i).setLocked(false);
             gamesItemList.get(i).setNewlyUnlocked(true);
@@ -216,7 +216,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-                if(gamesItemList.get(position).getLocked()) {
+                if (gamesItemList.get(position).getLocked()) {
 
                     new AlertDialog.Builder(context)
                             .setTitle(R.string.add_friends_dialog_title)
@@ -235,7 +235,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                                         Toast.makeText(context, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
                                     }
                                     NuggetInjector.getInstance().logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
-                                            null /* bundle */ );
+                                            null /* bundle */);
                                 }
                             })
                             .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -253,12 +253,17 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                     nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
                             null /* bundle */);
                     Log.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
-
-                    Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                    gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
-                    Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
-                    gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
-                    gameIntent.putExtra(EXTRA_GAME_IS_MULTIPLAYER, false);
+                    Intent gameIntent;
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                        Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+                        gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gamesItemList.get(position).getGamesUrl()));
+                    } else {
+                        gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+                        gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
+                        Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
+                        gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
+                        gameIntent.putExtra(EXTRA_GAME_IS_MULTIPLAYER, false);
+                    }
                     startActivity(gameIntent);
                 }
             }

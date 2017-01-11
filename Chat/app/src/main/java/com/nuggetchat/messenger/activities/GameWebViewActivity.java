@@ -24,7 +24,7 @@ public class GameWebViewActivity extends AppCompatActivity {
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
     private NuggetInjector nuggetInjector;
-    private Boolean gameIsMultiplayer ;
+    private Boolean gameIsMultiplayer;
 
 
     @Override

@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -895,10 +897,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onGameLink(String link) {
         // launch the WebView
-        Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
+        Intent gameIntent;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+            gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+        } else {
+            gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
+        }
         startActivity(gameIntent);
     }
 
@@ -1065,13 +1073,19 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 String peerGameUrl = multiPlayerItemList.get(index).getGamesUrl()
                         + "?room=" + myUserId
                         + "&user=" + targetUserId;
+                Intent gameIntent;
                 // launch the WebView
-                Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+                //The below condition is for below Lollipop
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+                    gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(thisGameUrl));
+                } else {
+                    gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+                }
                 startActivity(gameIntent);
-
                 // emit to peer
                 JSONObject payload = new JSONObject();
                 try {
