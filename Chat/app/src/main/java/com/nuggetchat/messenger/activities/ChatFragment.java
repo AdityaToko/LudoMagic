@@ -249,13 +249,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick(R.id.end_busy_call_button)
     public void onEndBusyCallBtnClick() {
-        // audioPlayer.stopRingtone();
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddClusterHideEndAndEndBusyCall();
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
-        // hideEndBusyCallBtn();
     }
 
     private void initVideoViews() {
@@ -659,16 +657,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, e.getMessage());
         }
 
-        //hideFriendsAddCluster();
-        // linearLayout.setVisibility(View.INVISIBLE);
-
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        //showEndCallBtn();
         audioPlayer.playRingtone(AudioPlayer.RINGTONE);
         endCall.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
-        //  startCallButton.setVisibility(View.INVISIBLE);
     }
 
     private void triggerImageChanges() {
@@ -707,7 +700,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                //  linearLayout.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -888,7 +880,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (peer != null) {
             Log.i(LOG_TAG, "Peer not null.. going to set remote sdp");
             peer.getPeerConnection().setRemoteDescription(peer, sdp);
-            //linearLayout.setVisibility(View.INVISIBLE);
             showEndCallBtn();
         }
         audioPlayer.stopRingtone();
@@ -923,21 +914,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
         Log.i(LOG_TAG, "onFetchIceCandidates");
-        Log.i(LOG_TAG, "onFetchIceCandidates peer not null");
-        if (webRtcClient.queuedRemoteCandidates != null) {
-            Log.i(LOG_TAG, "Queueing ice candidates before connection");
-            webRtcClient.queuedRemoteCandidates.add(candidate);
-        } else {
+        boolean candidateQueued = webRtcClient.lockAndQueueRemoteCandidates(candidate);
+        if (!candidateQueued) {
             Log.i(LOG_TAG, "Directly add to peer ice candidates after connection");
-            Peer peer = webRtcClient.getPeer();
-            if (peer == null) {
-                return;
-            }
-            PeerConnection peerConnection = peer.getPeerConnection();
-            if (peerConnection == null) {
-                return;
-            }
-            peerConnection.addIceCandidate(candidate);
+            webRtcClient.addIceCandidateToPeerConnection(candidate);
         }
     }
 
@@ -951,7 +931,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallOngoing() {
         Log.i(LOG_TAG, "on call ongoing");
-        //hideEndCallBtn();
         showEndBusyCallBtn();
         userBusyToast();
     }
@@ -982,8 +961,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        //audioPlayer.stopRingtone();
-                        //hideEndBusyCallBtn();
                         showFriendsAddClusterHideEndAndEndBusyCall();
                         webRtcClient.endCallAndRemoveRemoteStream();
                     }
