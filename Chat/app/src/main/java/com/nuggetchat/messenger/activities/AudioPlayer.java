@@ -6,6 +6,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
 
@@ -20,6 +21,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     static final String LOG_TAG = AudioPlayer.class.getSimpleName();
     public static final String BUSYTONE = "busy_tone";
     public static final String RINGTONE = "ringtone";
+    public static final String CALLER_TUNE = "caller_tune";
     private static AudioPlayer audioPlayer;
 
     private Context context;
@@ -48,12 +50,14 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
         stopRingtone();
         /*audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);*/
         Log.d(LOG_TAG, "AUDIOPLAYER Playing");
-        int tone;
+        Uri toneUri;
         boolean looping = false;
         if (type.equals(BUSYTONE)) {
-            tone = R.raw.busy_tone;
+            toneUri = Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.raw.busy_tone);
+        } else if (type.equals(CALLER_TUNE)) {
+            toneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
         } else {
-            tone = R.raw.progress_tone;
+            toneUri = Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.raw.progress_tone);
             looping = true;
         }
 
@@ -65,8 +69,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
 
                 try {
-                    mediaPlayer.setDataSource(context,
-                            Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + tone));
+                    mediaPlayer.setDataSource(context, toneUri);
                     mediaPlayer.prepare();
                 } catch (IOException e) {
                     Log.e(LOG_TAG, "Could not setup media player for ringtone");

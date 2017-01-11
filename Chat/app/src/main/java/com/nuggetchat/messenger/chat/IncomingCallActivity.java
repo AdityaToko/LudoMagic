@@ -89,7 +89,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         audioPlayer = AudioPlayer.getInstance(this);
         audioPlayer.requestAudioFocus();
-        audioPlayer.playRingtone(AudioPlayer.RINGTONE);
+        audioPlayer.playRingtone(AudioPlayer.CALLER_TUNE);
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
