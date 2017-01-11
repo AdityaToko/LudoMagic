@@ -1,12 +1,14 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
+import android.hardware.camera2.CameraManager;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
+import org.webrtc.CameraEnumerator;
 import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;

@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -34,10 +32,6 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER;
-import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_ORIENTATION;
-import static com.nuggetchat.messenger.activities.GameWebViewActivity.EXTRA_GAME_URL;
 
 public class GamesFragment extends Fragment implements FragmentChangeListener {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
@@ -253,18 +247,10 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                     nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
                             null /* bundle */);
                     Log.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
-                    Intent gameIntent;
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                        Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
-                        gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gamesItemList.get(position).getGamesUrl()));
-                    } else {
-                        gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-                        gameIntent.putExtra(EXTRA_GAME_URL, gamesItemList.get(position).getGamesUrl());
-                        Log.i(LOG_TAG, "the games isPortrait, " + gamesItemList.get(position).getPortrait());
-                        gameIntent.putExtra(EXTRA_GAME_ORIENTATION, gamesItemList.get(position).getPortrait());
-                        gameIntent.putExtra(EXTRA_GAME_IS_MULTIPLAYER, false);
-                    }
-                    startActivity(gameIntent);
+                    ((GamesChatActivity)getActivity()).launchGameActivity(
+                            gamesItemList.get(position).getGamesUrl(),
+                            gamesItemList.get(position).getPortrait(),
+                            false /*isMultiplayer*/ );
                 }
             }
         });

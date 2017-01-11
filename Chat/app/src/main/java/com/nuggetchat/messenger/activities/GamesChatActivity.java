@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -301,5 +303,20 @@ public class GamesChatActivity extends AppCompatActivity {
                 | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         return intent;
+    }
+
+    /*package local */void launchGameActivity(String gameUrl, boolean isPortrait,
+                                              boolean isMultiplayer) {
+        Intent gameIntent;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+            gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
+        } else {
+            gameIntent = new Intent(this, GameWebViewActivity.class);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, gameUrl);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, isMultiplayer);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, isPortrait);
+        }
+        startActivity(gameIntent);
     }
 }
