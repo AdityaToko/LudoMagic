@@ -53,6 +53,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     private boolean isActivityForResult;
     private BroadcastReceiver broadcastReceiver;
     private Handler mainHandler;
+    private Handler handler;
 
     Bundle bundle;
     @Override
@@ -61,6 +62,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
         Log.i(LOG_TAG, "onCreate IncomingCallActivity");
         mainHandler = new Handler(Looper.getMainLooper());
+        handler = new Handler();
         Intent intent = getIntent();
         bundle = intent.getExtras();
         (NuggetInjector.getInstance()).setIncomingCall(true);
@@ -105,6 +107,12 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                rejectButtonClick();
+            }
+        }, 30000);
         Log.i(LOG_TAG, "onResume IncomingCallActivit");
         IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
         registerReceiver(broadcastReceiver, intentFilter);
@@ -172,12 +180,14 @@ public class IncomingCallActivity extends AppCompatActivity {
     public void acceptButtonClick(){
         (NuggetInjector.getInstance()).setIncomingCall(false);
         (NuggetInjector.getInstance()).setOngoingCall(true);
+        handler.removeCallbacksAndMessages(null);
         triggerUserAction(true /*accepted*/);
     }
 
     @OnClick(R.id.reject_btn)
     public void rejectButtonClick(){
         (NuggetInjector.getInstance()).setIncomingCall(false);
+        handler.removeCallbacksAndMessages(null);
         triggerUserAction(false /*accepted*/);
     }
 
@@ -211,5 +221,11 @@ public class IncomingCallActivity extends AppCompatActivity {
             Log.e(LOG_TAG, "Exception while unregistering");
         }
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        super.onDestroy();
     }
 }

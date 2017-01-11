@@ -243,6 +243,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         chatService.socket.emit("end_call", payload);
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddClusterHideEndAndEndBusyCall();
+        handler.removeCallbacksAndMessages(null);
     }
 
     @OnClick(R.id.end_busy_call_button)
@@ -527,6 +528,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             updateVideoViews();
             setLoudSpeakerOn();
             hideFriendsAddCluster();
+            handler.removeCallbacksAndMessages(null);
         } else {
             Log.w(LOG_TAG, "Remote video tracks empty");
         }
@@ -667,6 +669,12 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         endCall.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
         //  startCallButton.setVisibility(View.INVISIBLE);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                onEndCallBtnClick();
+            }
+        }, 30000);
     }
 
     private void triggerImageChanges() {
@@ -1045,6 +1053,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage());
         }
+        handler.removeCallbacksAndMessages(null);
     }
 
     private class MultiPlayerClickListener implements View.OnClickListener {
