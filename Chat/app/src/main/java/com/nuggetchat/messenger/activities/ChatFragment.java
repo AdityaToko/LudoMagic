@@ -7,8 +7,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.net.Uri;
-import android.os.Build;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -42,7 +41,6 @@ import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
-import com.nuggetchat.messenger.PercentFrameLayout;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.chat.ChatService;
@@ -60,16 +58,15 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
-import org.webrtc.PeerConnection;
 import org.webrtc.RendererCommon;
 import org.webrtc.SessionDescription;
-import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoRenderer;
+import org.webrtc.VideoRendererGui;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -104,11 +101,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     RelativeLayout multiplayerGamesView;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     @BindView(R.id.end_busy_call_button) /* package-local */ ImageView endBusyCallBtn;
-    private PercentFrameLayout localRenderLayout;
-    private PercentFrameLayout remoteRenderLayout;
-    private SurfaceViewRenderer localRender;
-    private SurfaceViewRenderer remoteRender;
-    private EglBase eglBase;
+    private GLSurfaceView videoCallView;
+    private VideoRenderer.Callbacks local;
+    private VideoRenderer.Callbacks remote;
     private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
     private WebRtcClient webRtcClient;
     private View view;
@@ -158,6 +153,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(LOG_TAG, "onCreateView");
         mainHandler = new Handler(Looper.getMainLooper());
         gamesChatActivity = (GamesChatActivity) getActivity();
 
@@ -182,13 +178,24 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
         linearLayout.setVisibility(View.VISIBLE);
         getUserFriends();
+        videoCallView = (GLSurfaceView) view.findViewById(R.id.video_call_view);
+        videoCallView.setPreserveEGLContextOnPause(true);
+        videoCallView.setKeepScreenOn(true);
+        VideoRendererGui.setView(videoCallView, new Runnable() {
+            @Override
+            public void run() {
 
-        initVideoViews();
+            }
+        });
+        remote = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+                scalingType, true);
+        local = VideoRendererGui.create(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                LOCAL_HEIGHT_CONNECTING, scalingType, true);
+
         myUserId = SharedPreferenceUtility.getFacebookUserId(gamesChatActivity);
         Log.e(LOG_TAG, "User is : " + myUserId);
         triggerImageChanges();
         audioManagerInit();
-        localRender.setZOrderMediaOverlay(true);
         Log.i(LOG_TAG, "onCreate - call update View");
 
         initWebRtc(myUserId);
@@ -257,16 +264,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
     }
 
-    private void initVideoViews() {
-        localRenderLayout = (PercentFrameLayout) view.findViewById(R.id.local_layout);
-        remoteRenderLayout = (PercentFrameLayout) view.findViewById(R.id.remote_layout);
-        eglBase = EglBase.create();
-        localRender = (SurfaceViewRenderer) view.findViewById(R.id.local_video_view);
-        remoteRender = (SurfaceViewRenderer) view.findViewById(R.id.remote_video_view);
-        localRender.init(eglBase.getEglBaseContext(), null);
-        remoteRender.init(eglBase.getEglBaseContext(), null);
-    }
-
     private void updateVideoViews() {
         Log.i(LOG_TAG, "Post to Updating video Views");
         mainHandler.post(new Runnable() {
@@ -274,20 +271,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             public void run() {
                 if (nuggetInjector.isOngoingCall()) {
                     Log.i(LOG_TAG, "On Going call Updating video Views");
-                    remoteRenderLayout.setPosition(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT);
-                    remoteRender.setScalingType(scalingType);
-                    remoteRender.setMirror(true);
-                    localRenderLayout.setPosition(LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT);
-                    localRender.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+                    VideoRendererGui.update(remote, REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
+                            scalingType, true);
+                    VideoRendererGui.update(local, LOCAL_X, LOCAL_Y, LOCAL_WIDTH, LOCAL_HEIGHT,
+                            scalingType, true);
                 } else {
                     Log.i(LOG_TAG, "NO call Updating video Views");
-                    localRenderLayout.setPosition(LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
-                            LOCAL_HEIGHT_CONNECTING);
-                    localRender.setScalingType(scalingType);
+                    VideoRendererGui.update(local, LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING, LOCAL_WIDTH_CONNECTING,
+                            LOCAL_HEIGHT_CONNECTING, scalingType, true);
                 }
-                localRender.setMirror(true);
-                localRender.requestLayout();
-                remoteRender.requestLayout();
             }
         });
     }
@@ -460,8 +452,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
-        if (localRender != null) {
-            localRender.setVisibility(View.VISIBLE);
+        if (videoCallView != null) {
+            videoCallView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -475,11 +467,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onScrollFragment(int position) {
-        if (localRender != null) {
+        if (videoCallView != null) {
             if (position == 0) {
-                localRender.setVisibility(View.GONE);
+                videoCallView.setVisibility(View.GONE);
             } else {
-                localRender.setVisibility(View.VISIBLE);
+                videoCallView.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -492,7 +484,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         );
         String iceServersString = SharedPreferenceUtility.getIceServersUrls(gamesChatActivity);
         webRtcClient = new WebRtcClient(this, params,
-                eglBase.getEglBaseContext(), myUserId, iceServersString,
+                VideoRendererGui.getEglBaseContext(), myUserId, iceServersString,
                 gamesChatActivity);
     }
 
@@ -505,7 +497,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onLocalStream(MediaStream localStream) {
         Log.i(LOG_TAG, "onLocalStream");
         if (!localStream.videoTracks.isEmpty()) {
-            localStream.videoTracks.get(0).addRenderer(new VideoRenderer(localRender));
+            localStream.videoTracks.get(0).addRenderer(new VideoRenderer(local));
             updateVideoViews();
         } else {
             Log.w(LOG_TAG, "Video tracks empty");
@@ -523,7 +515,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (!remoteStream.videoTracks.isEmpty()) {
             Log.i(LOG_TAG, "remote stream not empty");
             nuggetInjector.setOngoingCall(true);
-            remoteVideoRender = new VideoRenderer(remoteRender);
+            remoteVideoRender = new VideoRenderer(remote);
             remoteStream.videoTracks.get(0).addRenderer(remoteVideoRender);
             updateVideoViews();
             setLoudSpeakerOn();
@@ -566,7 +558,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "the on resume of chatfragment is called");
+        Log.i(LOG_TAG, "onResume");
+        videoCallView.onResume();
         if (webRtcClient != null) {
             webRtcClient.onResume();
         }
@@ -585,6 +578,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onPause() {
+        Log.i(LOG_TAG, "onPause");
+        videoCallView.onPause();
         if (webRtcClient != null) {
             webRtcClient.onPause();
         }
@@ -593,6 +588,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onDestroyView() {
+        Log.i(LOG_TAG, "onDestoryView");
         destroyVideoViews();
         resetAudioManager();
         handler.removeCallbacksAndMessages(null);
@@ -601,7 +597,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @Override
     public void onDestroy() {
-        Log.i(LOG_TAG, "MessageHandler onDestroy" + nuggetInjector.isOngoingCall());
+        Log.i(LOG_TAG, "onDestroy" + nuggetInjector.isOngoingCall());
         if (webRtcClient != null) {
             if (nuggetInjector.isOngoingCall()) {
                 JSONObject payload = new JSONObject();
@@ -626,19 +622,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             undbindService();
             webRtcClient.endCallAndRemoveRemoteStream();
             webRtcClient.disposePeerConnnectionFactory();
-            if (localRender != null){
-                localRender.release();
-            }
-            if (remoteRender != null){
-                remoteRender.release();
-            }
-            if(eglBase != null){
-                eglBase.release();
-            }
         }
         nuggetInjector.setInitiator(false);
         nuggetInjector.setOngoingCall(false);
-        //eglBase.release();
         audioPlayer.stopRingtone();
         super.onDestroy();
     }
@@ -896,17 +882,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onGameLink(String link) {
         // launch the WebView
-        Intent gameIntent;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
-            gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-        } else {
-            gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
-            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
-            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
-        }
-        startActivity(gameIntent);
+        Log.i(LOG_TAG, "Received game link " + link);
+        gamesChatActivity.launchGameActivity(link, true /*isPortrait*/, true /*isMultiplayer*/);
     }
 
     @Override
@@ -1053,25 +1030,14 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             if (nuggetInjector.isOngoingCall()) {
                 nuggetInjector.logEvent(FirebaseAnalyticsConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
                         null /* bundle */);
+                String gameSessionId = UUID.randomUUID().toString();
                 String thisGameUrl = multiPlayerItemList.get(index).getGamesUrl()
-                        + "?room=" + myUserId
-                        + "&user=" + myUserId;
+                        + "?room=" + gameSessionId
+                        + "&user=" + "ann";
                 String peerGameUrl = multiPlayerItemList.get(index).getGamesUrl()
-                        + "?room=" + myUserId
-                        + "&user=" + targetUserId;
-                Intent gameIntent;
-                // launch the WebView
-                //The below condition is for below Lollipop
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
-                    gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(thisGameUrl));
-                } else {
-                    gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
-                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
-                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
-                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
-                }
-                startActivity(gameIntent);
+                        + "?room=" + gameSessionId
+                        + "&user=" + "dan";
+                gamesChatActivity.launchGameActivity(thisGameUrl, multiPlayerItemList.get(index).getPortrait(), true /*isMultiplayer*/);
                 // emit to peer
                 JSONObject payload = new JSONObject();
                 try {
@@ -1083,7 +1049,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                Log.i(LOG_TAG, "MessageHandler emit game_link");
+                Log.i(LOG_TAG, "Emit game link " + peerGameUrl);
                 chatService.socket.emit("game_link", payload);
             } else {
                 Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
