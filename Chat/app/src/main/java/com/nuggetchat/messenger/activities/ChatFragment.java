@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -248,13 +250,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
 
     @OnClick(R.id.end_busy_call_button)
     public void onEndBusyCallBtnClick() {
-        // audioPlayer.stopRingtone();
         webRtcClient.endCallAndRemoveRemoteStream();
         showFriendsAddClusterHideEndAndEndBusyCall();
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
-        // hideEndBusyCallBtn();
     }
 
     private void initVideoViews() {
@@ -659,16 +659,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             Log.e(LOG_TAG, e.getMessage());
         }
 
-        //hideFriendsAddCluster();
-        // linearLayout.setVisibility(View.INVISIBLE);
-
         SharedPreferenceUtility.setFavouriteFriend(getActivity(), facebookId);
         triggerImageChanges();
-        //showEndCallBtn();
         audioPlayer.playRingtone(AudioPlayer.RINGTONE);
         endCall.setVisibility(View.VISIBLE);
         linearLayout.setVisibility(View.INVISIBLE);
-        //  startCallButton.setVisibility(View.INVISIBLE);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -713,7 +708,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
-                //  linearLayout.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -894,7 +888,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (peer != null) {
             Log.i(LOG_TAG, "Peer not null.. going to set remote sdp");
             peer.getPeerConnection().setRemoteDescription(peer, sdp);
-            //linearLayout.setVisibility(View.INVISIBLE);
             showEndCallBtn();
         }
         audioPlayer.stopRingtone();
@@ -903,10 +896,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onGameLink(String link) {
         // launch the WebView
-        Intent gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
-        gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
+        Intent gameIntent;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+            gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+        } else {
+            gameIntent = new Intent(getActivity(), GameWebViewActivity.class);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, link);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, true);
+        }
         startActivity(gameIntent);
     }
 
@@ -923,21 +922,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onFetchIceCandidates(IceCandidate candidate) {
         Log.i(LOG_TAG, "onFetchIceCandidates");
-        Log.i(LOG_TAG, "onFetchIceCandidates peer not null");
-        if (webRtcClient.queuedRemoteCandidates != null) {
-            Log.i(LOG_TAG, "Queueing ice candidates before connection");
-            webRtcClient.queuedRemoteCandidates.add(candidate);
-        } else {
+        boolean candidateQueued = webRtcClient.lockAndQueueRemoteCandidates(candidate);
+        if (!candidateQueued) {
             Log.i(LOG_TAG, "Directly add to peer ice candidates after connection");
-            Peer peer = webRtcClient.getPeer();
-            if (peer == null) {
-                return;
-            }
-            PeerConnection peerConnection = peer.getPeerConnection();
-            if (peerConnection == null) {
-                return;
-            }
-            peerConnection.addIceCandidate(candidate);
+            webRtcClient.addIceCandidateToPeerConnection(candidate);
         }
     }
 
@@ -951,7 +939,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onCallOngoing() {
         Log.i(LOG_TAG, "on call ongoing");
-        //hideEndCallBtn();
         showEndBusyCallBtn();
         userBusyToast();
     }
@@ -982,8 +969,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        //audioPlayer.stopRingtone();
-                        //hideEndBusyCallBtn();
                         showFriendsAddClusterHideEndAndEndBusyCall();
                         webRtcClient.endCallAndRemoveRemoteStream();
                     }
@@ -1074,13 +1059,19 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 String peerGameUrl = multiPlayerItemList.get(index).getGamesUrl()
                         + "?room=" + myUserId
                         + "&user=" + targetUserId;
+                Intent gameIntent;
                 // launch the WebView
-                Intent gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
-                gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+                //The below condition is for below Lollipop
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+                    gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(thisGameUrl));
+                } else {
+                    gameIntent = new Intent(gamesChatActivity, GameWebViewActivity.class);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, thisGameUrl);
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, multiPlayerItemList.get(index).getPortrait());
+                    gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, true);
+                }
                 startActivity(gameIntent);
-
                 // emit to peer
                 JSONObject payload = new JSONObject();
                 try {

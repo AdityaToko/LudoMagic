@@ -24,7 +24,7 @@ public class GameWebViewActivity extends AppCompatActivity {
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
     private NuggetInjector nuggetInjector;
-    private Boolean gameIsMultiplayer ;
+    private Boolean gameIsMultiplayer;
 
 
     @Override
@@ -40,6 +40,7 @@ public class GameWebViewActivity extends AppCompatActivity {
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);
         }
+        gameIsMultiplayer = false;
         if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
             gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
             Log.i(LOG_TAG,"Game is multiplayer" + gameIsMultiplayer);
