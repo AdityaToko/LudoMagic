@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -179,19 +180,37 @@ public class WebRtcClient{
             if (videoTrack != null) {
                 localMediaStream.removeTrack(videoTrack);
             }
+            localMediaStream.dispose();
         }
 
         if (videoCapturer != null && !videoCapturer.isReleased()) {
             Log.i(LOG_TAG, "Video capturer dispose");
             videoCapturer.dispose();
+            videoCapturer = null;
         }
+
+        isCameraUsebyApp();
 
         if (videoSource != null) {
             Log.i(LOG_TAG, "Video source null");
             videoSource = null;
         }
+
     }
 
+    private boolean isCameraUsebyApp() {
+        Camera camera = null;
+        try {
+            camera = Camera.open(1);
+        } catch (RuntimeException e) {
+            return true;
+        } finally {
+            if (camera != null) {
+                camera.release();
+            }
+        }
+        return false;
+    }
 
     // Cycle through likely device names for the camera and return the first
     // capturer that works, or crash if none do.
@@ -244,6 +263,7 @@ public class WebRtcClient{
 
     public void disposePeerConnnectionFactory(){
         Log.i(LOG_TAG, "disposePeerConnection");
+
         releaseLocalMediaOnDestrory();
         if (factory != null) {
             factory.dispose();

@@ -628,6 +628,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             undbindService();
             webRtcClient.disposePeerConnnectionFactory();
         }
+        VideoRendererGui.remove(local);
+        VideoRendererGui.remove(remote);
+        VideoRendererGui.dispose();
         nuggetInjector.setInitiator(false);
         nuggetInjector.setOngoingCall(false);
         audioPlayer.stopRingtone();
