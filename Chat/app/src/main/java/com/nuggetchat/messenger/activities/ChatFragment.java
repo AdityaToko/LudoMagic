@@ -289,18 +289,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         });
     }
 
-    private void destroyVideoViews() {
-//        if (localRender != null) {
-//            localRender.release();
-//        }
-//        if (remoteRender != null) {
-//            remoteRender.release();
-//        }
-//        if (eglBase != null) {
-//            eglBase.release();
-//        }
-    }
-
     @OnClick(R.id.add_friends_to_chat)
     /* package-local */ void addFriendsForCall() {
         Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
@@ -593,7 +581,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onDestroyView() {
         Log.i(LOG_TAG, "onDestoryView");
-        destroyVideoViews();
         resetAudioManager();
         handler.removeCallbacksAndMessages(null);
         super.onDestroyView();
