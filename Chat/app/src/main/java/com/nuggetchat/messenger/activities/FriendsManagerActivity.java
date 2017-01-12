@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,6 +43,7 @@ import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -107,7 +107,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     }
 
     public void sendMessageToFriends(View v) {
-        Log.d(LOG_TAG, "Message to friends called");
+        MyLog.d(LOG_TAG, "Message to friends called");
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setPackage("com.facebook.orca");
@@ -140,7 +140,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @OnClick(R.id.skip_friends_addition)
     /* package-local */ void skipFriendsAddition() {
         if (intent.getStringExtra("user_id") == null) {
-            Log.i(LOG_TAG, "the skip button is clicked");
+            MyLog.i(LOG_TAG, "the skip button is clicked");
             Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
             startActivity(intent);
         }
@@ -158,9 +158,9 @@ public class FriendsManagerActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "On resume - friend activity");
+        MyLog.i(LOG_TAG, "On resume - friend activity");
         if (nuggetInjector.isOngoingCall()) {
-            Log.i(LOG_TAG, "On resume - friend activity");
+            MyLog.i(LOG_TAG, "On resume - friend activity");
             finish();
             return;
         }
@@ -207,12 +207,12 @@ public class FriendsManagerActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<GetTokenResult> task) {
                         if (task.isSuccessful()) {
                             String firebaseToken = task.getResult().getToken();
-                            Log.i(LOG_TAG,
+                            MyLog.i(LOG_TAG,
                                     "Refreshing - getUserFriends token:" + firebaseToken + " user:"
                                             + firebaseUid);
                             updateFriendsList(firebaseUid, firebaseToken, facebookToken);
                         } else {
-                            Log.e(LOG_TAG, "Error in updating friends.", task.getException());
+                            MyLog.e(LOG_TAG, "Error in updating friends.", task.getException());
                         }
                     }
                 });
@@ -228,7 +228,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.i(LOG_TAG, "Request success " + response);
+                        MyLog.i(LOG_TAG, "Request success " + response);
                         getFriendsFromFirebase(firebaseUid);
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
@@ -253,7 +253,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d(LOG_TAG, "Error in making friends request", error);
+                        MyLog.d(LOG_TAG, "Error in making friends request", error);
                         friendsManagerProgressBar.setVisibility(INVISIBLE);
                     }
                 }) {
@@ -270,7 +270,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
 
     private void getFriendsFromFirebase(String firebaseId) {
         String firebaseUri = Conf.firebaseUserFriends(firebaseId);
-        Log.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
+        MyLog.i(LOG_TAG, "Fetching user friends : , " + firebaseUri);
 
         final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
@@ -278,7 +278,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         inviteFriendsText.setVisibility(VISIBLE);
         swipeContainer.setRefreshing(false);
         if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
+            MyLog.e(LOG_TAG, "Unable to get database reference.");
             return;
         }
 
@@ -293,7 +293,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                 if (!newFriendList.isEmpty()) {
                     usersFriendList.clear();
                     usersFriendList.addAll(newFriendList);
-                    Log.d(LOG_TAG, String.valueOf(usersFriendList.size()));
+                    MyLog.d(LOG_TAG, String.valueOf(usersFriendList.size()));
                     SharedPreferenceUtility.setNumberOfFriends(usersFriendList.size(),
                             FriendsManagerActivity.this);
                 }
@@ -302,7 +302,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e(LOG_TAG, "Friend request cancelled," + databaseError);
+                MyLog.e(LOG_TAG, "Friend request cancelled," + databaseError);
             }
         });
     }

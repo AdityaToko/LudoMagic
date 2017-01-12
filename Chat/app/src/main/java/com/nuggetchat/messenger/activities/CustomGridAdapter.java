@@ -1,8 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Context;
-import android.media.Image;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +11,7 @@ import android.widget.TextView;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.GlideUtils;
+import com.nuggetchat.messenger.utils.MyLog;
 
 import java.util.ArrayList;
 
@@ -82,7 +81,7 @@ public class CustomGridAdapter extends BaseAdapter {
         }
 
         String imageURl = Conf.CLOUDINARY_PREFIX_URL + gameItemList.get(position).getGamesImage();
-        Log.d("The image uri " , imageURl);
+        MyLog.d("The image uri " , imageURl);
         GlideUtils.loadImage(context, imageView, null, imageURl);
 
         return convertView;

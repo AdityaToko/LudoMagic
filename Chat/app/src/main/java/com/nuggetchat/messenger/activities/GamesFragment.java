@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +25,7 @@ import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import java.util.ArrayList;
@@ -99,7 +98,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
     private void unlockGames(int newNumberLocked) {
         for (int i = gamesItemList.size() - numberLocked; i <= gamesItemList.size() - numberLocked; i++) {
-            Log.d("GAMESFRAGMENT", ">>>>UNLOCKING: " + String.valueOf(i) + "  " + gamesItemList.get(i).getGamesName());
+            MyLog.d("GAMESFRAGMENT", ">>>>UNLOCKING: " + String.valueOf(i) + "  " + gamesItemList.get(i).getGamesName());
             gamesItemList.get(i).setLocked(false);
             gamesItemList.get(i).setNewlyUnlocked(true);
         }
@@ -108,13 +107,13 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
     private void fetchDataForGames(final Context context) {
         String firebaseMultiPlayerGamesUri = Conf.firebaseMultiPlayerGamesUri();
-        Log.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
+        MyLog.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
 
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseMultiPlayerGamesUri);
 
         if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
+            MyLog.e(LOG_TAG, "Unable to get database reference.");
             return;
         }
 
@@ -124,7 +123,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                 for (DataSnapshot itemDataSnapshot : dataSnapshot.getChildren()) {
                     String id = itemDataSnapshot.getKey();
                     multiplayerIDList.add(0, id);
-                    Log.d(LOG_TAG, ">>>multiplayer id: " + id);
+                    MyLog.d(LOG_TAG, ">>>multiplayer id: " + id);
                 }
                 fetchAllGames(context);
             }
@@ -139,18 +138,18 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
     private void fetchAllGames(final Context context) {
         String firebaseUri = Conf.firebaseGamesUri();
-        Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
+        MyLog.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
 
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
 
         if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
+            MyLog.e(LOG_TAG, "Unable to get database reference.");
             return;
         }
 
         for (int i = 0; i < multiplayerIDList.size(); i++) {
-            Log.d(LOG_TAG, ">>multi ids: " + multiplayerIDList.get(i));
+            MyLog.d(LOG_TAG, ">>multi ids: " + multiplayerIDList.get(i));
         }
 
 
@@ -169,10 +168,10 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
                             if (multiplayerIDList.contains(gamesData.getDataId())) {
                                 multiplayerGamesItemList.add(0, gamesItem);
-                                Log.d("GAMEFRAGMENT", ">>>>MULTI GAMES: " + multiplayerGamesItemList.size() + " " + "false");
+                                MyLog.d("GAMEFRAGMENT", ">>>>MULTI GAMES: " + multiplayerGamesItemList.size() + " " + "false");
                             } else {
                                 gamesItemList.add(0, gamesItem);
-                                Log.d("GAMEFRAGMENT", ">>>>SOLO GAMES: " + gamesItemList.size() + " " + "false");
+                                MyLog.d("GAMEFRAGMENT", ">>>>SOLO GAMES: " + gamesItemList.size() + " " + "false");
                             }
 
                         } else {
@@ -181,10 +180,10 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
                             if (multiplayerIDList.contains(gamesData.getDataId())) {
                                 multiplayerGamesItemList.add(0, gamesItem);
-                                Log.d("GAMEFRAGMENT", ">>>>MULTI GAMES: " + multiplayerGamesItemList.size() + " " + "false");
+                                MyLog.d("GAMEFRAGMENT", ">>>>MULTI GAMES: " + multiplayerGamesItemList.size() + " " + "false");
                             } else {
                                 gamesItemList.add(0, gamesItem);
-                                Log.d("GAMEFRAGMENT", ">>>>SOLO GAMES: " + gamesItemList.size() + " " + "true");
+                                MyLog.d("GAMEFRAGMENT", ">>>>SOLO GAMES: " + gamesItemList.size() + " " + "true");
                             }
 
                         }
@@ -204,7 +203,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
 
     private void setUpGridView(final Context context) {
-        Log.i(LOG_TAG, "grid view set, " + gamesItemList);
+        MyLog.i(LOG_TAG, "grid view set, " + gamesItemList);
         CustomGridAdapter customGridAdapter = new CustomGridAdapter(getActivity(), gamesItemList);
         GridView gridView = (GridView) view.findViewById(R.id.grid_view);
         gridView.setAdapter(customGridAdapter);
@@ -248,7 +247,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                             Toast.LENGTH_SHORT).show();
                     nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
                             null /* bundle */);
-                    Log.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
+                    MyLog.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
                     ((GamesChatActivity) getActivity()).launchGameActivity(
                             gamesItemList.get(position).getGamesUrl(),
                             gamesItemList.get(position).getPortrait(),
@@ -260,12 +259,12 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
 
     @Override
     public void onShowFragment() {
-        Log.d(LOG_TAG, "onShowFragment: Games Fragment shown");
+        MyLog.d(LOG_TAG, "onShowFragment: Games Fragment shown");
     }
 
     @Override
     public void onHideFragment() {
-        Log.d(LOG_TAG, "onShowFragment: Games Fragment hidden");
+        MyLog.d(LOG_TAG, "onShowFragment: Games Fragment hidden");
     }
 
     @Override

@@ -6,7 +6,6 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -14,6 +13,7 @@ import android.webkit.WebViewClient;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
 
@@ -43,7 +43,7 @@ public class GameWebViewActivity extends AppCompatActivity {
         gameIsMultiplayer = false;
         if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
             gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
-            Log.i(LOG_TAG,"Game is multiplayer" + gameIsMultiplayer);
+            MyLog.i(LOG_TAG,"Game is multiplayer" + gameIsMultiplayer);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -84,11 +84,11 @@ public class GameWebViewActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "On resume - game webview");
+        MyLog.i(LOG_TAG, "On resume - game webview");
         // Finish only on solo games. TODO
-        Log.i(LOG_TAG, "is on going call, " +nuggetInjector.isOngoingCall());
+        MyLog.i(LOG_TAG, "is on going call, " +nuggetInjector.isOngoingCall());
         if (nuggetInjector.isOngoingCall() && (!gameIsMultiplayer)) {
-            Log.i(LOG_TAG, "On resume - game webview - Finishing ");
+            MyLog.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
             return;
         }

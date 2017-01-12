@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -37,6 +36,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import java.util.HashMap;
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void OnTokenRefreshFailed(FacebookException exception) {
-                                Log.e(LOG_TAG, "Error in refreshing access token.");
+                                MyLog.e(LOG_TAG, "Error in refreshing access token.");
                             }
                         });
             } else {
@@ -94,13 +94,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancel() {
                 // App code
-                Log.i(LOG_TAG, "ON CANCEL");
+                MyLog.i(LOG_TAG, "ON CANCEL");
             }
 
             @Override
             public void onError(FacebookException exception) {
                 // App code'
-                Log.i(LOG_TAG, "ON ERROR", exception);
+                MyLog.i(LOG_TAG, "ON ERROR", exception);
             }
         });
     }
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         loginProgressBar.setVisibility(View.VISIBLE);
         // App code
         final String accessToken = loginResult.getAccessToken().getToken();
-        Log.i(LOG_TAG, "Trying Login");
+        MyLog.i(LOG_TAG, "Trying Login");
         FirebaseAuth.getInstance()
                 .signInWithCredential(FacebookAuthProvider.getCredential(accessToken))
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     private void getFirebaseIdTokenAndStartNextActivity(final Task<AuthResult> task,
                                                         final AccessToken accessToken) {
         if (!task.isSuccessful()) {
-            Log.e(LOG_TAG, "Error in login.", task.getException());
+            MyLog.e(LOG_TAG, "Error in login.", task.getException());
             return;
         }
 
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveFacebookToFirebaseMap(String facebookUserId, String firebaseId) {
         String facebookToFirebaseMap = Conf.firebaseFbToFireidUri(facebookUserId);
-        Log.d(LOG_TAG, "Storing firebase id at: " + facebookToFirebaseMap);
+        MyLog.d(LOG_TAG, "Storing firebase id at: " + facebookToFirebaseMap);
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance().getReferenceFromUrl(facebookToFirebaseMap);
         if (firebaseRef == null) {
             return;
@@ -159,13 +159,13 @@ public class MainActivity extends AppCompatActivity {
     private void saveFacebookIdAndStartNextActivity() {
         final String firebaseId = SharedPreferenceUtility.getFirebaseUid(this);
         String firebaseUri = Conf.firebaseUsersUri() + firebaseId + "/facebookId";
-        Log.i(LOG_TAG, "Fetching user's facebook id: " + firebaseUri);
+        MyLog.i(LOG_TAG, "Fetching user's facebook id: " + firebaseUri);
 
         final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(firebaseUri);
 
         if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
+            MyLog.e(LOG_TAG, "Unable to get database reference.");
             return;
         }
         firebaseRef.addValueEventListener(new ValueEventListener() {
@@ -174,18 +174,18 @@ public class MainActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
                     String facebookUserId = dataSnapshot.getValue().toString();
                     SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
-                    Log.i(LOG_TAG, "Facebook id " + facebookUserId);
+                    MyLog.i(LOG_TAG, "Facebook id " + facebookUserId);
                     FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseId, facebookUserId, MainActivity.this);
                     saveFacebookToFirebaseMap(facebookUserId, firebaseId);
                     startFriendManagerActivity();
                 } else {
-                    Log.i(LOG_TAG, "No firebase id yet in server");
+                    MyLog.i(LOG_TAG, "No firebase id yet in server");
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.w(LOG_TAG, "Facebook id fetch cancelled");
+                MyLog.w(LOG_TAG, "Facebook id fetch cancelled");
             }
         });
     }
@@ -215,19 +215,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void refreshUserFriendsAndStartNextActivity(final String facebookToken, final String firebaseToken) {
-        Log.i(LOG_TAG, "Refresh friends Firebase token " + firebaseToken);
+        MyLog.i(LOG_TAG, "Refresh friends Firebase token " + firebaseToken);
         RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = new StringRequest(Request.Method.POST, Conf.GET_FRIENDS_API_URL,
                 new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.i(LOG_TAG, "Facebook login success ");
+                MyLog.i(LOG_TAG, "Facebook login success ");
                 saveFacebookIdAndStartNextActivity();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(LOG_TAG, "Error in making friends request", error);
+                MyLog.d(LOG_TAG, "Error in making friends request", error);
             }
         }){
             @Override

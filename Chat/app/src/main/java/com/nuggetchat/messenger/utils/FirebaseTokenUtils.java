@@ -2,7 +2,6 @@ package com.nuggetchat.messenger.utils;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,7 +25,7 @@ public class FirebaseTokenUtils {
         saveDeviceRegistrationToken("devices-facebook", facebookId, deviceRegistrationToken);
         if (context != null) {
             SharedPreferenceUtility.setFirebaseIdToken(deviceRegistrationToken, context);
-            Log.i(LOG_TAG, "Saved firebase device token in shared pref ");
+            MyLog.i(LOG_TAG, "Saved firebase device token in shared pref ");
         }
     }
 
@@ -40,10 +39,10 @@ public class FirebaseTokenUtils {
             return;
         }
         if (Utils.isNullOrEmpty(userDeviceIDUrl)) {
-            Log.w(LOG_TAG, "user device id not set");
+            MyLog.w(LOG_TAG, "user device id not set");
             return;
         }
-        Log.i(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
+        MyLog.i(LOG_TAG, "Storing user's device id at: " + userDeviceIDUrl);
         DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
                 .getReferenceFromUrl(userDeviceIDUrl);
         if (firebaseRef == null) {
@@ -56,11 +55,11 @@ public class FirebaseTokenUtils {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Log.i(LOG_TAG, "Firebase Device Id stored successfully!");
+                            MyLog.i(LOG_TAG, "Firebase Device Id stored successfully!");
                         } else {
                             Exception exception = task.getException();
                             if (exception != null) {
-                                Log.e(LOG_TAG, "Unable to update friends." + exception);
+                                MyLog.e(LOG_TAG, "Unable to update friends." + exception);
                             }
                         }
                     }
