@@ -34,3 +34,5 @@
 -dontwarn sun.misc.Unsafe
 -dontwarn org.slf4j.LoggerFactory
 -dontwarn org.slf4j.Logger
+-dontwarn java.nio.file.**
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
