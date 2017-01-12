@@ -15,3 +15,22 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keepattributes Signature
+-keepclassmembers class com.nuggetchat.lib.model.** {
+    public *;
+}
+
+-keepclassmembers class com.nuggetchat.messenger.datamodel.** {
+    public *;
+}
+
+-keep class com.cloudinary.** { *; }
+-keepnames class com.fasterxml.jackson.annotation.** { *; }
+
+-dontwarn org.w3c.dom.**
+-dontwarn java.awt.Desktop
+-dontwarn java.awt.Desktop$Action
+-dontwarn sun.misc.Unsafe
+-dontwarn org.slf4j.LoggerFactory
+-dontwarn org.slf4j.Logger
