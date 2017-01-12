@@ -36,6 +36,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
@@ -108,7 +109,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private WebRtcClient webRtcClient;
     private View view;
     private ArrayList<GamesItem> gamesItemList;
-    private ArrayList<GamesItem> multiPlayerItemList;
+    private ArrayList<GamesItem> multiplayerGamesItemList;
+    private ArrayList<String> multiplayerIDList;
     private NuggetInjector nuggetInjector;
     private ChatService chatService;
     private Handler mainHandler;
@@ -175,8 +177,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         bundle = getArguments();
         nuggetInjector = NuggetInjector.getInstance();
         gamesItemList = new ArrayList<>();
-        multiPlayerItemList = new ArrayList<>();
-        fetchData();
+        multiplayerGamesItemList = new ArrayList<>();
+        multiplayerIDList = new ArrayList<>();
+
+        fetchDataForGames(this.getContext());
         handler = new Handler();
 
         linearLayout.setVisibility(View.VISIBLE);
@@ -332,7 +336,37 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         }
     }
 
-    private void fetchData() {
+    private void fetchDataForGames(final Context context) {
+        String firebaseMultiPlayerGamesUri = Conf.firebaseMultiPlayerGamesUri();
+        Log.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
+
+        DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
+                .getReferenceFromUrl(firebaseMultiPlayerGamesUri);
+
+        if (firebaseRef == null) {
+            Log.e(LOG_TAG, "Unable to get database reference.");
+            return;
+        }
+
+        firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot itemDataSnapshot : dataSnapshot.getChildren()) {
+                    String id = itemDataSnapshot.getKey();
+                    multiplayerIDList.add(0, id);
+                    Log.d(LOG_TAG, ">>>multiplayer id: " + id);
+                }
+                fetchMultiplayerGames(context);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void fetchMultiplayerGames(final Context context) {
         String firebaseUri = Conf.firebaseGamesUri();
         Log.i(LOG_TAG, "Fetching Games Stream : , " + firebaseUri);
 
@@ -344,109 +378,47 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             return;
         }
 
-        firebaseRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                GamesData gamesDate = dataSnapshot.getValue(GamesData.class);
-                GamesItem gamesItem = new GamesItem(dataSnapshot.getKey(), gamesDate.getTitle(),
-                        gamesDate.getFeaturedImage(), gamesDate.getUrl(), gamesDate.getPortrait());
-                gamesItemList.add(gamesItem);
-            }
+        for (int i = 0; i < multiplayerIDList.size(); i++) {
+            String gameID = multiplayerIDList.get(i);
+            Log.d(LOG_TAG, ">>multi ids: " + gameID);
+            firebaseRef.child(gameID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    GamesData gamesData = snapshot.getValue(GamesData.class);
+                    if(gamesData != null) {
+                        GamesItem gamesItem = new GamesItem(gamesData.getDataId(), gamesData.getTitle(),
+                                gamesData.getFeaturedImage(), gamesData.getUrl(), gamesData.getPortrait(), false, false, gamesData.getValueScore());
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        String firebaseMultiPlayerGamesUri = Conf.firebaseMultiPlayerGamesUri();
-        Log.i(LOG_TAG, "Fetching MultiPlayer Games Stream : , " + firebaseMultiPlayerGamesUri);
-
-        firebaseRef = FirebaseDatabase.getInstance()
-                .getReferenceFromUrl(firebaseMultiPlayerGamesUri);
-
-        if (firebaseRef == null) {
-            Log.e(LOG_TAG, "Unable to get database reference.");
-            return;
-        }
-
-        firebaseRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.i(LOG_TAG, "datasnapshot, " + dataSnapshot.getKey());
-                for (int i = 0; i < gamesItemList.size(); i++) {
-                    Log.i(LOG_TAG, "games key " + gamesItemList.get(i).getGameKey());
-                    if (dataSnapshot.getKey().equals(gamesItemList.get(i).getGameKey())) {
-                        Log.i(LOG_TAG, "dataSnapshot games key " + dataSnapshot.getKey());
-                        Log.i(LOG_TAG, "games name, " + gamesItemList.get(i).getGamesName());
-                        Log.i(LOG_TAG, "games Image, " + gamesItemList.get(i).getGamesImage());
-                        GamesItem gamesItem = new GamesItem(gamesItemList.get(i).getGameKey(),
-                                gamesItemList.get(i).getGamesName(), gamesItemList.get(i).getGamesImage(),
-                                gamesItemList.get(i).getGamesUrl(), gamesItemList.get(i).getPortrait());
-                        multiPlayerItemList.add(gamesItem);
-                        Log.i(LOG_TAG, "the size , " + multiPlayerItemList.size());
+                        multiplayerGamesItemList.add(0,gamesItem);
+                        Log.d(LOG_TAG,">>> Multi game added: " + gamesData.getDataId());
+                        setUpListView(gamesItem);
                     }
                 }
 
-                for (int i = 0; i < multiPlayerItemList.size(); i++) {
-                    setUpListView(i);
+                @Override
+                public void onCancelled(DatabaseError error) {
                 }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+            });
+        }
     }
 
-    private void setUpListView(final int i) {
-        Log.i(LOG_TAG, "multiplayer game  " + i);
 
+    private void setUpListView(GamesItem gamesItem) {
         LinearLayout gamesList = (LinearLayout) view.findViewById(R.id.games_list);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.multiplayer_item, gamesList, false);
         TextView textView = (TextView) view.findViewById(R.id.grid_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.grid_image);
-        Log.i(LOG_TAG, "multiplayer game name, " + multiPlayerItemList.get(i).getGamesName());
-        Log.i(LOG_TAG, "multiplayer game image, " + multiPlayerItemList.get(i).getGamesImage());
+        Log.i(LOG_TAG, "multiplayer game name, " + gamesItem.getGamesName());
+        Log.i(LOG_TAG, "multiplayer game image, " + gamesItem.getGamesImage());
 
-        textView.setText(multiPlayerItemList.get(i).getGamesName());
-        String imageURl = Conf.CLOUDINARY_PREFIX_URL + multiPlayerItemList.get(i).getGamesImage();
+        textView.setText(gamesItem.getGamesName());
+        String imageURl = Conf.CLOUDINARY_PREFIX_URL + gamesItem.getGamesImage();
         Log.d("The image uri ", imageURl);
         GlideUtils.loadImage(gamesChatActivity, imageView, null, imageURl);
 
-        view.setOnClickListener(new MultiPlayerClickListener(i));
+        view.setOnClickListener(new MultiPlayerClickListener(gamesItem));
         gamesList.addView(view);
+
     }
 
     @Override
@@ -1027,10 +999,10 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     }
 
     private class MultiPlayerClickListener implements View.OnClickListener {
-        private int index;
+        private GamesItem gamesItem;
 
-        public MultiPlayerClickListener(int i) {
-            index = i;
+        public MultiPlayerClickListener(GamesItem item) {
+            gamesItem = item;
         }
 
         @Override
@@ -1039,13 +1011,13 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 nuggetInjector.logEvent(FirebaseAnalyticsConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
                         null /* bundle */);
                 String gameSessionId = UUID.randomUUID().toString();
-                String thisGameUrl = multiPlayerItemList.get(index).getGamesUrl()
+                String thisGameUrl = gamesItem.getGamesUrl()
                         + "?room=" + gameSessionId
                         + "&user=" + "ann";
-                String peerGameUrl = multiPlayerItemList.get(index).getGamesUrl()
+                String peerGameUrl = gamesItem.getGamesUrl()
                         + "?room=" + gameSessionId
                         + "&user=" + "dan";
-                gamesChatActivity.launchGameActivity(thisGameUrl, multiPlayerItemList.get(index).getPortrait(), true /*isMultiplayer*/);
+                gamesChatActivity.launchGameActivity(thisGameUrl, gamesItem.getPortrait(), true /*isMultiplayer*/);
                 // emit to peer
                 JSONObject payload = new JSONObject();
                 try {
