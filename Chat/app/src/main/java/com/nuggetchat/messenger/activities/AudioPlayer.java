@@ -8,10 +8,10 @@ import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.util.Log;
 
 import com.nuggetchat.messenger.BuildConfig;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.utils.MyLog;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     private AudioPlayer(Context context) {
         this.context = context.getApplicationContext();
         audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
-        Log.d(LOG_TAG, "AUDIOPLAYER setup");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER setup");
     }
 
     public static AudioPlayer getInstance(Context context) {
@@ -49,7 +49,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     public void playRingtone(String type) {
         stopRingtone();
         /*audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);*/
-        Log.d(LOG_TAG, "AUDIOPLAYER Playing");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER Playing");
         Uri toneUri;
         boolean looping = false;
         if (type.equals(BUSYTONE)) {
@@ -64,7 +64,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
         // Honour silent mode
         switch (audioManager.getRingerMode()) {
             case AudioManager.RINGER_MODE_NORMAL:
-                Log.d(LOG_TAG, "AUDIOPLAYER Normal mode");
+                MyLog.d(LOG_TAG, "AUDIOPLAYER Normal mode");
                 mediaPlayer = new MediaPlayer();
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
 
@@ -72,7 +72,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
                     mediaPlayer.setDataSource(context, toneUri);
                     mediaPlayer.prepare();
                 } catch (IOException e) {
-                    Log.e(LOG_TAG, "Could not setup media player for ringtone");
+                    MyLog.e(LOG_TAG, "Could not setup media player for ringtone");
                     mediaPlayer = null;
                     return;
                 }
@@ -89,9 +89,9 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     public void stopRingtone() {
-        Log.d(LOG_TAG, "AUDIOPLAYER Stop called");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER Stop called");
         if (mediaPlayer != null) {
-            Log.d(LOG_TAG, "AUDIOPLAYER player not null while stopping");
+            MyLog.d(LOG_TAG, "AUDIOPLAYER player not null while stopping");
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
@@ -99,18 +99,18 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     public void playProgressTone() {
-        Log.d(LOG_TAG, "AUDIOPLAYER Play Progress Tone");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER Play Progress Tone");
         stopProgressTone();
         try {
             audioTrack = createProgressTone(context);
             audioTrack.play();
         } catch (Exception e) {
-            Log.e(LOG_TAG, "Could not play progress tone", e);
+            MyLog.e(LOG_TAG, "Could not play progress tone", e);
         }
     }
 
     public void stopProgressTone() {
-        Log.d(LOG_TAG, "AUDIOPLAYER Stop progress tone");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER Stop progress tone");
         if (audioTrack != null) {
             audioTrack.stop();
             audioTrack.release();
@@ -119,7 +119,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
     }
 
     private static AudioTrack createProgressTone(Context context) throws IOException {
-        Log.d(LOG_TAG, "AUDIOPLAYER Creatign progress tone");
+        MyLog.d(LOG_TAG, "AUDIOPLAYER Creatign progress tone");
         AssetFileDescriptor fd = context.getResources().openRawResourceFd(R.raw.progress_tone);
         int length = (int) fd.getLength();
 
@@ -150,7 +150,7 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-        Log.e(LOG_TAG, "AUDIOPLAYER Error in media player what-" + i + " extra-" + i1);
+        MyLog.e(LOG_TAG, "AUDIOPLAYER Error in media player what-" + i + " extra-" + i1);
         this.mediaPlayer.stop();
         this.mediaPlayer.release();
         mediaPlayer.release();
@@ -161,14 +161,14 @@ public class AudioPlayer implements MediaPlayer.OnErrorListener{
         int result = audioManager.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL,
                 AudioManager.AUDIOFOCUS_GAIN);
         if (result ==  AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
-            Log.d(LOG_TAG, "audio focus granted");
+            MyLog.d(LOG_TAG, "audio focus granted");
         } else {
-            Log.d(LOG_TAG, "audio focus not granted");
+            MyLog.d(LOG_TAG, "audio focus not granted");
         }
     }
 
     public void releaseAudioFocus(){
         audioManager.abandonAudioFocus(null);
-        Log.d(LOG_TAG, "audio focus released");
+        MyLog.d(LOG_TAG, "audio focus released");
     }
 }

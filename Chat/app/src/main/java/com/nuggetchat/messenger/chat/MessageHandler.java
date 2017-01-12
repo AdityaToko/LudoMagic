@@ -1,11 +1,11 @@
 package com.nuggetchat.messenger.chat;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import org.json.JSONArray;
@@ -28,7 +28,7 @@ public class MessageHandler {
 
     public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
-        Log.e(LOG_TAG, "MessageHandler: " + socket + " " + "context " + context.getPackageCodePath());
+        MyLog.e(LOG_TAG, "MessageHandler: " + socket + " " + "context " + context.getPackageCodePath());
         this.context = context;
         nuggetInjector = NuggetInjector.getInstance();
         userId = SharedPreferenceUtility.getFacebookUserId(context);
@@ -36,7 +36,7 @@ public class MessageHandler {
         if("".equals(username)){
             username = WebRtcClient.getRandomString();
         }
-        Log.e(LOG_TAG, "MessageHandler: " + userId + " " + username);
+        MyLog.e(LOG_TAG, "MessageHandler: " + userId + " " + username);
     }
 
     public void addEventListener(EventListener eventListener) {
@@ -46,7 +46,7 @@ public class MessageHandler {
     public Emitter.Listener onInit = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onInit");
+            MyLog.i(LOG_TAG, "onInit");
             JSONObject user = new JSONObject();
             try {
                 user.put("userId", userId);
@@ -61,7 +61,7 @@ public class MessageHandler {
     public Emitter.Listener onInitSuccessful = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onInitSuccessful");
+            MyLog.i(LOG_TAG, "onInitSuccessful");
             socket.emit("message", "Init successful");
             try {
                 JSONObject successObj = (JSONObject) args[0];
@@ -72,7 +72,7 @@ public class MessageHandler {
                     stunUrlsBuilder.append(stunUrls.getString(i));
                     stunUrlsBuilder.append(",");
                 }
-                Log.i(LOG_TAG, stunUrlsBuilder.toString());
+                MyLog.i(LOG_TAG, stunUrlsBuilder.toString());
                 SharedPreferenceUtility.setIceServersUrls(stunUrlsBuilder.toString(), context);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -83,7 +83,7 @@ public class MessageHandler {
     public Emitter.Listener onPreCallHandshake = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onPreCallHandshake");
+            MyLog.i(LOG_TAG, "onPreCallHandshake");
             eventListener.onPreCallHandshake((JSONObject) args[0]);
         }
     };
@@ -91,7 +91,7 @@ public class MessageHandler {
     public Emitter.Listener onHandshakeComplete = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onHandshakeComplete");
+            MyLog.i(LOG_TAG, "onHandshakeComplete");
             eventListener.onHandshakeComplete((JSONObject) args[0]);
         }
     };
@@ -100,20 +100,20 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             final JSONObject requestObject = (JSONObject) args[0];
-            Log.i(LOG_TAG, "onCallRequested" + args[0].toString());
+            MyLog.i(LOG_TAG, "onCallRequested" + args[0].toString());
 
             try {
                 if (requestObject.getJSONObject("offer") != null) {
-                    Log.i(LOG_TAG, "onCallRequested if");
+                    MyLog.i(LOG_TAG, "onCallRequested if");
                     JSONObject offerObj = requestObject.getJSONObject("offer");
                     SessionDescription sdp = new SessionDescription(
                             SessionDescription.Type.fromCanonicalForm(offerObj.getString("type")),
                             offerObj.getString("sdp")
                     );
-                    Log.i(LOG_TAG, "onCallRequested to: " + requestObject.getString("to"));
+                    MyLog.i(LOG_TAG, "onCallRequested to: " + requestObject.getString("to"));
                     eventListener.onCallRequestOrAnswer(sdp);
                 } else {
-                    Log.w(LOG_TAG, "onCallRequested offer null");
+                    MyLog.w(LOG_TAG, "onCallRequested offer null");
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -124,9 +124,9 @@ public class MessageHandler {
     public Emitter.Listener onCallAccepted = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onCallAccepted");
+            MyLog.i(LOG_TAG, "onCallAccepted");
             if (nuggetInjector.isOngoingCall()) {
-                Log.w(LOG_TAG, "onCallAccepted Ignore other incoming calls");
+                MyLog.w(LOG_TAG, "onCallAccepted Ignore other incoming calls");
                 return;
             }
             JSONObject acceptObject = (JSONObject) args[0];
@@ -138,9 +138,9 @@ public class MessageHandler {
                             answerObj.getString("sdp")
                     );
                     eventListener.onCallRequestOrAnswer(sdp);
-                    Log.i(LOG_TAG, "onCallAccepted to:" + acceptObject.getString("to"));
+                    MyLog.i(LOG_TAG, "onCallAccepted to:" + acceptObject.getString("to"));
                 } else {
-                    Log.w(LOG_TAG, "onCallAccepted answer null");
+                    MyLog.w(LOG_TAG, "onCallAccepted answer null");
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -151,7 +151,7 @@ public class MessageHandler {
     public Emitter.Listener onCallRejected = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onCallRejected");
+            MyLog.i(LOG_TAG, "onCallRejected");
 
             eventListener.onCallRejected();
         }
@@ -160,26 +160,26 @@ public class MessageHandler {
     public Emitter.Listener onSocketError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onSocketError");
+            MyLog.i(LOG_TAG, "onSocketError");
         }
     };
 
     public Emitter.Listener onIceCandidates = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onIceCandidates");
+            MyLog.i(LOG_TAG, "onIceCandidates");
 
             try {
                 JSONObject iceCandidateObj = (JSONObject) args[0];
                 if (iceCandidateObj.get("candidate") != null) {
-                    Log.i(LOG_TAG, "onIceCandidates if ");
+                    MyLog.i(LOG_TAG, "onIceCandidates if ");
                     IceCandidate candidate = new IceCandidate(iceCandidateObj.getString("id"),
                             iceCandidateObj.getInt("label"),
                             iceCandidateObj.getString("candidate"));
                     eventListener.onFetchIceCandidates(candidate);
-                    Log.i(LOG_TAG, "onIceCandidates to:" + iceCandidateObj.getString("to"));
+                    MyLog.i(LOG_TAG, "onIceCandidates to:" + iceCandidateObj.getString("to"));
                 } else {
-                    Log.e(LOG_TAG, "onIceCandidates null" );
+                    MyLog.e(LOG_TAG, "onIceCandidates null" );
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -190,7 +190,7 @@ public class MessageHandler {
     public Emitter.Listener onGameLink = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onGameLink");
+            MyLog.i(LOG_TAG, "onGameLink");
             JSONObject gameLinkObject = (JSONObject) args[0];
 
             try {
@@ -198,7 +198,7 @@ public class MessageHandler {
                 if (gameLinkObject.getString("game_link") != null) {
                     eventListener.onGameLink(gameLinkObject.getString("game_link"));
                 } else {
-                    Log.w(LOG_TAG, "onGameLink game_link null");
+                    MyLog.w(LOG_TAG, "onGameLink game_link null");
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -209,7 +209,7 @@ public class MessageHandler {
     public Emitter.Listener onCallEnded = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onCallEnded");
+            MyLog.i(LOG_TAG, "onCallEnded");
             eventListener.onCallEnd();
         }
     };
@@ -217,7 +217,7 @@ public class MessageHandler {
     public Emitter.Listener onDisconnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onDisconnect");
+            MyLog.i(LOG_TAG, "onDisconnect");
             if (socket != null) {
                 socket.close();
                 socket = null;
@@ -228,7 +228,7 @@ public class MessageHandler {
     public Emitter.Listener onCallOngoing = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.i(LOG_TAG, "onDisconnect");
+            MyLog.i(LOG_TAG, "onDisconnect");
             eventListener.onCallOngoing();
         }
     };

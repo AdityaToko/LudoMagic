@@ -11,7 +11,6 @@ import android.os.Looper;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,6 +31,7 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
 import butterknife.BindView;
@@ -60,7 +60,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.i(LOG_TAG, "onCreate IncomingCallActivity");
+        MyLog.i(LOG_TAG, "onCreate IncomingCallActivity");
         mainHandler = new Handler(Looper.getMainLooper());
         handler = new Handler();
         Intent intent = getIntent();
@@ -76,7 +76,7 @@ public class IncomingCallActivity extends AppCompatActivity {
             isActivityForResult = true;
         }
 
-        Log.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
+        MyLog.e(LOG_TAG, "Type: " + type + " From: " + from + " To: " + to + " Token: " + token);
 
         fetchFriendNameAndPic(from);
 
@@ -113,7 +113,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                 rejectButtonClick();
             }
         }, 30000);
-        Log.i(LOG_TAG, "onResume IncomingCallActivit");
+        MyLog.i(LOG_TAG, "onResume IncomingCallActivit");
         IntentFilter intentFilter = new IntentFilter("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
         registerReceiver(broadcastReceiver, intentFilter);
     }
@@ -123,7 +123,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         String userFirebaseId = SharedPreferenceUtility.getFirebaseUid(IncomingCallActivity.this);
         String usersFriendUri = Conf.firebaseUserFriend(userFirebaseId, callerFacebookId);
         if (Utils.isNullOrEmpty(usersFriendUri)) {
-            Log.w(LOG_TAG, "No Caller facebook url");
+            MyLog.w(LOG_TAG, "No Caller facebook url");
             return;
         }
         FirebaseDatabase.getInstance().getReferenceFromUrl(usersFriendUri)
@@ -136,10 +136,10 @@ public class IncomingCallActivity extends AppCompatActivity {
                     if (friendInfo != null) {
                         friendName = friendInfo.getName();
                         if (Utils.isNullOrEmpty(friendName)) {
-                            Log.w(LOG_TAG, "Friend name not set " + friendName);
+                            MyLog.w(LOG_TAG, "Friend name not set " + friendName);
                         }
                     } else {
-                        Log.w(LOG_TAG, "Caller not in user friends");
+                        MyLog.w(LOG_TAG, "Caller not in user friends");
                     }
                     updateUIWithPicAndName(friendName, UserInfo.getUserPic(callerFacebookId));
                 }
@@ -153,7 +153,7 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     private void updateUIWithPicAndName(final String userName, final String callerPic) {
-        Log.i(LOG_TAG, "Updating name:" + userName + " pic:" + callerPic);
+        MyLog.i(LOG_TAG, "Updating name:" + userName + " pic:" + callerPic);
         if (mainHandler == null) {
             return;
         }
@@ -192,19 +192,19 @@ public class IncomingCallActivity extends AppCompatActivity {
     }
 
     private void triggerUserAction(boolean accepted) {
-        Log.i(LOG_TAG, "accepted or rejected, " + accepted);
+        MyLog.i(LOG_TAG, "accepted or rejected, " + accepted);
         audioPlayer.stopRingtone();
         if(!accepted){
             audioPlayer.releaseAudioFocus();
         }
         if (!isActivityForResult) {
-            Log.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
+            MyLog.i(LOG_TAG, "MessageHandler Trigger - Start game chat activity ");
             Intent startChatIntent = new Intent(this, GamesChatActivity.class);
             bundle.putBoolean(CALL_ACCEPTED, accepted);
             startChatIntent.putExtras(bundle);
             startActivity(startChatIntent);
         } else {
-            Log.i(LOG_TAG, "MessageHandler Trigger - Restart game chat activity ");
+            MyLog.i(LOG_TAG, "MessageHandler Trigger - Restart game chat activity ");
             Intent startChatIntent = new Intent();
             bundle.putBoolean(CALL_ACCEPTED, accepted);
             startChatIntent.putExtras(bundle);
@@ -218,7 +218,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         try {
             unregisterReceiver(broadcastReceiver);
         } catch (IllegalArgumentException e) {
-            Log.e(LOG_TAG, "Exception while unregistering");
+            MyLog.e(LOG_TAG, "Exception while unregistering");
         }
         super.onPause();
     }

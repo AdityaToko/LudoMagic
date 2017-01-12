@@ -4,10 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.utils.MyLog;
 
 import java.net.URISyntaxException;
 
@@ -36,16 +36,16 @@ public class ChatService extends Service {
     private final IBinder binder = new ChatBinder();
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e(LOG_TAG,"Inside onStartCommand");
+        MyLog.e(LOG_TAG,"Inside onStartCommand");
         try {
-            Log.e(LOG_TAG, "onStartCommand: inside try");
+            MyLog.e(LOG_TAG, "onStartCommand: inside try");
             socket = IO.socket(Conf.CHAT_WEBRTC_SERVER);
         } catch (URISyntaxException e) {
-            Log.e(LOG_TAG, "onStartCommand: inside catch");
-            Log.e(LOG_TAG, "Socket Uri Syntax exception: " + e.getMessage());
+            MyLog.e(LOG_TAG, "onStartCommand: inside catch");
+            MyLog.e(LOG_TAG, "Socket Uri Syntax exception: " + e.getMessage());
         }
         messageHandler = new MessageHandler(socket, this);
-        Log.e(LOG_TAG, "onStartCommand: registering events");
+        MyLog.e(LOG_TAG, "onStartCommand: registering events");
         socket.on(Socket.EVENT_CONNECT, messageHandler.onInit);
         socket.on("init_successful", messageHandler.onInitSuccessful);
         socket.on("pre_call_handshake", messageHandler.onPreCallHandshake);
@@ -53,7 +53,7 @@ public class ChatService extends Service {
         socket.on("call_requested", messageHandler.onCallRequested);
         socket.on(Socket.EVENT_DISCONNECT, messageHandler.onDisconnect);
         socket.connect();
-        Log.e(LOG_TAG, "onStartCommand: after socket connect" );
+        MyLog.e(LOG_TAG, "onStartCommand: after socket connect" );
         return START_NOT_STICKY;
     }
 
