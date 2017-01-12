@@ -172,7 +172,10 @@ public class WebRtcClient{
         if (rtcListener != null) {
             rtcListener.onRemoveLocalStream(localMediaStream);
         }
-
+        if( videoTrack != null){
+            videoTrack.dispose();
+        }
+        videoSource.stop();
         if (localMediaStream != null) {
             if (audioTrack != null) {
                 localMediaStream.removeTrack(audioTrack);
@@ -189,27 +192,11 @@ public class WebRtcClient{
             videoCapturer = null;
         }
 
-        isCameraUsebyApp();
-
         if (videoSource != null) {
             Log.i(LOG_TAG, "Video source null");
             videoSource = null;
         }
 
-    }
-
-    private boolean isCameraUsebyApp() {
-        Camera camera = null;
-        try {
-            camera = Camera.open(1);
-        } catch (RuntimeException e) {
-            return true;
-        } finally {
-            if (camera != null) {
-                camera.release();
-            }
-        }
-        return false;
     }
 
     // Cycle through likely device names for the camera and return the first
