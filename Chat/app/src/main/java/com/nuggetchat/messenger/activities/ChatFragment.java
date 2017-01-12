@@ -17,6 +17,8 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -191,7 +193,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         videoCallView.setKeepScreenOn(true);
         VideoRendererGui.setView(videoCallView, new Runnable() {
             @Override
-            public void run() {}
+            public void run() {
+                videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
         });
         remote = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, true);
@@ -417,7 +421,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             if (videoCallView.getVisibility() == View.INVISIBLE ){
                 videoCallView.setVisibility(View.VISIBLE);
             }
-            videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
     }
 
@@ -436,7 +439,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if ( videoCallView != null ){
             if (position == 0){
                 videoCallView.setVisibility(View.INVISIBLE);
-                videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             }
         }
 
