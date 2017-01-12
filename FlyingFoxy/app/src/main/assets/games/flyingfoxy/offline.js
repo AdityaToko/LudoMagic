@@ -1,5 +1,5 @@
 ﻿{
-	"version": 1483370322,
+	"version": 1484142930,
 	"fileList": [
 		"data.js",
 		"c2runtime.js",
@@ -68,12 +68,11 @@
 		"images/sprite16-sheet0.png",
 		"images/tiledbackground.png",
 		"images/sprite17-sheet0.png",
-		"images/sprite2-sheet0.png",
 		"images/sprite13-sheet0.png",
 		"images/soundbutton-sheet0.png",
 		"images/soundbutton-sheet1.png",
 		"images/creditsimage-sheet0.png",
-		"images/creditsbutton-sheet0.png",
+		"images/sprite2-sheet0.png",
 		"media/pickup_coin71.m4a",
 		"media/pickup_coin71.ogg",
 		"media/button.ogg",
