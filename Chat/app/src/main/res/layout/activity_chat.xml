@@ -15,7 +15,6 @@
             />
     </FrameLayout>
 
-
     <RelativeLayout
         android:id="@+id/multipayer_games_view"
         android:layout_width="match_parent"
@@ -38,20 +37,19 @@
 
             </LinearLayout>
         </HorizontalScrollView>
-
-        <TextView
-            android:id="@+id/text_play_with_friends"
-            android:layout_width="130dp"
-            android:layout_height="50dp"
-            android:layout_above="@id/horizontal_scroll"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="-30dp"
-            android:background="@drawable/play_with_friends"
-            android:gravity="center"
-            android:text="@string/play_with_friends"
-            android:textColor="@color/colorWhite" />
-
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/text_play_with_friends"
+        android:layout_width="130dp"
+        android:layout_height="20dp"
+        android:visibility="invisible"
+        android:layout_above="@id/multipayer_games_view"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/play_with_friends"
+        android:gravity="center"
+        android:text="@string/play_with_friends"
+        android:textColor="#544A63" />
 
  <!-- <ImageView
         android:id="@+id/start_call_button"
@@ -66,16 +64,18 @@
         android:id="@+id/end_call_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_above="@id/multipayer_games_view"
+        android:layout_above="@id/text_play_with_friends"
         android:layout_centerHorizontal="true"
         android:src="@drawable/end_call_button"
+        android:layout_marginBottom="3dp"
         android:visibility="invisible" />
 
     <ImageView
         android:id="@+id/end_busy_call_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_above="@id/multipayer_games_view"
+        android:layout_marginBottom="3dp"
+        android:layout_above="@id/text_play_with_friends"
         android:layout_centerHorizontal="true"
         android:src="@drawable/end_call_button"
         android:visibility="invisible" />

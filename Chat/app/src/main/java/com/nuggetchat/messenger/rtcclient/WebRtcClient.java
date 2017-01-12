@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
-import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -178,10 +177,24 @@ public class WebRtcClient{
         rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
-    private void releaseLocalMediaOnDestrory() {
+    public void releaseLocalMediaOnDestrory() {
+        Log.i(LOG_TAG, "Release camera");
         if (rtcListener != null) {
             rtcListener.onRemoveLocalStream(localMediaStream);
         }
+        Log.i(LOG_TAG, "Release camera 1");
+
+        if (videoTrack != null) {
+            videoTrack.dispose();
+        }
+
+        Log.i(LOG_TAG, "Release camera 2");
+
+        if (videoSource != null) {
+            videoSource.stop();
+        }
+
+        Log.i(LOG_TAG, "Release camera 3");
 
         if (localMediaStream != null) {
             if (audioTrack != null) {
@@ -190,36 +203,23 @@ public class WebRtcClient{
             if (videoTrack != null) {
                 localMediaStream.removeTrack(videoTrack);
             }
-            localMediaStream.dispose();
+            Log.i(LOG_TAG, "Release camera 3.1");
+            localMediaStream = null;
         }
+        Log.i(LOG_TAG, "Release camera 4");
 
         if (videoCapturer != null && !videoCapturer.isReleased()) {
             Log.i(LOG_TAG, "Video capturer dispose");
             videoCapturer.dispose();
             videoCapturer = null;
         }
-
-        isCameraUsebyApp();
+        Log.i(LOG_TAG, "Release camera 5");
 
         if (videoSource != null) {
             Log.i(LOG_TAG, "Video source null");
             videoSource = null;
         }
-
-    }
-
-    private boolean isCameraUsebyApp() {
-        Camera camera = null;
-        try {
-            camera = Camera.open(1);
-        } catch (RuntimeException e) {
-            return true;
-        } finally {
-            if (camera != null) {
-                camera.release();
-            }
-        }
-        return false;
+        Log.i(LOG_TAG, "Release camera 6");
     }
 
     // Cycle through likely device names for the camera and return the first
@@ -275,7 +275,11 @@ public class WebRtcClient{
     public void disposePeerConnnectionFactory(){
         Log.i(LOG_TAG, "disposePeerConnection");
 
-        releaseLocalMediaOnDestrory();
+        if (peer != null) {
+            Log.i(LOG_TAG, "peer reset connection");
+            peer.resetPeerConnection();
+        }
+
         if (factory != null) {
             factory.dispose();
             factory = null;
