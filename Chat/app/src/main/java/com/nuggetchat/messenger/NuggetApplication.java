@@ -2,13 +2,13 @@ package com.nuggetchat.messenger;
 
 import android.media.AudioManager;
 import android.support.multidex.MultiDexApplication;
-import android.util.Log;
 
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
+import com.nuggetchat.messenger.utils.MyLog;
 
 public class NuggetApplication extends MultiDexApplication {
     private static boolean initialized = false;
@@ -20,7 +20,7 @@ public class NuggetApplication extends MultiDexApplication {
 
         handleUncaughtExceptions();
         if (initialized) {
-            Log.w(LOG_TAG, "Activity initialized again.");
+            MyLog.w(LOG_TAG, "Activity initialized again.");
             return;
         }
 
@@ -39,7 +39,7 @@ public class NuggetApplication extends MultiDexApplication {
 
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
-                Log.e(LOG_TAG, "Uncaught exception", ex);
+                MyLog.e(LOG_TAG, "Uncaught exception", ex);
                 AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
                 audioManager.setMode(AudioManager.MODE_NORMAL);
                 audioManager.setSpeakerphoneOn(false);
