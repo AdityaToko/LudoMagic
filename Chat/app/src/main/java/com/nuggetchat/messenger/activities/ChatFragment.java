@@ -31,7 +31,6 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -100,6 +99,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     ImageView popularFriend2;
     @BindView(R.id.multipayer_games_view)
     RelativeLayout multiplayerGamesView;
+    @BindView(R.id.text_play_with_friends)
+    TextView textPlayWithFriends;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     @BindView(R.id.end_busy_call_button) /* package-local */ ImageView endBusyCallBtn;
     private GLSurfaceView videoCallView;
@@ -526,6 +527,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
+                textPlayWithFriends.setVisibility(View.INVISIBLE);
             }
         });
         if (webRtcClient != null) {
@@ -674,6 +676,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             @Override
             public void run() {
                 multiplayerGamesView.setVisibility(View.VISIBLE);
+                textPlayWithFriends.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -684,6 +687,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             public void run() {
                 endCall.setVisibility(View.INVISIBLE);
                 multiplayerGamesView.setVisibility(View.INVISIBLE);
+                textPlayWithFriends.setVisibility(View.INVISIBLE);
                 endBusyCallBtn.setVisibility(View.INVISIBLE);
                 audioPlayer.stopRingtone();
                 Log.d(LOG_TAG, "Show Friends Add Clusters");
