@@ -191,9 +191,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         videoCallView.setKeepScreenOn(true);
         VideoRendererGui.setView(videoCallView, new Runnable() {
             @Override
-            public void run() {
-
-            }
+            public void run() {}
         });
         remote = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, true);
@@ -290,18 +288,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 }
             }
         });
-    }
-
-    private void destroyVideoViews() {
-//        if (localRender != null) {
-//            localRender.release();
-//        }
-//        if (remoteRender != null) {
-//            remoteRender.release();
-//        }
-//        if (eglBase != null) {
-//            eglBase.release();
-//        }
     }
 
     @OnClick(R.id.add_friends_to_chat)
@@ -426,24 +412,34 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onShowFragment() {
         Log.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
         if (videoCallView != null) {
-            videoCallView.setVisibility(View.VISIBLE);
+            Log.d(LOG_TAG, "ChatFragment shown... show local stream");
+            webRtcClient.restartVideoSource();
+            if (videoCallView.getVisibility() == View.INVISIBLE ){
+                videoCallView.setVisibility(View.VISIBLE);
+            }
+            videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
     }
 
     @Override
     public void onHideFragment() {
         Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
+        if (videoCallView != null) {
+            Log.d(LOG_TAG, "ChatFragment hidden... hide local stream");
+            webRtcClient.stopVideoSource();
+        }
     }
 
     @Override
-    public void onScrollFragment(int position) {
-        if (videoCallView != null) {
-            if (position == 0) {
-                videoCallView.setVisibility(View.GONE);
-            } else {
-                videoCallView.setVisibility(View.VISIBLE);
+    public void onScrollFragment(int position, int postionOffsetPixels) {
+        Log.d(LOG_TAG, "onScrollFragment: Chat Fragment " + position);
+        if ( videoCallView != null ){
+            if (position == 0){
+                videoCallView.setVisibility(View.INVISIBLE);
+                videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             }
         }
+
     }
 
     private void initWebRtc(String myUserId) {
@@ -472,6 +468,19 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             updateVideoViews();
         } else {
             Log.w(LOG_TAG, "Video tracks empty");
+        }
+    }
+
+    @Override
+    public void onLocalStreamFirstFrame() {
+        if (videoCallView.getVisibility() == View.INVISIBLE) {
+            Log.i(LOG_TAG, "Show video call view");
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    videoCallView.setVisibility(View.VISIBLE);
+                }
+            });
         }
     }
 
@@ -538,11 +547,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "onResume");
+        Log.i(LOG_TAG, "onResume" + (isAdded() && isVisible() && getUserVisibleHint()));
         videoCallView.onResume();
         if (webRtcClient != null) {
-            webRtcClient.onResume();
+            if (isAdded() && isVisible() && getUserVisibleHint()) {
+                webRtcClient.onResume();
+            } else {
+                webRtcClient.stopVideoSource();
+            }
         }
+
         if (nuggetInjector.isOngoingCall() || nuggetInjector.isInitiator()) {
             showEndCallBtn();
         }
@@ -569,7 +583,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     @Override
     public void onDestroyView() {
         Log.i(LOG_TAG, "onDestoryView");
-        destroyVideoViews();
         resetAudioManager();
         handler.removeCallbacksAndMessages(null);
         super.onDestroyView();
