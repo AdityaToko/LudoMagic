@@ -502,15 +502,15 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             return;
         }
         ViewUtils.setWindowImmersive(gamesChatActivity.getWindow(), mainHandler);
+        hideFriendsAddCluster();
+        nuggetInjector.setOngoingCall(true);
+        setLoudSpeakerOn();
+        handler.removeCallbacksAndMessages(null);
         if (!remoteStream.videoTracks.isEmpty()) {
             Log.i(LOG_TAG, "remote stream not empty");
-            nuggetInjector.setOngoingCall(true);
             remoteVideoRender = new VideoRenderer(remote);
             remoteStream.videoTracks.get(0).addRenderer(remoteVideoRender);
             updateVideoViews();
-            setLoudSpeakerOn();
-            hideFriendsAddCluster();
-            handler.removeCallbacksAndMessages(null);
         } else {
             Log.w(LOG_TAG, "Remote video tracks empty");
         }
