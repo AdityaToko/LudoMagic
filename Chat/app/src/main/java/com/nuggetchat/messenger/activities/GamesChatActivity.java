@@ -210,7 +210,7 @@ public class GamesChatActivity extends AppCompatActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 Log.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
                 FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(1);
-                fragmentShown.onScrollFragment(position);
+                fragmentShown.onScrollFragment(position, positionOffsetPixels);
             }
 
             @Override
@@ -227,7 +227,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.d(LOG_TAG, "onPageScrollStateChanged called");
+                Log.d(LOG_TAG, "onPageScrollStateChanged called" + state);
             }
         };
         viewPager.addOnPageChangeListener(onPageChangeListener);

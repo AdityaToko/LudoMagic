@@ -453,6 +453,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (videoCallView != null) {
             Log.d(LOG_TAG, "ChatFragment shown... show local stream");
             webRtcClient.restartVideoSource();
+            if (videoCallView.getVisibility() == View.INVISIBLE ){
+                videoCallView.setVisibility(View.VISIBLE);
+            }
             videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
     }
@@ -462,15 +465,20 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         Log.d(LOG_TAG, "onHideFragment: Chat Fragment ");
         if (videoCallView != null) {
             Log.d(LOG_TAG, "ChatFragment hidden... hide local stream");
-            videoCallView.setVisibility(View.INVISIBLE);
-            videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             webRtcClient.stopVideoSource();
         }
     }
 
     @Override
-    public void onScrollFragment(int position) {
+    public void onScrollFragment(int position, int postionOffsetPixels) {
         Log.d(LOG_TAG, "onScrollFragment: Chat Fragment " + position);
+        if ( videoCallView != null ){
+            if (position == 0){
+                videoCallView.setVisibility(View.INVISIBLE);
+                videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
+        }
+
     }
 
     private void initWebRtc(String myUserId) {
