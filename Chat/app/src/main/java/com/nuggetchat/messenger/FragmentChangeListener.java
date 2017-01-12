@@ -5,5 +5,5 @@ public interface FragmentChangeListener {
 
     void onHideFragment();
 
-    void onScrollFragment(int position);
+    void onScrollFragment(int position, int offset);
 }

@@ -7,9 +7,11 @@ public interface RtcListener {
 
         void onLocalStream(MediaStream localStream);
 
+        void onLocalStreamFirstFrame();
+
         void onRemoveLocalStream(MediaStream localStream);
 
         void onAddRemoteStream(MediaStream remoteStream);
 
         void onRemoveRemoteStream(MediaStream remoteStream);
-    }
+}

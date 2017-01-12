@@ -269,7 +269,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     }
 
     @Override
-    public void onScrollFragment(int position) {
+    public void onScrollFragment(int position, int offset) {
 
     }
 }
