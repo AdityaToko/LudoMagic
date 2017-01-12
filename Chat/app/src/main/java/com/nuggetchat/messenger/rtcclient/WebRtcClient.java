@@ -124,15 +124,25 @@ public class WebRtcClient{
 
     public void onResume() {
         Log.i(LOG_TAG, "onResume");
-        if (videoSource != null) {
-            videoSource.restart();
-        }
+        restartVideoSource();
     }
 
     public void onPause() {
         Log.i(LOG_TAG, "onPause");
+        stopVideoSource();
+    }
+
+    public void stopVideoSource() {
         if (videoSource != null) {
+            Log.e(LOG_TAG, "Stopping video source.......");
             videoSource.stop();
+        }
+    }
+
+    public void restartVideoSource() {
+        if (videoSource != null) {
+            Log.e(LOG_TAG, "Restarting video source.......");
+            videoSource.restart();
         }
     }
 
@@ -252,6 +262,7 @@ public class WebRtcClient{
                 @Override
                 public void onFirstFrameAvailable() {
                     Log.i(LOG_TAG, "onFirstFrameAvailable");
+                    rtcListener.onLocalStreamFirstFrame();
                 }
 
                 @Override
