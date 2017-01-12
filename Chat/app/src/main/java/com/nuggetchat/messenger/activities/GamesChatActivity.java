@@ -203,6 +203,7 @@ public class GamesChatActivity extends AppCompatActivity {
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
+        viewPager.requestTransparentRegion(viewPager);
         ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
             int currentPosition = 0;
             @Override
