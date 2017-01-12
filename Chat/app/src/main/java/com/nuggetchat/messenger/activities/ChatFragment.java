@@ -600,15 +600,32 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             }
             Log.i(LOG_TAG, "MessageHandler onDestroy" + nuggetInjector.isOngoingCall());
             undbindService();
+            webRtcClient.releaseLocalMediaOnDestrory();
             webRtcClient.disposePeerConnnectionFactory();
         }
-        VideoRendererGui.remove(local);
-        VideoRendererGui.remove(remote);
-        VideoRendererGui.dispose();
-        nuggetInjector.setInitiator(false);
-        nuggetInjector.setOngoingCall(false);
-        audioPlayer.stopRingtone();
+        releaseVideoRendererGui();
+        releaseAudioAndInjector();
         super.onDestroy();
+    }
+
+    private void releaseAudioAndInjector() {
+        if (nuggetInjector != null) {
+            nuggetInjector.setInitiator(false);
+            nuggetInjector.setOngoingCall(false);
+        }
+        if (audioManager != null) {
+            audioPlayer.stopRingtone();
+        }
+    }
+
+    private void releaseVideoRendererGui() {
+        if (local != null) {
+            VideoRendererGui.remove(local);
+        }
+        if (remote != null) {
+            VideoRendererGui.remove(remote);
+        }
+        VideoRendererGui.dispose();
     }
 
     private void sendPreCallHandshake(String facebookId) {
