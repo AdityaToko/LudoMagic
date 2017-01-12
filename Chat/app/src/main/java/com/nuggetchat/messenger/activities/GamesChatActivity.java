@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -114,6 +116,17 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+
+                tabView = (LinearLayout) gamesChatTabLayout.getTabAt(position).getCustomView();
+                textView = (TextView) tabView.findViewById(R.id.tab_item_text);
+                imageView = (ImageView) tabView.findViewById(R.id.tab_item_image);
+                if (position == 0) {
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
+                } else {
+                    tabView.setBackgroundColor(Color.parseColor("#F7F3E2"));
+                }
+
             }
 
             @Override
@@ -190,13 +203,14 @@ public class GamesChatActivity extends AppCompatActivity {
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
+        viewPager.requestTransparentRegion(viewPager);
         ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
             int currentPosition = 0;
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 Log.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
                 FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(1);
-                fragmentShown.onScrollFragment(position);
+                fragmentShown.onScrollFragment(position, positionOffsetPixels);
             }
 
             @Override
@@ -213,7 +227,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.d(LOG_TAG, "onPageScrollStateChanged called");
+                Log.d(LOG_TAG, "onPageScrollStateChanged called" + state);
             }
         };
         viewPager.addOnPageChangeListener(onPageChangeListener);
@@ -290,5 +304,20 @@ public class GamesChatActivity extends AppCompatActivity {
                 | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         return intent;
+    }
+
+    /*package local */void launchGameActivity(String gameUrl, boolean isPortrait,
+                                              boolean isMultiplayer) {
+        Intent gameIntent;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+            gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
+        } else {
+            gameIntent = new Intent(this, GameWebViewActivity.class);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, gameUrl);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, isMultiplayer);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, isPortrait);
+        }
+        startActivity(gameIntent);
     }
 }

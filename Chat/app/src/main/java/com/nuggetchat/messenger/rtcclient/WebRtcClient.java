@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
@@ -13,7 +14,6 @@ import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
-import org.webrtc.VideoCapturer;
 import org.webrtc.VideoCapturerAndroid;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
@@ -21,6 +21,7 @@ import org.webrtc.VideoTrack;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.socket.client.Socket;
 
@@ -29,9 +30,10 @@ public class WebRtcClient{
     private VideoSource videoSource;
     private PeerConnectionParameters params;
     private String currentUserId;
-    private boolean initiator = false;
     private NuggetInjector nuggetInjector;
-    public List<IceCandidate> queuedRemoteCandidates;
+    private boolean isQueueDrainedOnce;
+    private AtomicBoolean queueLock;
+    public List<IceCandidate> queuedRemoteCandidates = null;
     public List<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private String userId1;
     private String userId2;
@@ -47,8 +49,10 @@ public class WebRtcClient{
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
+        Log.i(LOG_TAG, "Init");
         rtcListener = listener;
         this.params = params;
+        isQueueDrainedOnce = false;
         PeerConnectionFactory.initializeAndroidGlobals(context, true /* initializedAudio */,
                 true /* initializedVideo */, params.videoCodecHwAcceleration/*, mEGLcontext*/);
         factory = new PeerConnectionFactory();
@@ -58,13 +62,14 @@ public class WebRtcClient{
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         constraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
         constraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
+        queueLock = new AtomicBoolean(false);
         addIceServers(iceServerUrls);
         setCameraAndUpdateVideoViews();
     }
 
 
     public void endCallAndRemoveRemoteStream() {
-        Log.i(LOG_TAG, "End call - Incoming");
+        Log.i(LOG_TAG, "End call");
         nuggetInjector.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
@@ -73,18 +78,24 @@ public class WebRtcClient{
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null); // will also update video views
         }
+        queuedRemoteCandidates = null;
+        isQueueDrainedOnce = false;
+        queueLock.set(false);
     }
 
     public Peer addPeer(Socket socket) {
-        queuedRemoteCandidates = new LinkedList<>();
+        Log.i(LOG_TAG, "Add peer");
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
+        queuedRemoteCandidates = new LinkedList<>();
+        isQueueDrainedOnce = false;
+        queueLock.set(false);
         return newPeer;
     }
 
     public void addIceServers(String iceServersUrl){
-        Log.e(LOG_TAG, "Adding Ice Service Urls: " + iceServersUrl);
+        Log.e(LOG_TAG, "Add Ice Service Urls: " + iceServersUrl);
         if(iceServersUrl != null && !"".equals(iceServersUrl)){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
@@ -111,14 +122,26 @@ public class WebRtcClient{
         return peer;
     }
 
+    public void onResume() {
+        Log.i(LOG_TAG, "onResume");
+        restartVideoSource();
+    }
+
     public void onPause() {
+        Log.i(LOG_TAG, "onPause");
+        stopVideoSource();
+    }
+
+    public void stopVideoSource() {
         if (videoSource != null) {
+            Log.e(LOG_TAG, "Stopping video source.......");
             videoSource.stop();
         }
     }
 
-    public void onResume() {
+    public void restartVideoSource() {
         if (videoSource != null) {
+            Log.e(LOG_TAG, "Restarting video source.......");
             videoSource.restart();
         }
     }
@@ -132,7 +155,10 @@ public class WebRtcClient{
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(params.videoWidth)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(params.videoFps)));
         videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(params.videoFps)));
-        videoCapturer = getVideoCapturer();
+        videoCapturer = getNewVideoCapturer();
+        if (videoCapturer == null) {
+            return;
+        }
         if(videoSource == null){
             videoSource = factory.createVideoSource(videoCapturer, videoConstraints);
         }
@@ -151,63 +177,109 @@ public class WebRtcClient{
         rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
+    public void releaseLocalMediaOnDestrory() {
+        Log.i(LOG_TAG, "Release camera");
+        if (rtcListener != null) {
+            rtcListener.onRemoveLocalStream(localMediaStream);
+        }
+        Log.i(LOG_TAG, "Release camera 1");
+
+        if (videoTrack != null) {
+            videoTrack.dispose();
+        }
+
+        Log.i(LOG_TAG, "Release camera 2");
+
+        if (videoSource != null) {
+            videoSource.stop();
+        }
+
+        Log.i(LOG_TAG, "Release camera 3");
+
+        if (localMediaStream != null) {
+            if (audioTrack != null) {
+                localMediaStream.removeTrack(audioTrack);
+            }
+            if (videoTrack != null) {
+                localMediaStream.removeTrack(videoTrack);
+            }
+            Log.i(LOG_TAG, "Release camera 3.1");
+            localMediaStream = null;
+        }
+        Log.i(LOG_TAG, "Release camera 4");
+
+        if (videoCapturer != null && !videoCapturer.isReleased()) {
+            Log.i(LOG_TAG, "Video capturer dispose");
+            videoCapturer.dispose();
+            videoCapturer = null;
+        }
+        Log.i(LOG_TAG, "Release camera 5");
+
+        if (videoSource != null) {
+            Log.i(LOG_TAG, "Video source null");
+            videoSource = null;
+        }
+        Log.i(LOG_TAG, "Release camera 6");
+    }
+
     // Cycle through likely device names for the camera and return the first
     // capturer that works, or crash if none do.
-    private VideoCapturerAndroid getVideoCapturer() {
-        String[] cameraFacing = { "front", "back" };
-//        int[] cameraIndex = { 0, 1 };
-        int[] cameraIndex = { 1 };
-//        int[] cameraOrientation = { 0, 90, 180, 270 };
-        int[] cameraOrientation = { 270 };
-        VideoCapturerAndroid.CameraEventsHandler handler = new VideoCapturerAndroid.CameraEventsHandler() {
-            @Override
-            public void onCameraError(String s) {
-                Log.e(LOG_TAG, "onCameraError: " + s );
-                if(videoCapturer != null){
-                    videoCapturer.printStackTrace();
-                }
-            }
+    private VideoCapturerAndroid getNewVideoCapturer() {
+        String name = "Camera " + 1 + ", Facing " + "front" + ", Orientation " + 270;
+        VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name,  getNewCameraEventsHandler());
+        if (capturer != null) {
+            Log.i(LOG_TAG, "Using camera: " + name);
+            return capturer;
+        }
+        Log.e(LOG_TAG, "Camera not found: " + name);
+        return null;
+    }
 
-            @Override
-            public void onCameraFreezed(String s) {
-                Log.e(LOG_TAG, "onCameraFreezed: " + s );
-                if(videoCapturer != null){
-                    videoCapturer.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onCameraOpening(int i) {
-                Log.d(LOG_TAG, "onCameraOpening: " + i);
-            }
-
-            @Override
-            public void onFirstFrameAvailable() {
-                
-            }
-
-            @Override
-            public void onCameraClosed() {
-                Log.d(LOG_TAG, "onCameraClosed called ");
-            }
-        };
-        for (String facing : cameraFacing) {
-            for (int index : cameraIndex) {
-                for (int orientation : cameraOrientation) {
-                    String name = "Camera " + index + ", Facing " + facing +
-                            ", Orientation " + orientation;
-                    VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name, handler);
-                    if (capturer != null) {
-                        Log.i(LOG_TAG, "Using camera: " + name);
-                        return capturer;
+    @NonNull
+    private VideoCapturerAndroid.CameraEventsHandler getNewCameraEventsHandler() {
+        return new VideoCapturerAndroid.CameraEventsHandler() {
+                @Override
+                public void onCameraError(String s) {
+                    Log.e(LOG_TAG, "onCameraError: " + s );
+                    if(videoCapturer != null){
+                        videoCapturer.printStackTrace();
                     }
                 }
-            }
-        }
-        throw new IllegalStateException("Failed to open capturer");
+
+                @Override
+                public void onCameraFreezed(String s) {
+                    Log.e(LOG_TAG, "onCameraFreezed: " + s );
+                    if(videoCapturer != null){
+                        videoCapturer.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCameraOpening(int i) {
+                    Log.i(LOG_TAG, "onCameraOpening: " + i);
+                }
+
+                @Override
+                public void onFirstFrameAvailable() {
+                    Log.i(LOG_TAG, "onFirstFrameAvailable");
+                    rtcListener.onLocalStreamFirstFrame();
+                }
+
+                @Override
+                public void onCameraClosed() {
+                    Log.i(LOG_TAG, "onCameraClosed");
+                }
+            };
     }
 
     public void disposePeerConnnectionFactory(){
+        Log.i(LOG_TAG, "disposePeerConnection");
+
+        if (peer != null) {
+            Log.i(LOG_TAG, "peer reset connection");
+            peer.resetPeerConnection();
+        }
+
         if (factory != null) {
             factory.dispose();
             factory = null;
@@ -231,5 +303,76 @@ public class WebRtcClient{
             sb.append(c);
         }
         return sb.toString();
+    }
+
+    /*package local*/ void lockAndDrainRemoteCandidates(PeerConnection peerConnection, boolean retry) {
+        if (!queueLock.getAndSet(true)) {
+            Log.i(LOG_TAG, "Got lock for draining. retry:" + retry);
+            try {
+                drainRemoteCandidates(peerConnection);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Draining failed", e);
+            } finally {
+                queueLock.set(false);
+            }
+        } else if (!retry) {
+            Log.i(LOG_TAG, "Retrying for lock draining");
+            try {
+                Thread.sleep(200);
+                lockAndDrainRemoteCandidates(peerConnection, true /*retry*/);
+            } catch (InterruptedException e) {
+                Log.e(LOG_TAG, "Sleep & drain interrupted ", e);
+            }
+        } else {
+            Log.e(LOG_TAG, "Retry for lock failed draining");
+        }
+    }
+
+    private void drainRemoteCandidates(PeerConnection peerConnection) {
+        Log.i(LOG_TAG, "Drain remote candidate");
+        if (queuedRemoteCandidates == null) {
+            Log.w(LOG_TAG, "Queue null");
+            return;
+        }
+        if (peerConnection == null) {
+            Log.w(LOG_TAG, "Peer connection null");
+            return;
+        }
+        for (IceCandidate candidate : queuedRemoteCandidates) {
+            peerConnection.addIceCandidate(candidate);
+        }
+        queuedRemoteCandidates = null;
+        isQueueDrainedOnce = true;
+    }
+
+    public boolean lockAndQueueRemoteCandidates(IceCandidate candidate) {
+        boolean isQueued = false;
+        if (!queueLock.getAndSet(true)){
+            Log.i(LOG_TAG, "Got lock for queuing");
+            isQueued = queueRemoteCandidates(candidate);
+            queueLock.set(false);
+        }
+        Log.i(LOG_TAG, "Tried lock for queuing queued:" + isQueued );
+        return isQueued;
+    }
+
+    private boolean queueRemoteCandidates(IceCandidate candidate) {
+        Log.i(LOG_TAG, "Adding remote candidate to queue");
+        if (!isQueueDrainedOnce && queuedRemoteCandidates != null) {
+            queuedRemoteCandidates.add(candidate);
+            return true;
+        }
+        return false;
+    }
+
+    public void addIceCandidateToPeerConnection(IceCandidate candidate) {
+        if ( peer == null) {
+            return;
+        }
+        PeerConnection peerConnection = peer.getPeerConnection();
+        if (peerConnection == null) {
+            return;
+        }
+        peerConnection.addIceCandidate(candidate);
     }
 }
