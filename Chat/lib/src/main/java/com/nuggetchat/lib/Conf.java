@@ -3,7 +3,7 @@ package com.nuggetchat.lib;
 import com.nuggetchat.lib.common.Utils;
 
 public final class Conf {
-    public static final String CHAT_SERVER_HOST = "http://192.168.0.119:8080/";
+    public static final String CHAT_SERVER_HOST = "https://server.nuggetchat.com/";
     public static final String GET_FRIENDS_API_URL = CHAT_SERVER_HOST + "getFriends";
 
     private static final String FIREBASE_DOMAIN_URI = "https://nuggetplay-ceaaf.firebaseio.com/";
