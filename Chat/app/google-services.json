@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1089559694082:android:1ec2762abe0bd625",
         "android_client_info": {
-          "package_name": "com.nuggetchat.messenger"
+          "package_name": "com.nuggetmessenger.games"
         }
       },
       "oauth_client": [
@@ -41,7 +41,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1089559694082:android:bf3d2e39fe3dad26",
         "android_client_info": {
-          "package_name": "com.nuggetchat.messenger.debug"
+          "package_name": "com.nuggetmessenger.games.debug"
         }
       },
       "oauth_client": [

@@ -27,6 +27,7 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import java.util.ArrayList;
 
@@ -222,7 +223,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                                     Intent intent = new Intent(Intent.ACTION_SEND);
                                     intent.setPackage("com.facebook.orca");
                                     intent.setType("text/plain");
-                                    intent.putExtra(Intent.EXTRA_TEXT, "Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http://bit.ly/2iTz71P");
+                                    intent.putExtra(Intent.EXTRA_TEXT, ViewUtils.getInviteBody());
 
                                     try {
                                         startActivity(intent);

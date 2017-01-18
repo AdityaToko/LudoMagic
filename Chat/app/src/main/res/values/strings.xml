@@ -22,7 +22,6 @@
     <string name="unlock_games_dialog_message">By adding more friends you\'ve unlocked some new games. Try them out</string>
     <string name="add_friends_dialog_title">Add friends to unlock these games!</string>
     <string name="add_friends_dialog_message">Would you like to invite some friends now?</string>
-    <string name="send_friends_message">Hey! Found this app where we can play multiplayer games while voice-calling! Install it so we can play: http:\/\/bit.ly\/2iTz71P</string>
     <string name="fb_messenger_not_found">You do not have Facebook Messenger installed</string>
     <string name="facebook_messenger_not_found">You do not have Facebook Messenger installed</string>
 </resources>
