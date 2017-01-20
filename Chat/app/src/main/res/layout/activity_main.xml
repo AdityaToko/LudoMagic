@@ -2,60 +2,70 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
+    android:background="@color/colorWhite"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingTop="0dp"
     tools:context="com.nuggetchat.messenger.activities.MainActivity">
 
     <RelativeLayout
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    <ImageView
-        android:id="@+id/nugget_icon"
-        android:layout_marginTop="50dp"
-        android:layout_width="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/game_login_icon" />
+        android:layout_gravity="center_horizontal">
 
-    <ImageView
-        android:id="@+id/nugget_app_name_text"
-        android:layout_width="100dp"
-        android:layout_height="42dp"
-        android:layout_below="@id/nugget_icon"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/nugget_games_icon" />
+        <VideoView
+            android:id="@+id/nugget_login_anim"
+            android:layout_width="190dp"
+            android:layout_height="250dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"/>
 
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/login_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/nugget_app_name_text"
-        android:layout_marginTop="30dp" />
+        <FrameLayout
+            android:id="@+id/video_placeholder"
+            android:layout_width="190dp"
+            android:layout_height="250dp"
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/white"/>
 
-    <TextView
-        android:id="@+id/login_page_text"
-        android:layout_below="@id/login_button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:gravity="center"
-        android:text="@string/play_50_games_n_free_video_calls_multiplayer_text"
-        android:lineSpacingExtra="3dp"
-        android:layout_width="185dp"
-        android:layout_height="wrap_content" />
+        <ImageView
+            android:id="@+id/nugget_app_name_text"
+            android:layout_width="100dp"
+            android:layout_height="42dp"
+            android:layout_below="@id/nugget_login_anim"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/nugget_games_icon" />
 
-    <ProgressBar
-        android:id="@+id/login_progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="invisible" />
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/nugget_app_name_text"
+            android:layout_marginTop="30dp" />
+
+        <TextView
+            android:id="@+id/login_page_text"
+            android:layout_below="@id/login_button"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:text="@string/play_50_games_n_free_video_calls_multiplayer_text"
+            android:lineSpacingExtra="3dp"
+            android:layout_width="185dp"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            android:id="@+id/login_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="invisible" />
+
     </RelativeLayout>
 
     <TextView

@@ -1,6 +1,10 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,7 +12,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.VideoView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -35,6 +43,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -47,9 +56,15 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final double VIDEO_ASPECT_RATIO = 0.72;
     LoginButton loginButton;
     CallbackManager callbackManager;
     Handler mainHandler;
+    VideoView nuggetLoginAnim;
+    private NuggetInjector nuggetInjector;
+    private Uri videoPath;
+    @BindView(R.id.video_placeholder)
+    FrameLayout videoPlaceholder;
 
     @BindView(R.id.login_progress_bar) /* package-local */ ProgressBar loginProgressBar;
 
@@ -80,11 +95,16 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        nuggetInjector = NuggetInjector.getInstance();
         mainHandler = new Handler(Looper.getMainLooper());
+
+        nuggetLoginAnim = (VideoView) findViewById(R.id.nugget_login_anim);
+        videoPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.logo_anim);
+//        setVideoPlayerDimension();
+
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("public_profile", "email", "user_friends");
-
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -104,6 +124,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        nuggetLoginAnim.setVideoURI(videoPath);
+        nuggetLoginAnim.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+                Log.e(LOG_TAG, "Error with the splash video player. Error code::" + extra);
+                // This signifies that error is not handled, so if false returned then
+                // onCompletionListener is called.
+                return false;
+            }
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            nuggetLoginAnim.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
+                    if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                        // video started; hide the placeholder.
+                        videoPlaceholder.setVisibility(View.GONE);
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        } else {
+            videoPlaceholder.setVisibility(View.GONE);
+        }
+        nuggetLoginAnim.start();
+
+    }
+
+    
 
     private void loginToFirebase(final LoginResult loginResult) {
         loginProgressBar.setVisibility(View.VISIBLE);
@@ -154,6 +209,25 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         firebaseRef.setValue(firebaseId);
+    }
+
+    private void setVideoPlayerDimension() {
+        // Adjust the size of the video
+        // so it fits on the screen
+        int screenWidth = nuggetInjector.getScreenLandscapeWidth();
+        int screenHeight = nuggetInjector.getScreenLandscapeHeight();
+        double screenAspectRatio = (double) screenHeight / (double) screenWidth;
+        ViewGroup.LayoutParams layoutParams = nuggetLoginAnim.getLayoutParams();
+
+        if (VIDEO_ASPECT_RATIO < screenAspectRatio) {
+            layoutParams.width = screenWidth;
+            layoutParams.height = (int) (screenWidth * VIDEO_ASPECT_RATIO);
+
+        } else {
+            layoutParams.height = screenHeight;
+            layoutParams.width = (int) (screenHeight / VIDEO_ASPECT_RATIO);
+        }
+        nuggetLoginAnim.setLayoutParams(layoutParams);
     }
 
     private void saveFacebookIdAndStartNextActivity() {
