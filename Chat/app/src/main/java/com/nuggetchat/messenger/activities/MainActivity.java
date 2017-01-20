@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -74,9 +75,10 @@ public class MainActivity extends AppCompatActivity {
     protected AlphaAnimation fadeInFBButton = new AlphaAnimation(0.0f , 1.0f ) ;
 
     private boolean restartAnimOnResume = true;
+    private Button fbOverlayButton;
 
     @BindView(R.id.video_placeholder)  FrameLayout videoPlaceholder;
-
+    @BindView(R.id.login_anim_overlay)  ImageView loginAnimOverlay;
     @BindView(R.id.nugget_line) TextView nuggetLine;
     @BindView(R.id.login_page_text1) TextView loginPageText1;
     @BindView(R.id.login_page_text2) TextView loginPageText2;
@@ -124,10 +126,19 @@ public class MainActivity extends AppCompatActivity {
         nuggetLoginAnim = (VideoView) findViewById(R.id.nugget_login_anim);
         videoPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.logo_anim);
 
+        fbOverlayButton = (Button) findViewById(R.id.fb_overlay_button);
+        fbOverlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                restartAnimOnResume = false;
+                loginAnimOverlay.setVisibility(View.VISIBLE);
+                loginButton.performClick();
+            }
+        });
+
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("public_profile", "email", "user_friends");
-        
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {

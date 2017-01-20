@@ -31,6 +31,15 @@
             android:layout_centerHorizontal="true"
             android:background="@android:color/white"/>
 
+        <ImageView
+            android:id="@+id/login_anim_overlay"
+            android:layout_width="190dp"
+            android:layout_height="250dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"
+            android:background = "@drawable/login_anim_end"
+            android:visibility="invisible"/>
+
         <TextView
             android:id="@+id/nugget_line"
             android:layout_width="wrap_content"
@@ -59,7 +68,20 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="50dp"
-        />
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/fb_overlay_button"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:background="#416BC1"
+        android:onClick="onClick"
+        android:text="Sign Up with FaceBook"
+        android:textColor="#ffffff"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/fb_disclaimer"
@@ -76,7 +98,7 @@
 
     <TextView
         android:id="@+id/login_page_text4"
-        android:layout_above="@id/login_button"
+        android:layout_above="@id/fb_overlay_button"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="30dp"
         android:gravity="center"

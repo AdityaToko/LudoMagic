@@ -181,8 +181,8 @@ public class GamesChatActivity extends AppCompatActivity {
 
     private void setUpTabLayout() {
         // Add Tab
-        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("games"));
-        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText("call & play"));
+        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText(R.string.games_tab_heading));
+        gamesChatTabLayout.addTab(gamesChatTabLayout.newTab().setText(R.string.call_tab_heading));
     }
 
     private void setUpViewPager(ViewPager viewPager) {
@@ -236,7 +236,7 @@ public class GamesChatActivity extends AppCompatActivity {
         //set view for first tab
         LinearLayout tabFirstItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView textView = (TextView) tabFirstItem.findViewById(R.id.tab_item_text);
-        textView.setText("games");
+        textView.setText(R.string.games_tab_heading);
         textView.setTextColor(Color.parseColor("#F2830A"));
 
         ImageView imageView = (ImageView) tabFirstItem.findViewById(R.id.tab_item_image);
@@ -246,7 +246,7 @@ public class GamesChatActivity extends AppCompatActivity {
         //set view for second tab
         LinearLayout tabSecondItem = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.tab_layout_item, null);
         TextView secondTextView = (TextView) tabSecondItem.findViewById(R.id.tab_item_text);
-        secondTextView.setText("call & play");
+        secondTextView.setText(R.string.call_tab_heading);
         //tabSecondItem.setBackgroundResource(R.drawable.second_tab_background);
         secondTextView.setTextColor(Color.parseColor("#2290D3"));
         ImageView secondImageView = (ImageView) tabSecondItem.findViewById(R.id.tab_item_image);
