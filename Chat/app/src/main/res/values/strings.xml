@@ -5,6 +5,7 @@
     <string name="title_activity_games_chat">GamesChatActivity</string>
     <string name="title_activity_game_web_view">GameWebViewActivity</string>
     <string name="play_with_friends">play with friends</string>
+    <string name="nugget_line">a world of games</string>
     <string name="calling">Calling</string>
     <string name="start_call">Start Call</string>
     <string name="add_your_facebook_friends_to_unlock_more_games">Add your Facebook Friends to unlock more games</string>
@@ -16,8 +17,12 @@
     <string name="skip">skip</string>
     <string name="add_friends_header">Add Friends</string>
     <string name="no_ads">NO ADS!</string>
-    <string name="play_50_games_n_free_video_calls_multiplayer_text">play 50+ games \n make free video calls \n play with friends on call</string>
+    <string name="login_page_line1">Play 50+ games free with no ads </string>
+    <string name="login_page_line2">A gaming app where you can win real prizes </string>
+    <string name="login_page_line3">Play multiplayer games with friends to win </string>
+    <string name="login_page_line4">A tablet or TV winner every week </string>
     <string name="new_friend">New Friend</string>
+    <string name="fb_disclaimer">we\'ll never post without permission</string>
     <string name="unlock_games_dialog_title">You\'ve unlocked new games!!</string>
     <string name="unlock_games_dialog_message">By adding more friends you\'ve unlocked some new games. Try them out</string>
     <string name="add_friends_dialog_title">Add friends to unlock these games!</string>

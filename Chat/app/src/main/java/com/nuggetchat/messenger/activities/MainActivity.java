@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -13,9 +14,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.android.volley.Request;
@@ -63,8 +66,22 @@ public class MainActivity extends AppCompatActivity {
     VideoView nuggetLoginAnim;
     private NuggetInjector nuggetInjector;
     private Uri videoPath;
-    @BindView(R.id.video_placeholder)
-    FrameLayout videoPlaceholder;
+    protected AlphaAnimation fadeInNuggetLine = new AlphaAnimation(0.0f , 1.0f ) ;
+    protected AlphaAnimation fadeInText1 = new AlphaAnimation(0.0f , 1.0f ) ;
+    protected AlphaAnimation fadeInText2 = new AlphaAnimation(0.0f , 1.0f ) ;
+    protected AlphaAnimation fadeInText3 = new AlphaAnimation(0.0f , 1.0f ) ;
+    protected AlphaAnimation fadeInText4 = new AlphaAnimation(0.0f , 1.0f ) ;
+    protected AlphaAnimation fadeInFBButton = new AlphaAnimation(0.0f , 1.0f ) ;
+
+    private boolean restartAnimOnResume = true;
+
+    @BindView(R.id.video_placeholder)  FrameLayout videoPlaceholder;
+
+    @BindView(R.id.nugget_line) TextView nuggetLine;
+    @BindView(R.id.login_page_text1) TextView loginPageText1;
+    @BindView(R.id.login_page_text2) TextView loginPageText2;
+    @BindView(R.id.login_page_text3) TextView loginPageText3;
+    @BindView(R.id.login_page_text4) TextView loginPageText4;
 
     @BindView(R.id.login_progress_bar) /* package-local */ ProgressBar loginProgressBar;
 
@@ -95,16 +112,22 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        videoPlaceholder.setVisibility(View.VISIBLE);
         nuggetInjector = NuggetInjector.getInstance();
         mainHandler = new Handler(Looper.getMainLooper());
 
+        Typeface font = Typeface.createFromAsset(getAssets(), "handwriting.ttf");
+        nuggetLine.setTypeface(font);
+
+        setAnimationValues();
+
         nuggetLoginAnim = (VideoView) findViewById(R.id.nugget_login_anim);
         videoPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.logo_anim);
-//        setVideoPlayerDimension();
 
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("public_profile", "email", "user_friends");
+        
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -129,36 +152,69 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        nuggetLoginAnim.setVideoURI(videoPath);
-        nuggetLoginAnim.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
-                Log.e(LOG_TAG, "Error with the splash video player. Error code::" + extra);
-                // This signifies that error is not handled, so if false returned then
-                // onCompletionListener is called.
-                return false;
-            }
-        });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            nuggetLoginAnim.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+        if(restartAnimOnResume) {
+            textAnimations();
+            nuggetLoginAnim.setVideoURI(videoPath);
+            nuggetLoginAnim.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
-                public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
-                    if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                        // video started; hide the placeholder.
-                        videoPlaceholder.setVisibility(View.GONE);
-                        return true;
-                    }
+                public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+                    Log.e(LOG_TAG, "Error with the splash video player. Error code::" + extra);
+                    // This signifies that error is not handled, so if false returned then
+                    // onCompletionListener is called.
                     return false;
                 }
             });
-        } else {
-            videoPlaceholder.setVisibility(View.GONE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                nuggetLoginAnim.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                    @Override
+                    public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
+                        if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                            // video started; hide the placeholder.
+                            videoPlaceholder.setVisibility(View.INVISIBLE);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            } else {
+                videoPlaceholder.setVisibility(View.GONE);
+            }
+            nuggetLoginAnim.start();
         }
-        nuggetLoginAnim.start();
 
     }
 
-    
+    private void setAnimationValues() {
+        fadeInNuggetLine.setDuration(600);
+        fadeInText1.setDuration(1200);
+        fadeInText2.setDuration(1200);
+        fadeInText3.setDuration(1200);
+        fadeInText4.setDuration(1200);
+        fadeInFBButton.setDuration(1200);
+
+        fadeInNuggetLine.setFillAfter(true);
+        fadeInText1.setFillAfter(true);
+        fadeInText2.setFillAfter(true);
+        fadeInText3.setFillAfter(true);
+        fadeInText4.setFillAfter(true);
+        fadeInFBButton.setFillAfter(true);
+
+        fadeInNuggetLine.setStartOffset(2200);
+        fadeInText1.setStartOffset(2600);
+        fadeInText2.setStartOffset(3200);
+        fadeInText3.setStartOffset(3800);
+        fadeInText4.setStartOffset(4400);
+        fadeInFBButton.setStartOffset(5000);
+    }
+
+    private void textAnimations() {
+        nuggetLine.startAnimation(fadeInNuggetLine);
+        loginPageText1.startAnimation(fadeInText1);
+        loginPageText2.startAnimation(fadeInText2);
+        loginPageText3.startAnimation(fadeInText3);
+        loginPageText4.startAnimation(fadeInText4);
+//        loginButton.startAnimation(fadeInFBButton);
+    }
 
     private void loginToFirebase(final LoginResult loginResult) {
         loginProgressBar.setVisibility(View.VISIBLE);
@@ -209,25 +265,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         firebaseRef.setValue(firebaseId);
-    }
-
-    private void setVideoPlayerDimension() {
-        // Adjust the size of the video
-        // so it fits on the screen
-        int screenWidth = nuggetInjector.getScreenLandscapeWidth();
-        int screenHeight = nuggetInjector.getScreenLandscapeHeight();
-        double screenAspectRatio = (double) screenHeight / (double) screenWidth;
-        ViewGroup.LayoutParams layoutParams = nuggetLoginAnim.getLayoutParams();
-
-        if (VIDEO_ASPECT_RATIO < screenAspectRatio) {
-            layoutParams.width = screenWidth;
-            layoutParams.height = (int) (screenWidth * VIDEO_ASPECT_RATIO);
-
-        } else {
-            layoutParams.height = screenHeight;
-            layoutParams.width = (int) (screenHeight / VIDEO_ASPECT_RATIO);
-        }
-        nuggetLoginAnim.setLayoutParams(layoutParams);
     }
 
     private void saveFacebookIdAndStartNextActivity() {
