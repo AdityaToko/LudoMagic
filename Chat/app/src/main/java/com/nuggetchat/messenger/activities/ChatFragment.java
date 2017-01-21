@@ -1062,7 +1062,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 MyLog.i(LOG_TAG, "Emit game link " + peerGameUrl);
                 chatService.socket.emit("game_link", payload);
             } else {
-                Toast.makeText(getActivity(), "Please call a friend to start playing multiplayer with!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Please call a friend to start playing multiplayer!", Toast.LENGTH_LONG).show();
             }
         }
     }

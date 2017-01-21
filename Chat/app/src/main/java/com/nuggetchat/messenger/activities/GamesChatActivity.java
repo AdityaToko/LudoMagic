@@ -54,8 +54,8 @@ public class GamesChatActivity extends AppCompatActivity {
     @BindView(R.id.pager)
     /* package-local */ ViewPager viewPager;
 
-    @BindView(R.id.name_text)
-    /* package-local */ TextView nameText;
+    @BindView(R.id.gift_button)
+    /* package-local */ ImageView giftButton;
 
     @BindView(R.id.image)
     /* package-local */ ImageView image;
@@ -82,7 +82,7 @@ public class GamesChatActivity extends AppCompatActivity {
             MyLog.d(LOG_TAG, requestBundle.getString("from") + "");
         }
 
-        setUpToolbar();
+        setUpToolbar(this);
 
         setUpTabLayout();
 
@@ -155,6 +155,11 @@ public class GamesChatActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 viewPager.setCurrentItem(1);
             }
+        })
+        .setNegativeButton("Later", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
         });
         final AlertDialog dialog = builder.create();
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -201,7 +206,7 @@ public class GamesChatActivity extends AppCompatActivity {
                         && "pre_call_handshake".equals(requestBundle.getString("type")));
     }
 
-    private void setUpToolbar() {
+    private void setUpToolbar(final Context context) {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
         MyLog.i(LOG_TAG, "the username, " + userName);
         String profilePicUrl = UserInfo.getUserPic(SharedPreferenceUtility.getFacebookUserId(this));
@@ -215,7 +220,13 @@ public class GamesChatActivity extends AppCompatActivity {
             }
         });
 
-        nameText.setText(userName);
+        giftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createIncentiveDialog(context);
+            }
+        });
+
         setSupportActionBar(toolbar);
     }
 
