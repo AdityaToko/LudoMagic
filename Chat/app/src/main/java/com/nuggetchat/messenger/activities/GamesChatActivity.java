@@ -1,6 +1,7 @@
 package com.nuggetchat.messenger.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -12,9 +13,12 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -139,6 +143,42 @@ public class GamesChatActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         MyLog.i(LOG_TAG, "onResume GamesChatActivity");
+        if(checkFirstRun()) {
+            createIncentiveDialog(this);
+        }
+    }
+
+    private void createIncentiveDialog(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setPositiveButton("Play with friends", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                viewPager.setCurrentItem(1);
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        LayoutInflater inflater = LayoutInflater.from(context);
+        if(inflater!=null) {
+            View dialogLayout = inflater.inflate(R.layout.incentive_info_layout, null);
+            dialog.setView(dialogLayout);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+            dialog.show();
+        }
+    }
+
+    public boolean checkFirstRun() {
+        boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("isFirstRun", true);
+        if (isFirstRun) {
+            // Place your dialog code here to display the dialog
+
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("isFirstRun", false)
+                    .apply();
+            return true;
+        }
+        return false;
     }
 
     private void showGamesTab() {

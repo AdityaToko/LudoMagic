@@ -2,6 +2,7 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
@@ -15,9 +16,11 @@ import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -208,6 +211,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         bindChatService();
         return view;
     }
+
+
 
     private void audioManagerInit() {
         MyLog.i(LOG_TAG, "Audio manager Init");
@@ -1057,7 +1062,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 MyLog.i(LOG_TAG, "Emit game link " + peerGameUrl);
                 chatService.socket.emit("game_link", payload);
             } else {
-                Toast.makeText(getActivity(), "Please select a friend to start playing game with!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Please call a friend to start playing multiplayer with!", Toast.LENGTH_LONG).show();
             }
         }
     }

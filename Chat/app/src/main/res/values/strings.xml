@@ -4,8 +4,10 @@
     <string name="fb_login_protocol_scheme">fb241400816282456</string>
     <string name="title_activity_games_chat">GamesChatActivity</string>
     <string name="title_activity_game_web_view">GameWebViewActivity</string>
-    <string name="play_with_friends">play with friends</string>
+    <string name="play_with_friends">play with friends to win</string>
     <string name="nugget_line">a world of games</string>
+    <string name="incentive_info_heading">A SAMSUNG GALAXY TAB EVERY WEEK!</string>
+    <string name="incentive_info_details">Win games against the highest number of friends in 7 days &amp; win a Samsung Galaxy Tablet</string>
     <string name="games_tab_heading">solo games</string>
     <string name="call_tab_heading">play &amp; win</string>
     <string name="calling">Calling</string>
