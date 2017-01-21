@@ -7,8 +7,6 @@ import com.nuggetchat.lib.Conf;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -40,13 +38,9 @@ public class FirebaseInit extends HttpServlet {
                     + "  \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/nuggetchat-server%40nuggetplay-ceaaf.iam.gserviceaccount.com\"\n"
                     + "}";
 
-            Map<String, Object> auth = new HashMap<>();
-            auth.put("uid", "firebase-injest-appengine");
-
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setServiceAccount(new ByteArrayInputStream(accountJson.getBytes()))
                     .setDatabaseUrl(Conf.firebaseDomainUri())
-                    .setDatabaseAuthVariableOverride(auth)
                     .build();
             FirebaseApp.initializeApp(options);
             log.info("Firebase Init: Done.");

@@ -46,4 +46,14 @@ public class ViewUtils {
         }
     }
 
+    public static String getInviteSubject() {
+        return "Let's play a game! Try out Nugget Games with me";
+    }
+
+    public static String getInviteBody() {
+        String appId = "https://play.google.com/store/apps/details?id=com.nuggetmessenger.games";
+        return "Hey! Found this app where we can play multiplayer games while " +
+                "voice-calling! Install it from " + appId;
+    }
+
 }

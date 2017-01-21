@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.nuggetchat.messenger"
+        applicationId "com.nuggetmessenger.games"
         minSdkVersion 16
         targetSdkVersion 18
         versionCode 1
@@ -41,7 +41,7 @@ android {
         release {
             minifyEnabled false
             signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         debug {
@@ -50,6 +50,11 @@ android {
             signingConfig signingConfigs.debug
             return this
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 

@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.utils;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -64,7 +63,7 @@ public class GlideUtils {
                             @Override
                             public boolean onException(Exception e, String model,
                                     Target<GlideDrawable> target, boolean isFirstResource) {
-                                Log.e(LOG_TAG, "Error in downloading Image. "
+                                MyLog.e(LOG_TAG, "Error in downloading Image. "
                                         + (BuildConfig.DEBUG ? imageUrl : ""), e);
                                 return false;
                             }

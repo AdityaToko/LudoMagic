@@ -14,7 +14,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,6 +31,7 @@ import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
+import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
@@ -66,7 +66,7 @@ public class GamesChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.i(LOG_TAG, "onCreate GameChatActivity");
+        MyLog.i(LOG_TAG, "onCreate GameChatActivity");
         startService(new Intent(GamesChatActivity.this, ChatService.class));
 
         setContentView(R.layout.games_chat_activity);
@@ -75,7 +75,7 @@ public class GamesChatActivity extends AppCompatActivity {
         intent = getIntent();
         requestBundle = intent.getExtras();
         if (requestBundle != null && requestBundle.getString("from") != null) {
-            Log.d(LOG_TAG, requestBundle.getString("from") + "");
+            MyLog.d(LOG_TAG, requestBundle.getString("from") + "");
         }
 
         setUpToolbar();
@@ -138,7 +138,7 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(LOG_TAG, "onResume GamesChatActivity");
+        MyLog.i(LOG_TAG, "onResume GamesChatActivity");
     }
 
     private void showGamesTab() {
@@ -152,7 +152,7 @@ public class GamesChatActivity extends AppCompatActivity {
         tabView = (LinearLayout) gamesChatTabLayout.getTabAt(1).getCustomView();
         tabView.setBackgroundResource(R.drawable.second_tab_background);
 //        tabView.requestFocus();
-        Log.i(LOG_TAG, "chat view in focus " + tabView.hasFocus());
+        MyLog.i(LOG_TAG, "chat view in focus " + tabView.hasFocus());
     }
 
     private boolean shouldShowChatTab() {
@@ -163,7 +163,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
     private void setUpToolbar() {
         String userName = SharedPreferenceUtility.getFacebookUserName(this);
-        Log.i(LOG_TAG, "the username, " + userName);
+        MyLog.i(LOG_TAG, "the username, " + userName);
         String profilePicUrl = UserInfo.getUserPic(SharedPreferenceUtility.getFacebookUserId(this));
         Glide.with(this).load(profilePicUrl).asBitmap().centerCrop().into(new BitmapImageViewTarget(image) {
             @Override
@@ -190,7 +190,7 @@ public class GamesChatActivity extends AppCompatActivity {
         viewPagerAdapter.addFrag(new GamesFragment(), "games");
         ChatFragment chatFragment = new ChatFragment();
         if (intent != null) {
-            Log.d(LOG_TAG, "bundle set");
+            MyLog.d(LOG_TAG, "bundle set");
             Bundle bundle = new Bundle();
             String userId = intent.getStringExtra("user_id");
             if (userId != null) {
@@ -203,18 +203,19 @@ public class GamesChatActivity extends AppCompatActivity {
         }
         viewPagerAdapter.addFrag(chatFragment, "chat");
         viewPager.setAdapter(viewPagerAdapter);
+        viewPager.requestTransparentRegion(viewPager);
         ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
             int currentPosition = 0;
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
+                MyLog.d(LOG_TAG, "onPageScrolled called: " + position + " " + positionOffset + " " + positionOffsetPixels );
                 FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(1);
-                fragmentShown.onScrollFragment(position);
+                fragmentShown.onScrollFragment(position, positionOffsetPixels);
             }
 
             @Override
             public void onPageSelected(int position) {
-                Log.d(LOG_TAG, "onPageSelected called");
+                MyLog.d(LOG_TAG, "onPageSelected called");
                 FragmentChangeListener fragmentShown = (FragmentChangeListener) viewPagerAdapter.getItem(position);
                 fragmentShown.onShowFragment();
 
@@ -226,7 +227,7 @@ public class GamesChatActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.d(LOG_TAG, "onPageScrollStateChanged called");
+                MyLog.d(LOG_TAG, "onPageScrollStateChanged called" + state);
             }
         };
         viewPager.addOnPageChangeListener(onPageChangeListener);
@@ -266,18 +267,18 @@ public class GamesChatActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.i(LOG_TAG, "activity onActivityResult focus 1:" + this.hasWindowFocus() + " req:" + requestCode + " result" + resultCode);
+        MyLog.i(LOG_TAG, "activity onActivityResult focus 1:" + this.hasWindowFocus() + " req:" + requestCode + " result" + resultCode);
         if (resultCode == ChatFragment.INCOMING_CALL_CODE) {
-            Log.i(LOG_TAG, "Switch to chat tab");
+            MyLog.i(LOG_TAG, "Switch to chat tab");
             viewPager.setCurrentItem(1);
         }
     }
 
     private void refreshFirebaseToken() {
-        Log.i(LOG_TAG, "Refreshing firebase token");
+        MyLog.i(LOG_TAG, "Refreshing firebase token");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Log.w(LOG_TAG, "Unable to authenticate firebase");
+            MyLog.w(LOG_TAG, "Unable to authenticate firebase");
             return;
         }
         final String firebaseUid = SharedPreferenceUtility.getFirebaseUid(this);
@@ -291,7 +292,7 @@ public class GamesChatActivity extends AppCompatActivity {
                             FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseUid,
                                     facebookUid, GamesChatActivity.this);
                         } else {
-                            Log.e(LOG_TAG, "Firebase returned null token ");
+                            MyLog.e(LOG_TAG, "Firebase returned null token ");
                         }
                     }
                 });
@@ -309,7 +310,7 @@ public class GamesChatActivity extends AppCompatActivity {
                                               boolean isMultiplayer) {
         Intent gameIntent;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            Log.i(LOG_TAG, "Launching in default browser for below Lollipop.");
+            MyLog.i(LOG_TAG, "Launching in default browser for below Lollipop.");
             gameIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
         } else {
             gameIntent = new Intent(this, GameWebViewActivity.class);

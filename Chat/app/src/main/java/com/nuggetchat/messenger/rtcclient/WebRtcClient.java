@@ -1,11 +1,10 @@
 package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
-import android.hardware.Camera;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.utils.MyLog;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
@@ -50,7 +49,7 @@ public class WebRtcClient{
 
     public WebRtcClient(RtcListener listener, PeerConnectionParameters params, EglBase.Context mEGLcontext
                         /*EGLContext mEGLcontext*/, String currentUserId, String iceServerUrls, Context context) {
-        Log.i(LOG_TAG, "Init");
+        MyLog.i(LOG_TAG, "Init");
         rtcListener = listener;
         this.params = params;
         isQueueDrainedOnce = false;
@@ -70,11 +69,11 @@ public class WebRtcClient{
 
 
     public void endCallAndRemoveRemoteStream() {
-        Log.i(LOG_TAG, "End call");
+        MyLog.i(LOG_TAG, "End call");
         nuggetInjector.setInitiator(false);
         if (peer != null) {
             peer.resetPeerConnection();
-            Log.i(LOG_TAG, "peer reset done");
+            MyLog.i(LOG_TAG, "peer reset done");
         }
         if (rtcListener != null) {
             rtcListener.onRemoveRemoteStream(null); // will also update video views
@@ -85,7 +84,7 @@ public class WebRtcClient{
     }
 
     public Peer addPeer(Socket socket) {
-        Log.i(LOG_TAG, "Add peer");
+        MyLog.i(LOG_TAG, "Add peer");
         Peer newPeer = new Peer(this);
         newPeer.setLocalStream();
         newPeer.setSocket(socket);
@@ -96,7 +95,7 @@ public class WebRtcClient{
     }
 
     public void addIceServers(String iceServersUrl){
-        Log.e(LOG_TAG, "Add Ice Service Urls: " + iceServersUrl);
+        MyLog.e(LOG_TAG, "Add Ice Service Urls: " + iceServersUrl);
         if(iceServersUrl != null && !"".equals(iceServersUrl)){
             String[] iceServersArray = iceServersUrl.split(",");
             for(String server : iceServersArray){
@@ -105,7 +104,7 @@ public class WebRtcClient{
         }
     }
     public void addFriendForChat(String userId, Socket socket) {
-        Log.i(LOG_TAG, "addFriendForChat userId: " + userId);
+        MyLog.i(LOG_TAG, "addFriendForChat userId: " + userId);
         userId1 = currentUserId;
         userId2 = userId;
         peer = addPeer(socket);
@@ -124,21 +123,31 @@ public class WebRtcClient{
     }
 
     public void onResume() {
-        Log.i(LOG_TAG, "onResume");
-        if (videoSource != null) {
-            videoSource.restart();
-        }
+        MyLog.i(LOG_TAG, "onResume");
+        restartVideoSource();
     }
 
     public void onPause() {
-        Log.i(LOG_TAG, "onPause");
+        MyLog.i(LOG_TAG, "onPause");
+        stopVideoSource();
+    }
+
+    public void stopVideoSource() {
         if (videoSource != null) {
+            MyLog.e(LOG_TAG, "Stopping video source.......");
             videoSource.stop();
         }
     }
 
+    public void restartVideoSource() {
+        if (videoSource != null) {
+            MyLog.e(LOG_TAG, "Restarting video source.......");
+            videoSource.restart();
+        }
+    }
+
     public void setCameraAndUpdateVideoViews() {
-        Log.i(LOG_TAG, "setCameraAndUpdateVideoViews method");
+        MyLog.i(LOG_TAG, "setCameraAndUpdateVideoViews method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");
 
         MediaConstraints videoConstraints = new MediaConstraints();
@@ -153,25 +162,39 @@ public class WebRtcClient{
         if(videoSource == null){
             videoSource = factory.createVideoSource(videoCapturer, videoConstraints);
         }
-        Log.i(LOG_TAG, "Adding video track");
+        MyLog.i(LOG_TAG, "Adding video track");
         videoTrack = factory.createVideoTrack("ARDAMSv0", videoSource);
         localMediaStream.addTrack(videoTrack);
 
         if (audioSource == null) {
             audioSource = factory.createAudioSource(new MediaConstraints());
         }
-        Log.i(LOG_TAG, "Adding audio track");
+        MyLog.i(LOG_TAG, "Adding audio track");
         audioTrack = factory.createAudioTrack("ARDAMSa0", audioSource);
         localMediaStream.addTrack(audioTrack);
 
-        Log.i(LOG_TAG, "Trigger local stream");
+        MyLog.i(LOG_TAG, "Trigger local stream");
         rtcListener.onLocalStream(localMediaStream);  // Updating video views
     }
 
-    private void releaseLocalMediaOnDestrory() {
+    public void releaseLocalMediaOnDestrory() {
+        MyLog.i(LOG_TAG, "Release camera");
         if (rtcListener != null) {
             rtcListener.onRemoveLocalStream(localMediaStream);
         }
+        MyLog.i(LOG_TAG, "Release camera 1");
+
+        if (videoTrack != null) {
+            videoTrack.dispose();
+        }
+
+        MyLog.i(LOG_TAG, "Release camera 2");
+
+        if (videoSource != null) {
+            videoSource.stop();
+        }
+
+        MyLog.i(LOG_TAG, "Release camera 3");
 
         if (localMediaStream != null) {
             if (audioTrack != null) {
@@ -180,36 +203,23 @@ public class WebRtcClient{
             if (videoTrack != null) {
                 localMediaStream.removeTrack(videoTrack);
             }
-            localMediaStream.dispose();
+            MyLog.i(LOG_TAG, "Release camera 3.1");
+            localMediaStream = null;
         }
+        MyLog.i(LOG_TAG, "Release camera 4");
 
         if (videoCapturer != null && !videoCapturer.isReleased()) {
-            Log.i(LOG_TAG, "Video capturer dispose");
+            MyLog.i(LOG_TAG, "Video capturer dispose");
             videoCapturer.dispose();
             videoCapturer = null;
         }
-
-        isCameraUsebyApp();
+        MyLog.i(LOG_TAG, "Release camera 5");
 
         if (videoSource != null) {
-            Log.i(LOG_TAG, "Video source null");
+            MyLog.i(LOG_TAG, "Video source null");
             videoSource = null;
         }
-
-    }
-
-    private boolean isCameraUsebyApp() {
-        Camera camera = null;
-        try {
-            camera = Camera.open(1);
-        } catch (RuntimeException e) {
-            return true;
-        } finally {
-            if (camera != null) {
-                camera.release();
-            }
-        }
-        return false;
+        MyLog.i(LOG_TAG, "Release camera 6");
     }
 
     // Cycle through likely device names for the camera and return the first
@@ -218,10 +228,10 @@ public class WebRtcClient{
         String name = "Camera " + 1 + ", Facing " + "front" + ", Orientation " + 270;
         VideoCapturerAndroid capturer = VideoCapturerAndroid.create(name,  getNewCameraEventsHandler());
         if (capturer != null) {
-            Log.i(LOG_TAG, "Using camera: " + name);
+            MyLog.i(LOG_TAG, "Using camera: " + name);
             return capturer;
         }
-        Log.e(LOG_TAG, "Camera not found: " + name);
+        MyLog.e(LOG_TAG, "Camera not found: " + name);
         return null;
     }
 
@@ -230,7 +240,7 @@ public class WebRtcClient{
         return new VideoCapturerAndroid.CameraEventsHandler() {
                 @Override
                 public void onCameraError(String s) {
-                    Log.e(LOG_TAG, "onCameraError: " + s );
+                    MyLog.e(LOG_TAG, "onCameraError: " + s );
                     if(videoCapturer != null){
                         videoCapturer.printStackTrace();
                     }
@@ -238,7 +248,7 @@ public class WebRtcClient{
 
                 @Override
                 public void onCameraFreezed(String s) {
-                    Log.e(LOG_TAG, "onCameraFreezed: " + s );
+                    MyLog.e(LOG_TAG, "onCameraFreezed: " + s );
                     if(videoCapturer != null){
                         videoCapturer.printStackTrace();
                     }
@@ -246,25 +256,30 @@ public class WebRtcClient{
 
                 @Override
                 public void onCameraOpening(int i) {
-                    Log.i(LOG_TAG, "onCameraOpening: " + i);
+                    MyLog.i(LOG_TAG, "onCameraOpening: " + i);
                 }
 
                 @Override
                 public void onFirstFrameAvailable() {
-                    Log.i(LOG_TAG, "onFirstFrameAvailable");
+                    MyLog.i(LOG_TAG, "onFirstFrameAvailable");
+                    rtcListener.onLocalStreamFirstFrame();
                 }
 
                 @Override
                 public void onCameraClosed() {
-                    Log.i(LOG_TAG, "onCameraClosed");
+                    MyLog.i(LOG_TAG, "onCameraClosed");
                 }
             };
     }
 
     public void disposePeerConnnectionFactory(){
-        Log.i(LOG_TAG, "disposePeerConnection");
+        MyLog.i(LOG_TAG, "disposePeerConnection");
 
-        releaseLocalMediaOnDestrory();
+        if (peer != null) {
+            MyLog.i(LOG_TAG, "peer reset connection");
+            peer.resetPeerConnection();
+        }
+
         if (factory != null) {
             factory.dispose();
             factory = null;
@@ -292,35 +307,35 @@ public class WebRtcClient{
 
     /*package local*/ void lockAndDrainRemoteCandidates(PeerConnection peerConnection, boolean retry) {
         if (!queueLock.getAndSet(true)) {
-            Log.i(LOG_TAG, "Got lock for draining. retry:" + retry);
+            MyLog.i(LOG_TAG, "Got lock for draining. retry:" + retry);
             try {
                 drainRemoteCandidates(peerConnection);
             } catch (Exception e) {
-                Log.e(LOG_TAG, "Draining failed", e);
+                MyLog.e(LOG_TAG, "Draining failed", e);
             } finally {
                 queueLock.set(false);
             }
         } else if (!retry) {
-            Log.i(LOG_TAG, "Retrying for lock draining");
+            MyLog.i(LOG_TAG, "Retrying for lock draining");
             try {
                 Thread.sleep(200);
                 lockAndDrainRemoteCandidates(peerConnection, true /*retry*/);
             } catch (InterruptedException e) {
-                Log.e(LOG_TAG, "Sleep & drain interrupted ", e);
+                MyLog.e(LOG_TAG, "Sleep & drain interrupted ", e);
             }
         } else {
-            Log.e(LOG_TAG, "Retry for lock failed draining");
+            MyLog.e(LOG_TAG, "Retry for lock failed draining");
         }
     }
 
     private void drainRemoteCandidates(PeerConnection peerConnection) {
-        Log.i(LOG_TAG, "Drain remote candidate");
+        MyLog.i(LOG_TAG, "Drain remote candidate");
         if (queuedRemoteCandidates == null) {
-            Log.w(LOG_TAG, "Queue null");
+            MyLog.w(LOG_TAG, "Queue null");
             return;
         }
         if (peerConnection == null) {
-            Log.w(LOG_TAG, "Peer connection null");
+            MyLog.w(LOG_TAG, "Peer connection null");
             return;
         }
         for (IceCandidate candidate : queuedRemoteCandidates) {
@@ -333,16 +348,16 @@ public class WebRtcClient{
     public boolean lockAndQueueRemoteCandidates(IceCandidate candidate) {
         boolean isQueued = false;
         if (!queueLock.getAndSet(true)){
-            Log.i(LOG_TAG, "Got lock for queuing");
+            MyLog.i(LOG_TAG, "Got lock for queuing");
             isQueued = queueRemoteCandidates(candidate);
             queueLock.set(false);
         }
-        Log.i(LOG_TAG, "Tried lock for queuing queued:" + isQueued );
+        MyLog.i(LOG_TAG, "Tried lock for queuing queued:" + isQueued );
         return isQueued;
     }
 
     private boolean queueRemoteCandidates(IceCandidate candidate) {
-        Log.i(LOG_TAG, "Adding remote candidate to queue");
+        MyLog.i(LOG_TAG, "Adding remote candidate to queue");
         if (!isQueueDrainedOnce && queuedRemoteCandidates != null) {
             queuedRemoteCandidates.add(candidate);
             return true;
