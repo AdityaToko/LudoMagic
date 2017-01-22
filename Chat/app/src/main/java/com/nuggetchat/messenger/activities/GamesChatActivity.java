@@ -3,11 +3,13 @@ package com.nuggetchat.messenger.activities;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -16,6 +18,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -44,6 +47,18 @@ import butterknife.ButterKnife;
 
 public class GamesChatActivity extends AppCompatActivity {
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
+    private static final long INCENTIVE_START_TS = 1485061598;
+    private static final long DELTA_PRIZE_TIME = 604800;
+    private static final int CURRENT_LEADER_MINIMUM_1 = 10;
+    private static final int CURRENT_LEADER_MINIMUM_2 = 18;
+
+    private long lastPrizeTS;
+    private long nextPrizeTS;
+    private long currentPrizeCounter;
+    private long startPrizeCounter;
+    private int currentScore;
+    private int currentLeaderScore;
+    private CountDownTimer counter = null;
 
     @BindView(R.id.toolbar)
     /* package-local */ Toolbar toolbar;
@@ -59,6 +74,9 @@ public class GamesChatActivity extends AppCompatActivity {
 
     @BindView(R.id.image)
     /* package-local */ ImageView image;
+
+    @BindView(R.id.next_prize_time)
+    /* package-local */ TextView nextPrizeTime;
 
     private LinearLayout tabView;
     private TextView textView;
@@ -146,7 +164,116 @@ public class GamesChatActivity extends AppCompatActivity {
         if(checkFirstRun()) {
             createIncentiveDialog(this);
         }
+        incentiveActions();
+
     }
+
+    @Override
+    protected void onStop() {
+        if(counter!=null) {
+            counter.cancel();
+        }
+        super.onStop();
+    }
+
+    private void incentiveActions() {
+        //if not FirstRun read last & next from SharedPreferences
+        //Update based on current TS
+        long currentTS = System.currentTimeMillis()/1000;
+        long deltaPrizeTime = DELTA_PRIZE_TIME;
+        lastPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
+        nextPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
+
+        if(lastPrizeTS==0l || nextPrizeTS==0l) {
+            long startTS = INCENTIVE_START_TS;
+
+            long deltaCurrentStart = currentTS - startTS;
+            int periods = 0;
+            if(deltaPrizeTime != 0l) {
+                periods = (int) (deltaCurrentStart / deltaPrizeTime);
+                lastPrizeTS = startTS + deltaPrizeTime * ((long) periods);
+                nextPrizeTS = startTS + deltaPrizeTime * ((long) (periods + 1));
+            }
+
+            Log.d(LOG_TAG,">>> currentTS: " + currentTS);
+            Log.d(LOG_TAG,">>> startTS: " + startTS);
+            Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
+            Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
+            Log.d(LOG_TAG,">>> periods: " + periods);
+            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
+            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+
+            SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
+            if(prefs != null) {
+                prefs.edit().putLong("lastPrizeTS",lastPrizeTS);
+                prefs.edit().putLong("nextPrizeTS",lastPrizeTS);
+            }
+        }
+
+
+        if((currentTS-lastPrizeTS) > deltaPrizeTime) {
+            lastPrizeTS = nextPrizeTS;
+            nextPrizeTS = lastPrizeTS + deltaPrizeTime;
+            SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
+            if(prefs != null) {
+                prefs.edit().putLong("lastPrizeTS",lastPrizeTS);
+                prefs.edit().putLong("nextPrizeTS",lastPrizeTS);
+            }
+            currentScore = 0;
+            setCurrentScore(currentScore);
+            prizeWinActions();
+        }
+
+        startCounter(nextPrizeTS-currentTS);
+
+    }
+
+    private void startCounter(long start) {
+        Log.d(LOG_TAG,">>>Starting counter: " + start);
+        int seconds = (int) (start);
+        int minutes = seconds / 60;
+        seconds = seconds - minutes * 60;
+        int hours = minutes / 60;
+        minutes = minutes - hours * 60;
+        int days = hours / 24;
+        hours = hours - days * 24;
+
+
+        nextPrizeTime.setText(days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
+                + "m:" + String.format("%02d", seconds) + "s");
+
+        counter = new CountDownTimer(start*1000,100) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Log.d(LOG_TAG,">>>COUNTER TICK");
+                int seconds = (int) (millisUntilFinished / 1000);
+                int minutes = seconds / 60;
+                seconds = seconds - minutes * 60;
+                int hours = minutes / 60;
+                minutes = minutes - hours * 60;
+                int days = hours / 24;
+                seconds = seconds % 60;
+                hours = hours - days * 24;
+
+                nextPrizeTime.setText(days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
+                        + "m:" + String.format("%02d", seconds) + "s");
+            }
+
+            @Override
+            public void onFinish() {
+
+            }
+        }.start();
+    }
+
+    private void setCurrentScore(int currentScore) {
+
+    }
+
+    private void prizeWinActions() {
+
+    }
+
 
     private void createIncentiveDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
