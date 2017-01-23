@@ -39,6 +39,14 @@ public final class Conf {
         return firebaseDomainUri() + FIREBASE_USERS_URI;
     }
 
+    public static String firebaseMultiGamePlayedURI(String userId, String currentDate) {
+        return firebaseUsersUri() + userId + "/" + currentDate + "/" + "multiplayer/";
+    }
+
+    public static String firebaseSoloGamePlayedURI(String userId, String currentDate) {
+        return firebaseUsersUri() + userId + "/" + currentDate + "/" + "solo/";
+    }
+
     public static String firebaseUsersUri(String firebaseId) {
         if (Utils.isNullOrEmpty(firebaseId)) {
             return "";

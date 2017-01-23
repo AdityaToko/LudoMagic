@@ -245,7 +245,6 @@ public class GamesChatActivity extends AppCompatActivity {
         counter = new CountDownTimer(start*1000,100) {
             @Override
             public void onTick(long millisUntilFinished) {
-                Log.d(LOG_TAG,">>>COUNTER TICK");
                 int seconds = (int) (millisUntilFinished / 1000);
                 int minutes = seconds / 60;
                 seconds = seconds - minutes * 60;

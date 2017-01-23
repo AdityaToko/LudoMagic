@@ -129,6 +129,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private VideoRenderer localRenderer;
     private String myUserId;
     private String targetUserId;
+    private String myFirebaseId;
+    private String targetFirebaseId;
 
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -1055,6 +1057,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     payload.put("from", myUserId);
                     payload.put("to", targetUserId);
                     payload.put("token", "abcd");
+                    payload.put("gameID",gamesItem.getGameKey());
                     payload.put("game_link", peerGameUrl);
                 } catch (JSONException e) {
                     e.printStackTrace();

@@ -1,10 +1,12 @@
 package com.nuggetchat.messenger.chat;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.FirebaseUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -133,6 +135,7 @@ public class MessageHandler {
             try {
                 if (acceptObject.get("answer") != null) {
                     JSONObject answerObj = acceptObject.getJSONObject("answer");
+
                     SessionDescription sdp = new SessionDescription(
                             SessionDescription.Type.fromCanonicalForm(answerObj.getString("type")),
                             answerObj.getString("sdp")
@@ -190,19 +193,24 @@ public class MessageHandler {
     public Emitter.Listener onGameLink = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            MyLog.i(LOG_TAG, "onGameLink");
-            JSONObject gameLinkObject = (JSONObject) args[0];
+        MyLog.i(LOG_TAG, "onGameLink");
+        JSONObject gameLinkObject = (JSONObject) args[0];
 
-            try {
-                eventListener.onCall(gameLinkObject.getString("from"),socket);
-                if (gameLinkObject.getString("game_link") != null) {
-                    eventListener.onGameLink(gameLinkObject.getString("game_link"));
-                } else {
-                    MyLog.w(LOG_TAG, "onGameLink game_link null");
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+        try {
+            String from = gameLinkObject.getString("from");
+            String to = gameLinkObject.getString("to");
+            String gameID = gameLinkObject.getString("gameID");
+            FirebaseUtils.writeCallMade(from, to, gameID);
+
+            eventListener.onCall(gameLinkObject.getString("from"),socket);
+            if (gameLinkObject.getString("game_link") != null) {
+                eventListener.onGameLink(gameLinkObject.getString("game_link"));
+            } else {
+                MyLog.w(LOG_TAG, "onGameLink game_link null");
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         }
     };
 
