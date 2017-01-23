@@ -65,6 +65,33 @@
                     android:layout_toStartOf="@+id/image"
                     android:background="@drawable/gift"/>
 
+                <TextView
+                    android:id="@+id/your_score"
+                    android:layout_width="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:visibility="visible"
+                    android:text="0"
+                    android:layout_marginEnd="10dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/gift_button"
+                    android:layout_toStartOf="@+id/gift_button"
+                    android:textColor="#e5576f"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/your_score_text"
+                    android:layout_width="wrap_content"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/your_score"
+                    android:layout_toStartOf="@+id/your_score"
+                    android:text="@string/prize_score_line"
+                    android:textColor="#544a63"
+                    android:textSize="14sp" />
+
             </RelativeLayout>
 
             <RelativeLayout

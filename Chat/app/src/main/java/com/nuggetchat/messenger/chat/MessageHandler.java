@@ -1,7 +1,6 @@
 package com.nuggetchat.messenger.chat;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
@@ -27,6 +26,7 @@ public class MessageHandler {
     private NuggetInjector nuggetInjector;
     private String userId;
     private String username;
+    private UpdateInterface updatesListener;
 
     public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
@@ -44,7 +44,9 @@ public class MessageHandler {
     public void addEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
     }
-
+    public void registerUpdatesListener(UpdateInterface updatesListener){
+        this.updatesListener = updatesListener;
+    }
     public Emitter.Listener onInit = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -195,12 +197,12 @@ public class MessageHandler {
         public void call(Object... args) {
         MyLog.i(LOG_TAG, "onGameLink");
         JSONObject gameLinkObject = (JSONObject) args[0];
-
         try {
             String from = gameLinkObject.getString("from");
             String to = gameLinkObject.getString("to");
             String gameID = gameLinkObject.getString("gameID");
-            FirebaseUtils.writeCallMade(from, to, gameID);
+            FirebaseUtils.writeGamePlayed(from, to, gameID);
+            updatesListener.updateReceiverScore(to, from);
 
             eventListener.onCall(gameLinkObject.getString("from"),socket);
             if (gameLinkObject.getString("game_link") != null) {

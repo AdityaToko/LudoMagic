@@ -17,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,8 +130,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private VideoRenderer localRenderer;
     private String myUserId;
     private String targetUserId;
-    private String myFirebaseId;
-    private String targetFirebaseId;
 
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -139,6 +138,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             MyLog.i(LOG_TAG, "On Service connected");
             chatService = ((ChatService.ChatBinder) iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
+            chatService.registerUpdatesListener(gamesChatActivity);
             if (bundle != null && bundle.getBundle("requestBundle") != null) {
                 Bundle requestBundle = bundle.getBundle("requestBundle");
                 if (requestBundle.getString("user_id") != null) {
@@ -1064,6 +1064,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 }
                 MyLog.i(LOG_TAG, "Emit game link " + peerGameUrl);
                 chatService.socket.emit("game_link", payload);
+                Log.d(LOG_TAG,">>>Update Sender Score");
+                gamesChatActivity.updateScore(myUserId,targetUserId);
+
             } else {
                 Toast.makeText(getActivity(), "Please call a friend to start playing multiplayer!", Toast.LENGTH_LONG).show();
             }

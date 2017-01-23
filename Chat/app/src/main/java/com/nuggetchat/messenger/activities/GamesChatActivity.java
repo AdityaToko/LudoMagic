@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -37,6 +38,7 @@ import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.chat.UpdateInterface;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -45,7 +47,7 @@ import com.nuggetchat.messenger.utils.ViewUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class GamesChatActivity extends AppCompatActivity {
+public class GamesChatActivity extends AppCompatActivity implements UpdateInterface{
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
     private static final long INCENTIVE_START_TS = 1485061598;
     private static final long DELTA_PRIZE_TIME = 604800;
@@ -78,11 +80,15 @@ public class GamesChatActivity extends AppCompatActivity {
     @BindView(R.id.next_prize_time)
     /* package-local */ TextView nextPrizeTime;
 
+    @BindView(R.id.your_score)
+    /* package-local */ TextView yourScore;
+
     private LinearLayout tabView;
     private TextView textView;
     private ImageView imageView;
     private Intent intent;
     private Bundle requestBundle;
+    private Handler mainHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +105,7 @@ public class GamesChatActivity extends AppCompatActivity {
         if (requestBundle != null && requestBundle.getString("from") != null) {
             MyLog.d(LOG_TAG, requestBundle.getString("from") + "");
         }
-
+        mainHandler = new Handler(getMainLooper());
         setUpToolbar(this);
 
         setUpTabLayout();
@@ -265,8 +271,19 @@ public class GamesChatActivity extends AppCompatActivity {
         }.start();
     }
 
-    private void setCurrentScore(int currentScore) {
+    private void setCurrentScore(final int currentScore) {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                yourScore.setText(String.valueOf(currentScore));
+                yourScore.setVisibility(View.VISIBLE);
+            }
+        });
+    }
 
+    public void updateScore(String myUserID, String targetUserID) {
+        currentScore = currentScore + 1;
+        setCurrentScore(currentScore);
     }
 
     private void prizeWinActions() {
@@ -496,5 +513,11 @@ public class GamesChatActivity extends AppCompatActivity {
             gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, isPortrait);
         }
         startActivity(gameIntent);
+    }
+
+    @Override
+    public void updateReceiverScore(String from, String to) {
+        Log.d(LOG_TAG,">>>Update Reciever Score");
+        updateScore(from, to);
     }
 }

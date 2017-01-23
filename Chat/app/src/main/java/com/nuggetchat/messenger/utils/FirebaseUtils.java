@@ -13,7 +13,7 @@ import com.nuggetchat.messenger.datamodel.GamePlayedHistory;
 public class FirebaseUtils {
     public static final String LOG_TAG = FirebaseUtils.class.getSimpleName();
 
-    public static void writeCallMade (String from, String to, String gameID) {
+    public static void writeGamePlayed(String from, String to, String gameID) {
         Log.d(LOG_TAG, ">>> From uid" + from);
         Log.d(LOG_TAG, ">>> To uid" + to);
         Log.d(LOG_TAG, ">>> gameID" + gameID);
@@ -23,11 +23,11 @@ public class FirebaseUtils {
         GamePlayedHistory gamePlayedHistoryFrom = new GamePlayedHistory(gameID, playedTS, true, to);
         GamePlayedHistory gamePlayedHistoryTo = new GamePlayedHistory(gameID, playedTS, true, from);
 
-        writeCallMadeToFirebase(from, gamePlayedHistoryFrom);
-        writeCallMadeToFirebase(to, gamePlayedHistoryTo);
+        writeGamePlayedToFirebase(from, gamePlayedHistoryFrom);
+        writeGamePlayedToFirebase(to, gamePlayedHistoryTo);
     }
 
-    public static void writeCallMadeToFirebase(String userId, GamePlayedHistory gamePlayedHistory) {
+    public static void writeGamePlayedToFirebase(String userId, GamePlayedHistory gamePlayedHistory) {
         String fbaseUserHistoryUri;
         if (DataFormat.isNotNullNorEmpty(userId)) {
             String currentDate = Utils.getCurrentDate();
