@@ -259,6 +259,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             payload.put("from", myUserId);
             payload.put("to", targetUserId);
             payload.put("token", "abcd");
+            payload.put("caller", SharedPreferenceUtility.getFacebookUserName(gamesChatActivity));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -596,6 +597,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     payload.put("from", myUserId);
                     payload.put("to", targetUserId);
                     payload.put("token", "abcd");
+                    payload.put("caller", SharedPreferenceUtility.getFacebookUserName(gamesChatActivity));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

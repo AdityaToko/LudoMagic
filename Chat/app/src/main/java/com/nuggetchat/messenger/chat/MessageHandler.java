@@ -1,9 +1,13 @@
 package com.nuggetchat.messenger.chat;
 
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.GameLeftListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
@@ -229,8 +233,29 @@ public class MessageHandler {
     public Emitter.Listener onCallEnded = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            MyLog.i(LOG_TAG, "onCallEnded");
-            eventListener.onCallEnd();
+            JSONObject callEndObj = (JSONObject) args[0];
+            Log.i(LOG_TAG, "onCallEnded");
+            if (!nuggetInjector.isOngoingCall()){
+                String callerName = "Unknown";
+                try {
+                    callerName = callEndObj.getString("caller");
+                } catch (JSONException e) {
+                    Log.e(LOG_TAG, "Caller name not available");
+                }
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                        .setContentTitle("Missed Call")
+                        .setContentText(callerName)
+                        .setSmallIcon(R.drawable.notification_icon);
+                int notificationId = 001;
+                NotificationManager manager = (NotificationManager) context.
+                        getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(notificationId, builder.build());
+            }
+            Intent intent = new Intent("com.nuggetchat.messenger.DISMISS_INCOMING_CALL_ACTIVITY");
+            context.sendBroadcast(intent);
+            if (eventListener != null){
+                eventListener.onCallEnd();
+            }
         }
     };
 
@@ -249,7 +274,9 @@ public class MessageHandler {
         @Override
         public void call(Object... args) {
             MyLog.i(LOG_TAG, "onDisconnect");
-            eventListener.onCallOngoing();
+            if (eventListener != null){
+                eventListener.onCallOngoing();
+            }
         }
     };
 }

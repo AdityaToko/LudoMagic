@@ -16,6 +16,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -32,6 +33,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.FragmentChangeListener;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
@@ -71,7 +73,13 @@ public class GamesChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         MyLog.i(LOG_TAG, "onCreate GameChatActivity");
-        startService(new Intent(GamesChatActivity.this, ChatService.class));
+        if(!NuggetInjector.getInstance().isChatServiceRunning()){
+            Log.d(LOG_TAG, "onCreate: Chat Service started from GamesChat");
+            startService(new Intent(GamesChatActivity.this, ChatService.class));
+        } else {
+            Log.d(LOG_TAG, "onCreate: Chat Service already running");
+        }
+
 
         setContentView(R.layout.games_chat_activity);
         ButterKnife.bind(this);
@@ -167,7 +175,6 @@ public class GamesChatActivity extends AppCompatActivity {
             View dialogLayout = inflater.inflate(R.layout.incentive_info_layout, null);
             dialog.setView(dialogLayout);
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
             dialog.show();
         }
     }

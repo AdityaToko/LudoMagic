@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -59,6 +60,12 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!NuggetInjector.getInstance().isChatServiceRunning()){
+            Log.d(LOG_TAG, "onCreate: Chat Service started from Incoming Call");
+            startService(new Intent(this, ChatService.class));
+        } else {
+            Log.d(LOG_TAG, "onCreate: Chat Service already running");
+        }
 
         MyLog.i(LOG_TAG, "onCreate IncomingCallActivity");
         mainHandler = new Handler(Looper.getMainLooper());

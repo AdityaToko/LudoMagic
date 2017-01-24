@@ -20,6 +20,7 @@ public class NuggetInjector {
     private boolean isInitiator = false;
     private boolean isOngoingCall = false;
     private boolean isIncomingCall = false;
+    private boolean isChatServiceRunning = false;
     private int screenLandscapeWidth;
     private int screenLandscapeHeight;
 
@@ -72,6 +73,14 @@ public class NuggetInjector {
 
     public void setIncomingCall(boolean incomingCall) {
         isIncomingCall = incomingCall;
+    }
+
+    public boolean isChatServiceRunning(){
+        return isChatServiceRunning;
+    }
+
+    public void setChatServiceRunning(boolean chatServiceRunning){
+        isChatServiceRunning = chatServiceRunning;
     }
 
     public int getScreenLandscapeWidth() {

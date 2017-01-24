@@ -4,8 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.nuggetchat.lib.Conf;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.utils.MyLog;
 
@@ -19,6 +21,7 @@ public class ChatService extends Service {
     public Socket socket;
     MessageHandler messageHandler;
     EventListener eventListener;
+    private NuggetInjector nuggetInjector = NuggetInjector.getInstance();
 
     public class ChatBinder extends Binder {
        public ChatService getService() {
@@ -37,6 +40,7 @@ public class ChatService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         MyLog.e(LOG_TAG,"Inside onStartCommand");
+        nuggetInjector.setChatServiceRunning(true);
         try {
             MyLog.e(LOG_TAG, "onStartCommand: inside try");
             socket = IO.socket(Conf.CHAT_WEBRTC_SERVER);
@@ -51,6 +55,7 @@ public class ChatService extends Service {
         socket.on("pre_call_handshake", messageHandler.onPreCallHandshake);
         socket.on("handshake_complete", messageHandler.onHandshakeComplete);
         socket.on("call_requested", messageHandler.onCallRequested);
+        socket.on("call_ended", messageHandler.onCallEnded);
         socket.on(Socket.EVENT_DISCONNECT, messageHandler.onDisconnect);
         socket.connect();
         MyLog.e(LOG_TAG, "onStartCommand: after socket connect" );
@@ -77,9 +82,15 @@ public class ChatService extends Service {
         socket.on("call_rejected", messageHandler.onCallRejected);
         socket.on("call_ongoing", messageHandler.onCallOngoing);
         socket.on("ice_candidates", messageHandler.onIceCandidates);
-        socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);
         socket.on("game_left", messageHandler.onGameLeft);
         socket.on("socket_error", messageHandler.onSocketError);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(LOG_TAG, "onDestroy");
+        nuggetInjector.setChatServiceRunning(false);
+        super.onDestroy();
     }
 }
