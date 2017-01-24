@@ -1,11 +1,18 @@
 package com.nuggetchat.messenger.activities;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -13,28 +20,57 @@ import android.webkit.WebViewClient;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
+import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.chat.MessageHandler;
+import com.nuggetchat.messenger.rtcclient.GameLeftListener;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class GameWebViewActivity extends AppCompatActivity {
+
+public class GameWebViewActivity extends AppCompatActivity implements GameLeftListener{
     public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
     public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
     public static final String EXTRA_GAME_IS_MULTIPLAYER = GameWebViewActivity.class.getName() + ".game_is_multiplayer";
+    public static final String EXTRA_FROM = GameWebViewActivity.class.getName() + ".from";
+    public static final String EXTRA_TO = GameWebViewActivity.class.getName() + ".to";
     private static final String LOG_TAG = GameWebViewActivity.class.getSimpleName();
     private WebView gameWebView;
     private NuggetInjector nuggetInjector;
     private Boolean gameIsMultiplayer;
+    private ChatService chatService;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            chatService = ((ChatService.ChatBinder) iBinder).getService();
+            MessageHandler messageHandler = chatService.getMessageHandler();
+            if (messageHandler != null){
+                messageHandler.setGameLeftListener(GameWebViewActivity.this);
+            }
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            chatService = null;
+        }
+    };
+    private boolean isBound;
+    private String myUserId;
+    private String targetUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        bindChatService();
         setContentView(R.layout.games_web_view_activity);
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         String gameUrl = bundle.getString(EXTRA_GAME_URL);
+        myUserId = bundle.getString(EXTRA_FROM);
+        targetUserId = bundle.getString(EXTRA_TO);
         nuggetInjector = NuggetInjector.getInstance();
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
@@ -81,6 +117,13 @@ public class GameWebViewActivity extends AppCompatActivity {
         }
     }
 
+    private void bindChatService() {
+        Log.i(LOG_TAG, " Binding service ");
+        bindService(new Intent(this, ChatService.class), serviceConnection,
+                Context.BIND_AUTO_CREATE);
+        isBound = true;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -110,6 +153,7 @@ public class GameWebViewActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
+        undbindService();
         if (gameWebView != null) {
             gameWebView.destroy();
         }
@@ -122,5 +166,63 @@ public class GameWebViewActivity extends AppCompatActivity {
         if (hasFocus) {
             ViewUtils.setWindowImmersive(getWindow());
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(NuggetInjector.getInstance().isInitiator()){
+            if(gameIsMultiplayer){
+                chatService.socket.emit("game_left", getPayload());
+            }
+        }
+        super.onBackPressed();
+    }
+
+    private void undbindService() {
+        if (isBound) {
+            if (chatService != null) {
+                chatService.getMessageHandler().removeGameLeftListener(this);
+            }
+            unbindService(serviceConnection);
+            isBound = false;
+        }
+    }
+
+    private void showGameLeftDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Oh, Snap!")
+                .setMessage("The other player has left the game!")
+                .setPositiveButton("Go to Chat", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                })
+                .setCancelable(false);
+        builder.create();
+        builder.show();
+    }
+
+    private JSONObject getPayload(){
+        JSONObject payload = new JSONObject();
+        try {
+            MyLog.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
+            payload.put("from", myUserId);
+            payload.put("to", targetUserId);
+            payload.put("token", "abcd");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return payload;
+    }
+
+    @Override
+    public void notifyGameLeft() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showGameLeftDialog();
+            }
+        });
     }
 }

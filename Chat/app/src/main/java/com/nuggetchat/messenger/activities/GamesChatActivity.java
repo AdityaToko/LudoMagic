@@ -358,7 +358,7 @@ public class GamesChatActivity extends AppCompatActivity {
     }
 
     /*package local */void launchGameActivity(String gameUrl, boolean isPortrait,
-                                              boolean isMultiplayer) {
+                                              boolean isMultiplayer, String from, String to) {
         Intent gameIntent;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             MyLog.i(LOG_TAG, "Launching in default browser for below Lollipop.");
@@ -368,6 +368,8 @@ public class GamesChatActivity extends AppCompatActivity {
             gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_URL, gameUrl);
             gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_IS_MULTIPLAYER, isMultiplayer);
             gameIntent.putExtra(GameWebViewActivity.EXTRA_GAME_ORIENTATION, isPortrait);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_FROM, from);
+            gameIntent.putExtra(GameWebViewActivity.EXTRA_TO, to);
         }
         startActivity(gameIntent);
     }

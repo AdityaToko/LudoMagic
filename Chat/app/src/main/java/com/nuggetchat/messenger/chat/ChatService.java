@@ -57,6 +57,10 @@ public class ChatService extends Service {
         return START_NOT_STICKY;
     }
 
+    public MessageHandler getMessageHandler() {
+        return messageHandler;
+    }
+
     public void registerEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
         registerForCallEvents(eventListener);
@@ -75,6 +79,7 @@ public class ChatService extends Service {
         socket.on("ice_candidates", messageHandler.onIceCandidates);
         socket.on("call_ended", messageHandler.onCallEnded);
         socket.on("game_link", messageHandler.onGameLink);
+        socket.on("game_left", messageHandler.onGameLeft);
         socket.on("socket_error", messageHandler.onSocketError);
     }
 }

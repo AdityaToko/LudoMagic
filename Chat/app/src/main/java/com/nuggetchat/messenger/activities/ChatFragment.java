@@ -17,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -194,7 +195,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         videoCallView.setKeepScreenOn(true);
         VideoRendererGui.setView(videoCallView, new Runnable() {
             @Override
-            public void run() {}
+            public void run() {
+                videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
         });
         remote = VideoRendererGui.create(REMOTE_X, REMOTE_Y, REMOTE_WIDTH, REMOTE_HEIGHT,
                 scalingType, true);
@@ -422,7 +425,6 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             if (videoCallView.getVisibility() == View.INVISIBLE ){
                 videoCallView.setVisibility(View.VISIBLE);
             }
-            videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
     }
 
@@ -431,9 +433,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         MyLog.i(LOG_TAG, "onHideFragment: Chat Fragment ");
         if (videoCallView != null) {
             MyLog.d(LOG_TAG, "ChatFragment hidden... hide local stream");
-            videoCallView.setVisibility(View.INVISIBLE);
-            videoCallView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             webRtcClient.stopVideoSource();
+            videoCallView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -893,7 +894,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     public void onGameLink(String link) {
         // launch the WebView
         MyLog.i(LOG_TAG, "Received game link " + link);
-        gamesChatActivity.launchGameActivity(link, true /*isPortrait*/, true /*isMultiplayer*/);
+        gamesChatActivity.launchGameActivity(link, true /*isPortrait*/, true /*isMultiplayer*/, myUserId,
+                targetUserId);
     }
 
     @Override
@@ -1047,7 +1049,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                 String peerGameUrl = gamesItem.getGamesUrl()
                         + "?room=" + gameSessionId
                         + "&user=" + "dan";
-                gamesChatActivity.launchGameActivity(thisGameUrl, gamesItem.getPortrait(), true /*isMultiplayer*/);
+                gamesChatActivity.launchGameActivity(thisGameUrl, gamesItem.getPortrait(), true /*isMultiplayer*/,
+                        myUserId, targetUserId);
                 // emit to peer
                 JSONObject payload = new JSONObject();
                 try {

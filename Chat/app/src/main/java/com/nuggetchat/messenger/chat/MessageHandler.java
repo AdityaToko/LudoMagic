@@ -1,9 +1,11 @@
 package com.nuggetchat.messenger.chat;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.rtcclient.EventListener;
+import com.nuggetchat.messenger.rtcclient.GameLeftListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -25,6 +27,7 @@ public class MessageHandler {
     private NuggetInjector nuggetInjector;
     private String userId;
     private String username;
+    private GameLeftListener gameLeftListener;
 
     public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
@@ -41,6 +44,15 @@ public class MessageHandler {
 
     public void addEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    public void setGameLeftListener(GameLeftListener gameLeftListener) {
+        this.gameLeftListener = gameLeftListener;
+    }
+
+    public void removeGameLeftListener(GameLeftListener gameLeftListener){
+        this.gameLeftListener = gameLeftListener;
+        this.gameLeftListener = null;
     }
 
     public Emitter.Listener onInit = new Emitter.Listener() {
@@ -203,6 +215,14 @@ public class MessageHandler {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    };
+
+    public Emitter.Listener onGameLeft = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.i(LOG_TAG, "game left");
+            gameLeftListener.notifyGameLeft();
         }
     };
 

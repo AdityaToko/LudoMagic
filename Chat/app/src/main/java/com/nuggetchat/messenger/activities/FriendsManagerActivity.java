@@ -159,7 +159,6 @@ public class FriendsManagerActivity extends AppCompatActivity {
         if (nuggetInjector.isOngoingCall()) {
             MyLog.i(LOG_TAG, "On resume - friend activity");
             finish();
-            return;
         }
     }
 

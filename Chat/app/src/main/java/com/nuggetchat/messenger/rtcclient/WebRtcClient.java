@@ -2,6 +2,7 @@ package com.nuggetchat.messenger.rtcclient;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.utils.MyLog;
@@ -134,14 +135,15 @@ public class WebRtcClient{
 
     public void stopVideoSource() {
         if (videoSource != null) {
-            MyLog.e(LOG_TAG, "Stopping video source.......");
+            Log.e(LOG_TAG, "Stopping video source.......");
+            videoSource.stop();
             videoSource.stop();
         }
     }
 
     public void restartVideoSource() {
         if (videoSource != null) {
-            MyLog.e(LOG_TAG, "Restarting video source.......");
+            Log.e(LOG_TAG, "Restarting video source.......");
             videoSource.restart();
         }
     }
@@ -256,18 +258,18 @@ public class WebRtcClient{
 
                 @Override
                 public void onCameraOpening(int i) {
-                    MyLog.i(LOG_TAG, "onCameraOpening: " + i);
+                    Log.i(LOG_TAG, "onCameraOpening: " + i);
                 }
 
                 @Override
                 public void onFirstFrameAvailable() {
-                    MyLog.i(LOG_TAG, "onFirstFrameAvailable");
+                    Log.i(LOG_TAG, "onFirstFrameAvailable");
                     rtcListener.onLocalStreamFirstFrame();
                 }
 
                 @Override
                 public void onCameraClosed() {
-                    MyLog.i(LOG_TAG, "onCameraClosed");
+                    Log.i(LOG_TAG, "onCameraClosed");
                 }
             };
     }

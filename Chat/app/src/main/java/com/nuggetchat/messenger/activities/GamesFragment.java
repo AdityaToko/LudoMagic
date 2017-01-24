@@ -252,7 +252,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                     ((GamesChatActivity) getActivity()).launchGameActivity(
                             gamesItemList.get(position).getGamesUrl(),
                             gamesItemList.get(position).getPortrait(),
-                            false /*isMultiplayer*/);
+                            false /*isMultiplayer*/, "", "");
                 }
             }
         });
