@@ -30,7 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class GameWebViewActivity extends AppCompatActivity implements GameLeftListener{
+public class GameWebViewActivity extends AppCompatActivity implements GameLeftListener {
     public static final String EXTRA_GAME_URL = GamesFragment.class.getName() + ".game_url";
     public static final String EXTRA_GAME_ORIENTATION = GamesFragment.class.getName() + ".game_orientation";
     public static final String EXTRA_GAME_IS_MULTIPLAYER = GameWebViewActivity.class.getName() + ".game_is_multiplayer";
@@ -46,7 +46,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             chatService = ((ChatService.ChatBinder) iBinder).getService();
             MessageHandler messageHandler = chatService.getMessageHandler();
-            if (messageHandler != null){
+            if (messageHandler != null) {
                 messageHandler.setGameLeftListener(GameWebViewActivity.this);
             }
         }
@@ -59,6 +59,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
     private boolean isBound;
     private String myUserId;
     private String targetUserId;
+    private boolean hasLeftGame = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
         gameIsMultiplayer = false;
         if (bundle.containsKey(EXTRA_GAME_IS_MULTIPLAYER)) {
             gameIsMultiplayer = bundle.getBoolean(EXTRA_GAME_IS_MULTIPLAYER);
-            MyLog.i(LOG_TAG,"Game is multiplayer" + gameIsMultiplayer);
+            MyLog.i(LOG_TAG, "Game is multiplayer" + gameIsMultiplayer);
         }
         gameWebView = (WebView) findViewById(R.id.game_web_view);
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -129,7 +130,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
         super.onResume();
         MyLog.i(LOG_TAG, "On resume - game webview");
         // Finish only on solo games. TODO
-        MyLog.i(LOG_TAG, "is on going call, " +nuggetInjector.isOngoingCall());
+        MyLog.i(LOG_TAG, "is on going call, " + nuggetInjector.isOngoingCall());
         if (nuggetInjector.isOngoingCall() && (!gameIsMultiplayer)) {
             MyLog.i(LOG_TAG, "On resume - game webview - Finishing ");
             finish();
@@ -154,6 +155,10 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
     @Override
     public void onDestroy() {
         undbindService();
+        if (gameIsMultiplayer && !hasLeftGame){
+            chatService.socket.emit("game_left", getPayload());
+            hasLeftGame = true;
+        }
         if (gameWebView != null) {
             gameWebView.destroy();
         }
@@ -170,11 +175,10 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
 
     @Override
     public void onBackPressed() {
-        //if(NuggetInjector.getInstance().isInitiator()){
-            if(gameIsMultiplayer){
-                chatService.socket.emit("game_left", getPayload());
-            }
-        //}
+        if (gameIsMultiplayer) {
+            chatService.socket.emit("game_left", getPayload());
+            hasLeftGame = true;
+        }
         super.onBackPressed();
     }
 
@@ -203,7 +207,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
         builder.show();
     }
 
-    private JSONObject getPayload(){
+    private JSONObject getPayload() {
         JSONObject payload = new JSONObject();
         try {
             MyLog.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
