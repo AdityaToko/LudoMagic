@@ -170,11 +170,11 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
 
     @Override
     public void onBackPressed() {
-        if(NuggetInjector.getInstance().isInitiator()){
+        //if(NuggetInjector.getInstance().isInitiator()){
             if(gameIsMultiplayer){
                 chatService.socket.emit("game_left", getPayload());
             }
-        }
+        //}
         super.onBackPressed();
     }
 
