@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,15 +35,29 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.nuggetchat.lib.Conf;
+import com.nuggetchat.lib.common.Utils;
 import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.chat.UpdateInterface;
+import com.nuggetchat.messenger.datamodel.CurrentLeader;
+import com.nuggetchat.messenger.datamodel.PrizeWinner;
 import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
+import com.nuggetchat.messenger.utils.FirebaseUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -51,7 +66,8 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
     private static final long INCENTIVE_START_TS = 1485061598;
     private static final long DELTA_PRIZE_TIME = 604800;
-    private static final int CURRENT_LEADER_MINIMUM_1 = 10;
+    private static final int PERCENTAGE_MINIMUM1 = 40;
+    private static final int CURRENT_LEADER_MINIMUM_1 = 5;
     private static final int CURRENT_LEADER_MINIMUM_2 = 18;
 
     private long lastPrizeTS;
@@ -81,7 +97,10 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     /* package-local */ TextView nextPrizeTime;
 
     @BindView(R.id.your_score)
-    /* package-local */ TextView yourScore;
+    /* package-local */ TextView yourScoreText;
+
+    @BindView(R.id.current_leader_score)
+    /* package-local */ TextView leaderScoreText;
 
     private LinearLayout tabView;
     private TextView textView;
@@ -168,9 +187,10 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         super.onResume();
         MyLog.i(LOG_TAG, "onResume GamesChatActivity");
         if(checkFirstRun()) {
-            createIncentiveDialog(this);
+            createIncentiveInfoDialog(this);
+            getCurrentLeaderAndUpdate();
         }
-        incentiveActions();
+        incentiveActions(this);
 
     }
 
@@ -182,13 +202,20 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         super.onStop();
     }
 
-    private void incentiveActions() {
+    private void incentiveActions(Context context) {
         //if not FirstRun read last & next from SharedPreferences
         //Update based on current TS
+        currentLeaderScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentLeaderScore", 0);
+        currentScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentGiftScore", 0);
+        setCurrentScore(currentScore);
+        setLeaderScore(currentLeaderScore);
         long currentTS = System.currentTimeMillis()/1000;
         long deltaPrizeTime = DELTA_PRIZE_TIME;
         lastPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
         nextPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
+
+        prizeWinActions(context);
+
 
         if(lastPrizeTS==0l || nextPrizeTS==0l) {
             long startTS = INCENTIVE_START_TS;
@@ -201,13 +228,13 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                 nextPrizeTS = startTS + deltaPrizeTime * ((long) (periods + 1));
             }
 
-            Log.d(LOG_TAG,">>> currentTS: " + currentTS);
-            Log.d(LOG_TAG,">>> startTS: " + startTS);
-            Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
-            Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
-            Log.d(LOG_TAG,">>> periods: " + periods);
-            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
-            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+//            Log.d(LOG_TAG,">>> currentTS: " + currentTS);
+//            Log.d(LOG_TAG,">>> startTS: " + startTS);
+//            Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
+//            Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
+//            Log.d(LOG_TAG,">>> periods: " + periods);
+//            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
+//            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
 
             SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
             if(prefs != null) {
@@ -227,7 +254,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
             }
             currentScore = 0;
             setCurrentScore(currentScore);
-            prizeWinActions();
+            prizeWinActions(context);
         }
 
         startCounter(nextPrizeTS-currentTS);
@@ -236,6 +263,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
 
     private void startCounter(long start) {
         Log.d(LOG_TAG,">>>Starting counter: " + start);
+        String nextPrizeTimeText;
         int seconds = (int) (start);
         int minutes = seconds / 60;
         seconds = seconds - minutes * 60;
@@ -244,9 +272,9 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         int days = hours / 24;
         hours = hours - days * 24;
 
-
-        nextPrizeTime.setText(days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
-                + "m:" + String.format("%02d", seconds) + "s");
+        nextPrizeTimeText = days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
+                + "m:" + String.format("%02d", seconds) + "s";
+        setNextPrizeTime(nextPrizeTimeText);
 
         counter = new CountDownTimer(start*1000,100) {
             @Override
@@ -260,8 +288,9 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                 seconds = seconds % 60;
                 hours = hours - days * 24;
 
-                nextPrizeTime.setText(days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
-                        + "m:" + String.format("%02d", seconds) + "s");
+                String nextPrizeTimeText = days + "d:" + String.format("%02d", hours)+ "h:" + String.format("%02d", minutes)
+                        + "m:" + String.format("%02d", seconds) + "s";
+                setNextPrizeTime(nextPrizeTimeText);
             }
 
             @Override
@@ -271,27 +300,275 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         }.start();
     }
 
+    private void setNextPrizeTime(final String nextPrizeTimeText) {
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                nextPrizeTime.setText(String.valueOf(nextPrizeTimeText));
+                nextPrizeTime.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+
     private void setCurrentScore(final int currentScore) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                yourScore.setText(String.valueOf(currentScore));
-                yourScore.setVisibility(View.VISIBLE);
+                yourScoreText.setText(String.valueOf(currentScore));
+                yourScoreText.setVisibility(View.VISIBLE);
             }
         });
     }
 
     public void updateScore(String myUserID, String targetUserID) {
-        currentScore = currentScore + 1;
-        setCurrentScore(currentScore);
+        //Do only if played with new user
+        SharedPreferences pref = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
+        Set<String> someStringSet = pref.getStringSet("playedWith", new HashSet<String>());
+        Log.d(LOG_TAG, "=>>> Played with list: " + someStringSet);
+
+        if (!someStringSet.contains(targetUserID)) {
+
+            someStringSet.add(targetUserID);
+            Log.d(LOG_TAG, "=>>> Updated played with list: " + someStringSet);
+
+            pref.edit().putStringSet("playedWith", someStringSet).apply();
+
+            currentScore = currentScore + 1;
+            setCurrentScore(currentScore);
+
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                    .edit()
+                    .putInt("currentGiftScore", currentScore)
+                    .apply();
+
+            getCurrentLeaderAndUpdate();
+        }
     }
 
-    private void prizeWinActions() {
+    public void setLeaderScore(final int leaderScore) {
+
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                leaderScoreText.setText(String.valueOf(leaderScore));
+                leaderScoreText.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void getCurrentLeaderAndUpdate() {
+        final String myID = SharedPreferenceUtility.getFacebookUserId(this);
+        String fbaseCurrentLeaderUri = Conf.firebaseCurrentLeaderUri();
+        DatabaseReference firebaseDataRef = FirebaseDatabase.getInstance().getReferenceFromUrl(fbaseCurrentLeaderUri);
+        Log.d(LOG_TAG,"=>>> Getting Current Leader & Updating " + firebaseDataRef);
+
+        firebaseDataRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(final DataSnapshot dataSnapshot) {
+                Log.d(LOG_TAG,"=>>> Here0");
+                CurrentLeader currentLeader=null;
+                try {
+                     currentLeader = dataSnapshot.getValue(CurrentLeader.class);
+                } catch(Exception e) {
+                    Log.d(LOG_TAG, e.getMessage());
+                }
+                Log.d(LOG_TAG,"=>>> dataSnapshot: " + dataSnapshot.toString());
+                int currentGlobalLeaderScore = currentLeader.getScore();
+                int globalLeaderMinimum1 = currentLeader.getMinimum1();
+                int globalLeaderMinimum2 = currentLeader.getMinimum2();
+                int compareMinimum;
+
+                long leaderTimeLeft = currentLeader.getScoreTime();
+
+                long currentTS = System.currentTimeMillis()/1000;
+                long timeLeft = nextPrizeTS-currentTS;
+
+                Log.d(LOG_TAG,"=>>> Info: currentGlobal: " + currentGlobalLeaderScore
+                        + " globalMin1: " + globalLeaderMinimum1
+                        + " globalMin2: " + globalLeaderMinimum2
+                        + " leaderTimeLeft: " + leaderTimeLeft
+                        + " currentTS: " + currentTS
+                        + " timeLeft: " + timeLeft
+                        );
+
+                if(currentGlobalLeaderScore > currentScore) {
+                    Log.d(LOG_TAG,"==> Here1");
+                    setLeaderScore(currentGlobalLeaderScore);
+                    getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                            .edit()
+                            .putInt("currentLeaderScore", currentGlobalLeaderScore)
+                            .apply();
+
+                } else if(currentGlobalLeaderScore <= currentScore) {
+                    Log.d(LOG_TAG,"==> Here2");
+                    if(timeLeft >= (DELTA_PRIZE_TIME * PERCENTAGE_MINIMUM1 / 100)) {
+                        Log.d(LOG_TAG,"==> Here3");
+                        compareMinimum = globalLeaderMinimum1;
+                    } else {
+                        Log.d(LOG_TAG,"==> Here4");
+                        compareMinimum = globalLeaderMinimum2;
+                    }
+
+                    if(currentGlobalLeaderScore < compareMinimum) {
+                        Log.d(LOG_TAG,"==> Here5");
+                        Random random = new Random();
+                        int add = random.nextInt(2);
+                        currentGlobalLeaderScore = compareMinimum + add;
+                        setLeaderScore(currentGlobalLeaderScore);
+                        getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                                .edit()
+                                .putInt("currentLeaderScore", currentGlobalLeaderScore)
+                                .apply();
+                        CurrentLeader update = new CurrentLeader("none",
+                                currentLeader.getMinName(),currentLeader.getMinimum1(),currentLeader.getMinimum2(),
+                                currentGlobalLeaderScore, timeLeft);
+                        updateFbaseLeaderScore(update);
+                    } else {
+                        Log.d(LOG_TAG,"==> Here6");
+                        if(currentGlobalLeaderScore == currentScore) {
+                            Log.d(LOG_TAG,"==> Here7");
+                            if(timeLeft > leaderTimeLeft) {
+                                Log.d(LOG_TAG,"==> Here8");
+                                currentGlobalLeaderScore = currentScore;
+                                setLeaderScore(currentGlobalLeaderScore);
+                                CurrentLeader update = new CurrentLeader(myID,
+                                        currentLeader.getMinName(),currentLeader.getMinimum1(),currentLeader.getMinimum2(),
+                                        currentGlobalLeaderScore, timeLeft);
+                                updateFbaseLeaderScore(update);
+                            } else {
+                                Log.d(LOG_TAG,"==> Here9");
+                                setLeaderScore(currentGlobalLeaderScore);
+                            }
+                            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                                    .edit()
+                                    .putInt("currentLeaderScore", currentGlobalLeaderScore)
+                                    .apply();
+                        } else if (currentGlobalLeaderScore < currentScore) {
+                            Log.d(LOG_TAG,"==> Here10");
+                            currentGlobalLeaderScore = currentScore;
+                            setLeaderScore(currentGlobalLeaderScore);
+                            getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                                    .edit()
+                                    .putInt("currentLeaderScore", currentGlobalLeaderScore)
+                                    .apply();
+                            CurrentLeader update = new CurrentLeader(myID,
+                                    currentLeader.getMinName(),currentLeader.getMinimum1(),currentLeader.getMinimum2(),
+                                    currentGlobalLeaderScore, timeLeft);
+                            updateFbaseLeaderScore(update);
+                        }
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e(LOG_TAG, "Error in fetching data.", databaseError.toException());
+            }
+        });
 
     }
 
+    private void updateFbaseLeaderScore(CurrentLeader update) {
+        Log.d(LOG_TAG, "=>>> Updating Fbase Leader Score: " + update.getId() + " score: " + update.getScore() + " timeLeft: " + update.getScoreTime());
+        if(update.getId() =="none") {
+            updateFbaseMinimumLeaderScore(update);
+        } else {
+            findFbaseIDUpdateLeaderScore(update);
+        }
+    }
 
-    private void createIncentiveDialog(Context context) {
+
+    private void updateFbaseMinimumLeaderScore(CurrentLeader update) {
+        String fbaseCurrentLeaderUri = Conf.firebaseCurrentLeaderUri();
+        Log.d(LOG_TAG,">>>Writing to: " + fbaseCurrentLeaderUri);
+
+        DatabaseReference histRef =
+                FirebaseDatabase.getInstance().getReferenceFromUrl(fbaseCurrentLeaderUri);
+        FirebaseUtils.fireBaseSetValue(histRef, update, "user-id:" + update.getId());
+    }
+
+
+    private void findFbaseIDUpdateLeaderScore(final CurrentLeader update) {
+        String fbaseFbToFireidUri = Conf.firebaseFbToFireidUri(update.getId());
+        DatabaseReference firebaseDataRef = FirebaseDatabase.getInstance().getReferenceFromUrl(fbaseFbToFireidUri);
+        Log.d(LOG_TAG,"=>>> Getting Fireid & Updating " + firebaseDataRef);
+
+        firebaseDataRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String firebaseID = dataSnapshot.getValue(String.class);
+                Log.d(LOG_TAG,"=>>> Writing to Firebase: " + firebaseID);
+                update.setId(firebaseID);
+                updateFbaseMinimumLeaderScore(update);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+    private void prizeWinActions(Context context) {
+        createYouWonDialog(context);
+    }
+
+
+    private void createYouWonDialog(Context context) {
+        Log.d(LOG_TAG, "==>>> Creating YouWon Dialog");
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        final AlertDialog dialog = builder.create();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        if(inflater!=null) {
+            Log.d(LOG_TAG, "==>>> Expanding YouWon View");
+
+            try {
+                View dialogLayout = inflater.inflate(R.layout.incentive_youwon_layout, null);
+                Log.d(LOG_TAG, "==>>> Have I crashed? 1");
+
+                dialog.setView(dialogLayout);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+            final EditText inputEmail = (EditText) dialogLayout.findViewById(R.id.input_email);
+            final EditText inputAddress = (EditText) dialogLayout.findViewById(R.id.input_address);
+
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String inputEmailText = inputEmail.getText().toString();
+                        String inputEmailAddress = inputAddress.getText().toString();
+                        writeWinnerDetailsToFbase(inputEmailText, inputEmailAddress);
+                    }
+                });
+                dialog.show();
+            } catch (Exception e) {
+                Log.d(LOG_TAG, "==>>>" + e.getMessage());
+            }
+        } else {
+            Log.d(LOG_TAG, "==>>> Inflater null");
+        }
+    }
+
+
+    private void writeWinnerDetailsToFbase(String email, String address) {
+        String fbaseWinnersUri = Conf.firebaseWinnersUri();
+        Log.d(LOG_TAG,">>>Writing to: " + fbaseWinnersUri);
+        String dateClaimed = Utils.getCurrentDate();
+        PrizeWinner winner = new PrizeWinner(dateClaimed, email, address);
+
+        DatabaseReference histRef =
+                FirebaseDatabase.getInstance().getReferenceFromUrl(fbaseWinnersUri);
+        FirebaseUtils.fireBaseSetValue(histRef.push(), winner, "user-id:" + winner.getDate());
+    }
+
+
+    private void createIncentiveInfoDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setPositiveButton("Play with friends", new DialogInterface.OnClickListener() {
             @Override
@@ -366,7 +643,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         giftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createIncentiveDialog(context);
+                createIncentiveInfoDialog(context);
             }
         });
 

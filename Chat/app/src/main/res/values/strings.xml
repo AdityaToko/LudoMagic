@@ -7,6 +7,7 @@
     <string name="play_with_friends">play with friends to win</string>
     <string name="nugget_line">a world of games</string>
     <string name="incentive_info_heading">A SAMSUNG GALAXY TAB EVERY WEEK!</string>
+    <string name="incentive_otherswon_heading">A SAMSUNG GALAXY TAB!</string>
     <string name="incentive_info_details">Play games against the highest number of friends in 7 days &amp; win a Samsung Galaxy Tablet</string>
     <string name="games_tab_heading">SOLO GAMES</string>
     <string name="call_tab_heading">PLAY &amp; WIN</string>
@@ -35,7 +36,7 @@
     <string name="facebook_messenger_not_found">You do not have Facebook Messenger installed</string>
 
     <string name="what_incentive">Samsung Tablet</string>
-    <string name="prize_score_line">Your gift score</string>
+    <string name="prize_score_line">Your gift score: </string>
     <string name="next_prize_line">next prize in </string>
     <string name="current_leader_line">current leader: </string>
 
