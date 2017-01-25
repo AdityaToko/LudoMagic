@@ -11,11 +11,23 @@
     >
 
     <TextView
+        android:id="@+id/winner_name"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_centerHorizontal="true"
-        android:text="@string/incentive_info_heading"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:textSize="16dp"
+        android:textColor="#e5576f" />
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_centerHorizontal="true"
+        android:text="@string/incentive_otherswon_heading"
+        android:layout_below="@id/winner_name"
         android:textStyle="bold"
         android:textAlignment="center"
         android:textSize="16dp"

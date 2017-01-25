@@ -6,6 +6,10 @@ public class LastLeader {
     int score;
     long scoreTime;
 
+    public LastLeader() {
+
+    }
+
     public LastLeader(String id, String name, int score, long scoreTime) {
         this.id = id;
         this.name = name;
