@@ -574,6 +574,11 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                     lastLeader = dataSnapshot.getValue(UserInfo.class);
                     Log.d(LOG_TAG,"*>>> Last leader Fbase: " + lastLeader.toString());
                     if (lastLeader.getFacebookId().equals(myID)) {
+                        giftButton.setBackgroundResource(R.drawable.got_gift);
+                        getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                                .edit()
+                                .putBoolean("toClaimGift", true)
+                                .apply();
                         createYouWonDialog(context);
                     } else {
                         createOtherWonDialog(context, lastLeader.getName());
@@ -732,7 +737,12 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         giftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createIncentiveInfoDialog(context);
+                boolean toClaimGift = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("toClaimGift", true);
+                if(toClaimGift) {
+                    createYouWonDialog(context);
+                } else {
+                    createIncentiveInfoDialog(context);
+                }
             }
         });
 
@@ -938,11 +948,15 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                     } else if (inputAddressText.isEmpty()) {
                         inputAddressHint.setText("Address can't be empty");
                         inputAddressHint.setVisibility(View.VISIBLE);
-                    } else if (!inputEmailText.contains("@")) {
+                    } else if ((!inputEmailText.contains("@")) || (!inputEmailText.contains(".com"))) {
                         inputEmailHint.setText("Please enter a valid email");
                         inputEmailHint.setVisibility(View.VISIBLE);
                     } else {
-
+                        getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                                .edit()
+                                .putBoolean("toClaimGift", false)
+                                .apply();
+                        giftButton.setBackgroundResource(R.drawable.gift);
                         writeWinnerDetailsToFbase(inputEmailText, inputAddressText);
                         dismiss();
                     }
