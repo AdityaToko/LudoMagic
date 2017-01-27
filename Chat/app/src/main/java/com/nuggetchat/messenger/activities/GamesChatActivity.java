@@ -69,14 +69,15 @@ import butterknife.ButterKnife;
 
 public class GamesChatActivity extends AppCompatActivity implements UpdateInterface {
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
-    private static final long INCENTIVE_START_TS = 1485061598;
-    private static final long DELTA_PRIZE_TIME = 604800;
+    private static final long INCENTIVE_START_TS = 1485508492;
+    private static final long DELTA_PRIZE_TIME = 300;
     private static final int PERCENTAGE_MINIMUM1 = 40;
-    private static final int CURRENT_LEADER_MINIMUM_1 = 5;
-    private static final int CURRENT_LEADER_MINIMUM_2 = 18;
+    private static final int CURRENT_LEADER_MINIMUM_1 = 0;
+    private static final int CURRENT_LEADER_MINIMUM_2 = 2;
+    private static final int RANDOM_RANGE = 1;
 
-    private long lastPrizeTS;
-    private long nextPrizeTS;
+    private Long lastPrizeTS;
+    private Long nextPrizeTS;
     private long currentPrizeCounter;
     private long startPrizeCounter;
     private int currentScore;
@@ -210,39 +211,42 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     private void incentiveActions(Context context) {
         //if not FirstRun read last & next from SharedPreferences
         //Update based on current TS
+        Log.d(LOG_TAG,">>> Here0");
         currentLeaderScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentLeaderScore", 0);
         currentScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentGiftScore", 0);
         setCurrentScore(currentScore);
         setLeaderScore(currentLeaderScore);
         long currentTS = System.currentTimeMillis() / 1000;
         long deltaPrizeTime = DELTA_PRIZE_TIME;
-        lastPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
-        nextPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", 0l);
+        lastPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", -1l);
+        nextPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("nextPrizeTS", -1l);
 
-        prizeWinActions(context);
+        Log.d(LOG_TAG,">>> Here1 lastPrizeTS: " + lastPrizeTS + " nextPrizeTS: " + nextPrizeTS);
+        if (lastPrizeTS.equals(-1l) || nextPrizeTS.equals(-1l)) {
+            Log.d(LOG_TAG,">>> Here2");
 
-
-        if (lastPrizeTS == 0l || nextPrizeTS == 0l) {
             long startTS = INCENTIVE_START_TS;
-
             long deltaCurrentStart = currentTS - startTS;
             int periods = 0;
             if (deltaPrizeTime != 0l) {
+                Log.d(LOG_TAG,">>> Here3");
                 periods = (int) (deltaCurrentStart / deltaPrizeTime);
                 lastPrizeTS = startTS + deltaPrizeTime * ((long) periods);
                 nextPrizeTS = startTS + deltaPrizeTime * ((long) (periods + 1));
             }
 
-//            Log.d(LOG_TAG,">>> currentTS: " + currentTS);
-//            Log.d(LOG_TAG,">>> startTS: " + startTS);
-//            Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
-//            Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
-//            Log.d(LOG_TAG,">>> periods: " + periods);
-//            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
-//            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+            Log.d(LOG_TAG,">>> currentTS: " + currentTS);
+            Log.d(LOG_TAG,">>> startTS: " + startTS);
+            Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
+            Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
+            Log.d(LOG_TAG,">>> periods: " + periods);
+            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
+            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+            Log.d(LOG_TAG,">>> current-last: " + (currentTS-lastPrizeTS));
 
             SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
             if (prefs != null) {
+                Log.d(LOG_TAG,">>> Here4");
                 prefs.edit().putLong("lastPrizeTS", lastPrizeTS);
                 prefs.edit().putLong("nextPrizeTS", lastPrizeTS);
             }
@@ -250,23 +254,27 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
 
 
         if ((currentTS - lastPrizeTS) > deltaPrizeTime) {
+            Log.d(LOG_TAG,">>> Here5");
             lastPrizeTS = nextPrizeTS;
             nextPrizeTS = lastPrizeTS + deltaPrizeTime;
             SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
             if (prefs != null) {
+                Log.d(LOG_TAG,">>> Here6");
                 prefs.edit().putLong("lastPrizeTS", lastPrizeTS);
                 prefs.edit().putLong("nextPrizeTS", lastPrizeTS);
             }
+            Log.d(LOG_TAG,">>> Here7");
             currentScore = 0;
             setCurrentScore(currentScore);
             prizeWinActions(context);
         }
-
-        startCounter(nextPrizeTS - currentTS);
+        Log.d(LOG_TAG,">>> Before starting counter - lastPrizeTS: " + lastPrizeTS);
+        Log.d(LOG_TAG,">>> Before starting counter - nextPrizeTS: " + nextPrizeTS);
+        startCounter(nextPrizeTS - currentTS, context);
 
     }
 
-    private void startCounter(long start) {
+    private void startCounter(long start, final Context context) {
         Log.d(LOG_TAG, ">>>Starting counter: " + start);
         String nextPrizeTimeText;
         int seconds = (int) (start);
@@ -300,7 +308,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
 
             @Override
             public void onFinish() {
-
+                incentiveActions(context);
             }
         }.start();
     }
@@ -418,7 +426,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                     if (currentGlobalLeaderScore < compareMinimum) {
                         Log.d(LOG_TAG, "==> Here5");
                         Random random = new Random();
-                        int add = random.nextInt(2);
+                        int add = random.nextInt(RANDOM_RANGE);
                         currentGlobalLeaderScore = compareMinimum + add;
                         setLeaderScore(currentGlobalLeaderScore);
                         getSharedPreferences("PREFERENCE", MODE_PRIVATE)
