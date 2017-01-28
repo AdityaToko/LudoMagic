@@ -23,12 +23,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
@@ -58,8 +56,6 @@ import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
 
-import org.w3c.dom.Text;
-
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -80,7 +76,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     private Long nextPrizeTS;
     private long currentPrizeCounter;
     private long startPrizeCounter;
-    private int currentScore;
+    private int currentGiftScore;
     private int currentLeaderScore;
     private CountDownTimer counter = null;
 
@@ -196,6 +192,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
             createIncentiveInfoDialog(this);
             getCurrentLeaderAndUpdate();
         }
+        Log.d(LOG_TAG,"Calling Incentive Actions 1");
         incentiveActions(this);
 
     }
@@ -209,12 +206,10 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     }
 
     private void incentiveActions(Context context) {
-        //if not FirstRun read last & next from SharedPreferences
-        //Update based on current TS
         Log.d(LOG_TAG,">>> Here0");
         currentLeaderScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentLeaderScore", 0);
-        currentScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentGiftScore", 0);
-        setCurrentScore(currentScore);
+        currentGiftScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentGiftScore", 0);
+        setCurrentGiftScore(currentGiftScore);
         setLeaderScore(currentLeaderScore);
         long currentTS = System.currentTimeMillis() / 1000;
         long deltaPrizeTime = DELTA_PRIZE_TIME;
@@ -240,32 +235,38 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
             Log.d(LOG_TAG,">>> deltaPrizeTime: " + deltaPrizeTime);
             Log.d(LOG_TAG,">>> deltaCurrentStart: " + deltaCurrentStart);
             Log.d(LOG_TAG,">>> periods: " + periods);
-            Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
-            Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
-            Log.d(LOG_TAG,">>> current-last: " + (currentTS-lastPrizeTS));
 
             SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
             if (prefs != null) {
                 Log.d(LOG_TAG,">>> Here4");
-                prefs.edit().putLong("lastPrizeTS", lastPrizeTS);
-                prefs.edit().putLong("nextPrizeTS", lastPrizeTS);
+                prefs.edit()
+                    .putLong("lastPrizeTS", lastPrizeTS)
+                    .putLong("nextPrizeTS", nextPrizeTS)
+                    .apply();
             }
+
         }
 
 
-        if ((currentTS - lastPrizeTS) > deltaPrizeTime) {
+        Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
+        Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+        Log.d(LOG_TAG,">>> current-last: " + (currentTS-lastPrizeTS));
+
+        if ((currentTS - lastPrizeTS) > (deltaPrizeTime-500)) {
             Log.d(LOG_TAG,">>> Here5");
             lastPrizeTS = nextPrizeTS;
-            nextPrizeTS = lastPrizeTS + deltaPrizeTime;
+            nextPrizeTS = nextPrizeTS + deltaPrizeTime;
             SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
             if (prefs != null) {
                 Log.d(LOG_TAG,">>> Here6");
-                prefs.edit().putLong("lastPrizeTS", lastPrizeTS);
-                prefs.edit().putLong("nextPrizeTS", lastPrizeTS);
+                prefs.edit()
+                        .putLong("lastPrizeTS", lastPrizeTS)
+                        .putLong("nextPrizeTS", nextPrizeTS)
+                        .apply();
             }
             Log.d(LOG_TAG,">>> Here7");
-            currentScore = 0;
-            setCurrentScore(currentScore);
+            currentGiftScore = 0;
+            setCurrentGiftScore(currentGiftScore);
             prizeWinActions(context);
         }
         Log.d(LOG_TAG,">>> Before starting counter - lastPrizeTS: " + lastPrizeTS);
@@ -289,7 +290,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                 + "m:" + String.format("%02d", seconds) + "s";
         setNextPrizeTime(nextPrizeTimeText);
 
-        counter = new CountDownTimer(start * 1000, 100) {
+        counter = new CountDownTimer(start * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 int seconds = (int) (millisUntilFinished / 1000);
@@ -304,11 +305,16 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                 String nextPrizeTimeText = days + "d:" + String.format("%02d", hours) + "h:" + String.format("%02d", minutes)
                         + "m:" + String.format("%02d", seconds) + "s";
                 setNextPrizeTime(nextPrizeTimeText);
+
+                if((millisUntilFinished <= 2100) && (millisUntilFinished >= 1100)) {
+                    Log.d(LOG_TAG,"Calling Incentive Actions 2");
+                    incentiveActions(context);
+                }
             }
 
             @Override
             public void onFinish() {
-                incentiveActions(context);
+
             }
         }.start();
     }
@@ -324,11 +330,11 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     }
 
 
-    private void setCurrentScore(final int currentScore) {
+    private void setCurrentGiftScore(final int currentGiftScore) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                yourScoreText.setText(String.valueOf(currentScore));
+                yourScoreText.setText(String.valueOf(currentGiftScore));
                 yourScoreText.setVisibility(View.VISIBLE);
             }
         });
@@ -347,12 +353,12 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
 
             pref.edit().putStringSet("playedWith", someStringSet).apply();
 
-            currentScore = currentScore + 1;
-            setCurrentScore(currentScore);
+            currentGiftScore = currentGiftScore + 1;
+            setCurrentGiftScore(currentGiftScore);
 
             getSharedPreferences("PREFERENCE", MODE_PRIVATE)
                     .edit()
-                    .putInt("currentGiftScore", currentScore)
+                    .putInt("currentGiftScore", currentGiftScore)
                     .apply();
 
             getCurrentLeaderAndUpdate();
@@ -405,7 +411,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                         + " timeLeft: " + timeLeft
                 );
 
-                if (currentGlobalLeaderScore > currentScore) {
+                if (currentGlobalLeaderScore > currentGiftScore) {
                     Log.d(LOG_TAG, "==> Here1");
                     setLeaderScore(currentGlobalLeaderScore);
                     getSharedPreferences("PREFERENCE", MODE_PRIVATE)
@@ -413,7 +419,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                             .putInt("currentLeaderScore", currentGlobalLeaderScore)
                             .apply();
 
-                } else if (currentGlobalLeaderScore <= currentScore) {
+                } else if (currentGlobalLeaderScore <= currentGiftScore) {
                     Log.d(LOG_TAG, "==> Here2");
                     if (timeLeft >= (DELTA_PRIZE_TIME * PERCENTAGE_MINIMUM1 / 100)) {
                         Log.d(LOG_TAG, "==> Here3");
@@ -439,11 +445,11 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                         updateFbaseLeaderScore(update);
                     } else {
                         Log.d(LOG_TAG, "==> Here6");
-                        if (currentGlobalLeaderScore == currentScore) {
+                        if (currentGlobalLeaderScore == currentGiftScore) {
                             Log.d(LOG_TAG, "==> Here7");
                             if (timeLeft > leaderTimeLeft) {
                                 Log.d(LOG_TAG, "==> Here8");
-                                currentGlobalLeaderScore = currentScore;
+                                currentGlobalLeaderScore = currentGiftScore;
                                 setLeaderScore(currentGlobalLeaderScore);
                                 CurrentLeader update = new CurrentLeader(myID,
                                         currentLeader.getMinName(), currentLeader.getMinimum1(), currentLeader.getMinimum2(),
@@ -457,9 +463,9 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                                     .edit()
                                     .putInt("currentLeaderScore", currentGlobalLeaderScore)
                                     .apply();
-                        } else if (currentGlobalLeaderScore < currentScore) {
+                        } else if (currentGlobalLeaderScore < currentGiftScore) {
                             Log.d(LOG_TAG, "==> Here10");
-                            currentGlobalLeaderScore = currentScore;
+                            currentGlobalLeaderScore = currentGiftScore;
                             setLeaderScore(currentGlobalLeaderScore);
                             getSharedPreferences("PREFERENCE", MODE_PRIVATE)
                                     .edit()
