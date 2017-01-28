@@ -18,7 +18,6 @@ public class SharedPreferenceUtility {
     private static final String FAV_FRIEND_2 = "fav_friend_2";
     private static final String NUMBER_OF_FRIENDS = "number_of_friends";
 
-
     public static int getNumberOfFriends(Context context) {
         return getPreferences(context).getInt(NUMBER_OF_FRIENDS,0);
     }

@@ -11,6 +11,7 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.rtcclient.GameLeftListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
+import com.nuggetchat.messenger.utils.FirebaseUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -32,6 +33,7 @@ public class MessageHandler {
     private String userId;
     private String username;
     private GameLeftListener gameLeftListener;
+    private UpdateInterface updatesListener;
 
     public MessageHandler(Socket socket, Context context) {
         this.socket = socket;
@@ -48,6 +50,10 @@ public class MessageHandler {
 
     public void addEventListener(EventListener eventListener) {
         this.eventListener = eventListener;
+    }
+
+    public void registerUpdatesListener(UpdateInterface updatesListener){
+        this.updatesListener = updatesListener;
     }
 
     public void setGameLeftListener(GameLeftListener gameLeftListener) {
@@ -206,19 +212,24 @@ public class MessageHandler {
     public Emitter.Listener onGameLink = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            MyLog.i(LOG_TAG, "onGameLink");
-            JSONObject gameLinkObject = (JSONObject) args[0];
+        MyLog.i(LOG_TAG, "onGameLink");
+        JSONObject gameLinkObject = (JSONObject) args[0];
+        try {
+            String from = gameLinkObject.getString("from");
+            String to = gameLinkObject.getString("to");
+            String gameID = gameLinkObject.getString("gameID");
+            FirebaseUtils.writeGamePlayed(from, to, gameID);
+            updatesListener.updateReceiverScore(to, from);
 
-            try {
-                eventListener.onCall(gameLinkObject.getString("from"),socket);
-                if (gameLinkObject.getString("game_link") != null) {
-                    eventListener.onGameLink(gameLinkObject.getString("game_link"));
-                } else {
-                    MyLog.w(LOG_TAG, "onGameLink game_link null");
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            eventListener.onCall(gameLinkObject.getString("from"),socket);
+            if (gameLinkObject.getString("game_link") != null) {
+                eventListener.onGameLink(gameLinkObject.getString("game_link"));
+            } else {
+                MyLog.w(LOG_TAG, "onGameLink game_link null");
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         }
     };
 

@@ -75,7 +75,13 @@ public class ChatService extends Service {
         this.eventListener = eventListener;
         this.eventListener = null;
     }
-
+    public void registerUpdatesListener(UpdateInterface updateListner){
+        if(messageHandler != null){
+            messageHandler.registerUpdatesListener(updateListner);
+        } else {
+            Log.e(LOG_TAG, "registerUpdatesListener: listener not registered" );
+        }
+    }
     private void registerForCallEvents(EventListener eventListener){
         messageHandler.addEventListener(eventListener);
         socket.on("call_accepted", messageHandler.onCallAccepted);

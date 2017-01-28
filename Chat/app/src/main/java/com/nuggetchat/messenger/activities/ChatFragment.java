@@ -138,6 +138,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
             MyLog.i(LOG_TAG, "On Service connected");
             chatService = ((ChatService.ChatBinder) iBinder).getService();
             chatService.registerEventListener(ChatFragment.this);
+            chatService.registerUpdatesListener(gamesChatActivity);
             if (bundle != null && bundle.getBundle("requestBundle") != null) {
                 Bundle requestBundle = bundle.getBundle("requestBundle");
                 if (requestBundle.getString("user_id") != null) {
@@ -1060,12 +1061,16 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
                     payload.put("from", myUserId);
                     payload.put("to", targetUserId);
                     payload.put("token", "abcd");
+                    payload.put("gameID",gamesItem.getGameKey());
                     payload.put("game_link", peerGameUrl);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 MyLog.i(LOG_TAG, "Emit game link " + peerGameUrl);
                 chatService.socket.emit("game_link", payload);
+                Log.d(LOG_TAG,">>>Update Sender Score");
+                gamesChatActivity.updateScore(myUserId,targetUserId);
+
             } else {
                 Toast.makeText(getActivity(), "Please call a friend to start playing multiplayer!", Toast.LENGTH_LONG).show();
             }

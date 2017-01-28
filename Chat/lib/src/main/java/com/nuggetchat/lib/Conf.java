@@ -9,6 +9,10 @@ public final class Conf {
     private static final String FIREBASE_DOMAIN_URI = "https://nuggetplay-ceaaf.firebaseio.com/";
     private static final String FIREBASE_STREAM_URI = "streams/"; // stream URI
     private static final String FIREBASE_GAMES_URI = "games/"; // games URI
+    private static final String FIREBASE_WINNERS_URI = "winners/"; // games URI
+    private static final String FIREBASE_INCENTIVES = "incentives/"; //incentives URI
+    private static final String FIREBASE_CURRENT_LEADER_URI = "current_leader/"; //current leader URI
+    private static final String FIREBASE_LAST_LEADER_URI = "last_leader/"; //current leader URI
     private static final String FIREBASE_MULTIPLAYER_GAMES_URI = "multiplayer-games/"; //multiplayer-games URI
     private static final String FIREBASE_USERS_URI = "users/"; //users URI
     public static final String CLOUDINARY_PREFIX_URL = "http://res.cloudinary.com/tokoimages1/image/upload/";
@@ -27,6 +31,10 @@ public final class Conf {
         return firebaseDomainUri() + FIREBASE_GAMES_URI;
     }
 
+    public static String firebaseWinnersUri() {
+        return firebaseDomainUri() + FIREBASE_WINNERS_URI;
+    }
+
     public static String firebaseStreamUri() {
         return firebaseDomainUri() + FIREBASE_STREAM_URI;
     }
@@ -35,8 +43,24 @@ public final class Conf {
         return firebaseStreamUri() + FIREBASE_MULTIPLAYER_GAMES_URI;
     }
 
+    public static String firebaseCurrentLeaderUri() {
+        return firebaseDomainUri() + FIREBASE_INCENTIVES + FIREBASE_CURRENT_LEADER_URI;
+    }
+
+    public static String firebaseLastLeaderUri() {
+        return firebaseDomainUri() + FIREBASE_INCENTIVES + FIREBASE_LAST_LEADER_URI;
+    }
+
     public static String firebaseUsersUri() {
         return firebaseDomainUri() + FIREBASE_USERS_URI;
+    }
+
+    public static String firebaseMultiGamePlayedURI(String userId, String currentDate) {
+        return firebaseUsersUri() + userId + "/" + currentDate + "/" + "multiplayer/";
+    }
+
+    public static String firebaseSoloGamePlayedURI(String userId, String currentDate) {
+        return firebaseUsersUri() + userId + "/" + currentDate + "/" + "solo/";
     }
 
     public static String firebaseUsersUri(String firebaseId) {
