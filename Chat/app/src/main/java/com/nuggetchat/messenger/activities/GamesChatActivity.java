@@ -65,11 +65,11 @@ import butterknife.ButterKnife;
 
 public class GamesChatActivity extends AppCompatActivity implements UpdateInterface {
     private static final String LOG_TAG = GamesChatActivity.class.getSimpleName();
-    private static final long INCENTIVE_START_TS = 1485508492;
-    private static final long DELTA_PRIZE_TIME = 300;
-    private static final int PERCENTAGE_MINIMUM1 = 40;
-    private static final int CURRENT_LEADER_MINIMUM_1 = 0;
-    private static final int CURRENT_LEADER_MINIMUM_2 = 2;
+    private static final long INCENTIVE_START_TS = 1485061200;
+    private static final long DELTA_PRIZE_TIME = 604800;
+    private static final int PERCENTAGE_MINIMUM1 = 30;
+    private static final int CURRENT_LEADER_MINIMUM_1 = 3;
+    private static final int CURRENT_LEADER_MINIMUM_2 = 14;
     private static final int RANDOM_RANGE = 1;
 
     private Long lastPrizeTS;
@@ -205,14 +205,48 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         super.onStop();
     }
 
-    private void incentiveActions(Context context) {
+
+    private void counterOverResetPeriod(Context context) {
+        resetPrizePeriod(context);
+
+        long currentTS = System.currentTimeMillis() / 1000;
+        startCounter(nextPrizeTS-currentTS, context);
+    }
+
+
+    private void resetPrizePeriod(Context context) {
+        Log.d(LOG_TAG,">>> Here5");
+        long currentTS = System.currentTimeMillis() / 1000;
+        long startTS = INCENTIVE_START_TS;
+        long deltaPrizeTime = DELTA_PRIZE_TIME;
+        long deltaCurrentStart = currentTS - startTS;
+        int periods = (int) (deltaCurrentStart / deltaPrizeTime);
+        lastPrizeTS = startTS + deltaPrizeTime * ((long) periods);
+        nextPrizeTS = startTS + deltaPrizeTime * ((long) (periods + 1));
+
+        SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
+        if (prefs != null) {
+            Log.d(LOG_TAG,">>> Here6");
+            prefs.edit()
+                    .putLong("lastPrizeTS", lastPrizeTS)
+                    .putLong("nextPrizeTS", nextPrizeTS)
+                    .apply();
+        }
+        Log.d(LOG_TAG,">>> Here7");
+        currentGiftScore = 0;
+        setCurrentGiftScore(currentGiftScore);
+        prizeWinActions(context);
+    }
+
+
+    private void prizePeriodActions(Context context) {
         Log.d(LOG_TAG,">>> Here0");
         currentLeaderScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentLeaderScore", 0);
         currentGiftScore = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getInt("currentGiftScore", 0);
         setCurrentGiftScore(currentGiftScore);
         setLeaderScore(currentLeaderScore);
-        long currentTS = System.currentTimeMillis() / 1000;
         long deltaPrizeTime = DELTA_PRIZE_TIME;
+        long currentTS = System.currentTimeMillis() / 1000;
         lastPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("lastPrizeTS", -1l);
         nextPrizeTS = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getLong("nextPrizeTS", -1l);
 
@@ -240,40 +274,32 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
             if (prefs != null) {
                 Log.d(LOG_TAG,">>> Here4");
                 prefs.edit()
-                    .putLong("lastPrizeTS", lastPrizeTS)
-                    .putLong("nextPrizeTS", nextPrizeTS)
-                    .apply();
-            }
-
-        }
-
-
-        Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
-        Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
-        Log.d(LOG_TAG,">>> current-last: " + (currentTS-lastPrizeTS));
-
-        if ((currentTS - lastPrizeTS) > (deltaPrizeTime-500)) {
-            Log.d(LOG_TAG,">>> Here5");
-            lastPrizeTS = nextPrizeTS;
-            nextPrizeTS = nextPrizeTS + deltaPrizeTime;
-            SharedPreferences prefs = getSharedPreferences("PREFERENCE", MODE_PRIVATE);
-            if (prefs != null) {
-                Log.d(LOG_TAG,">>> Here6");
-                prefs.edit()
                         .putLong("lastPrizeTS", lastPrizeTS)
                         .putLong("nextPrizeTS", nextPrizeTS)
                         .apply();
             }
-            Log.d(LOG_TAG,">>> Here7");
-            currentGiftScore = 0;
-            setCurrentGiftScore(currentGiftScore);
-            prizeWinActions(context);
+
+        }
+        Log.d(LOG_TAG,">>> lastPrizeTS: " + lastPrizeTS);
+        Log.d(LOG_TAG,">>> nextPrizeTS: " + nextPrizeTS);
+        Log.d(LOG_TAG,">>> current-last: " + (currentTS-lastPrizeTS));
+
+        if ((currentTS - lastPrizeTS) > deltaPrizeTime) {
+            resetPrizePeriod(context);
         }
         Log.d(LOG_TAG,">>> Before starting counter - lastPrizeTS: " + lastPrizeTS);
         Log.d(LOG_TAG,">>> Before starting counter - nextPrizeTS: " + nextPrizeTS);
+    }
+
+
+    private void incentiveActions(Context context) {
+        prizePeriodActions(context);
+
+        long currentTS = System.currentTimeMillis() / 1000;
         startCounter(nextPrizeTS - currentTS, context);
 
     }
+
 
     private void startCounter(long start, final Context context) {
         Log.d(LOG_TAG, ">>>Starting counter: " + start);
@@ -306,16 +332,16 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                         + "m:" + String.format("%02d", seconds) + "s";
                 setNextPrizeTime(nextPrizeTimeText);
 
-                if((millisUntilFinished <= 2100) && (millisUntilFinished >= 1100)) {
-                    Log.d(LOG_TAG,"Calling Incentive Actions 2");
-                    incentiveActions(context);
-                }
+//                if((millisUntilFinished <= 2100) && (millisUntilFinished >= 1100)) {
+//                    Log.d(LOG_TAG,"Calling Incentive Actions 2");
+//                }
             }
 
             @Override
             public void onFinish() {
-
+                counterOverResetPeriod(context);
             }
+
         }.start();
     }
 
@@ -595,7 +621,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
                                 .apply();
                         createYouWonDialog(context);
                     } else {
-                        createOtherWonDialog(context, lastLeader.getName());
+                        createOtherWonDialog(context, lastLeader.getName().toUpperCase());
                     }
 
                 } catch (Exception e) {
@@ -751,7 +777,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         giftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean toClaimGift = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("toClaimGift", true);
+                boolean toClaimGift = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getBoolean("toClaimGift", false);
                 if(toClaimGift) {
                     createYouWonDialog(context);
                 } else {

@@ -24,8 +24,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/congrats_text"
         android:text="You've won a brand new Galaxy Tablet"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:textSize="18sp"
         android:padding="8dp"
         android:gravity="center"/>
@@ -37,7 +37,7 @@
         android:src="@drawable/tablet"
         android:layout_width="match_parent"
         android:layout_centerVertical="true"
-        android:layout_height="150dp" />
+        android:layout_height="120dp" />
 
     <TextView
         android:id="@+id/yes_its_true"
@@ -46,8 +46,8 @@
         android:layout_below="@id/image_view"
         android:text="Yes it's true! Really!"
         android:textColor="@color/colorAccent"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:textSize="18sp"
         android:padding="8dp"
         android:gravity="center"/>

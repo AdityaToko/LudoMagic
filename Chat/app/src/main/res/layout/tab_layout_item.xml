@@ -9,8 +9,8 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_gravity="center"
-        android:layout_marginLeft="38dp"
-        android:layout_marginStart="38dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginStart="25dp"
         android:src="@drawable/nuggeticon" />
 
     <TextView
@@ -21,6 +21,6 @@
         android:layout_marginLeft="10dp"
         android:layout_marginStart="10dp"
         android:layout_height="wrap_content"
-        android:textSize="15sp" />
+        android:textSize="14sp" />
 
 </LinearLayout>
