@@ -1,6 +1,7 @@
 package com.nuggetchat.lib;
 
 import com.nuggetchat.lib.common.Utils;
+import com.nuggetchat.lib.model.DataFormat;
 
 public final class Conf {
     public static final String CHAT_SERVER_HOST = "https://server.nuggetchat.com/";
@@ -114,5 +115,23 @@ public final class Conf {
             return "";
         }
         return firebaseDomainUri() + FACEBOOK_DEVICE_TOKEN + "/" + firebaseId + "/";
+    }
+
+    public static String firebaseUserResponseUri() {
+        return firebaseDomainUri() + "user-response/";
+    }
+
+    public static String firebaseUserResponseUri(String type) {
+        if (DataFormat.isNotNullNorEmpty(type)) {
+            return firebaseUserResponseUri() + type + "/";
+        }
+        return "";
+    }
+
+    public static String firebaseUserResponseUri(String type, String userId) {
+        if (DataFormat.isNotNullNorEmpty(type) && DataFormat.isNotNullNorEmpty(userId)) {
+            return firebaseUserResponseUri() + type + "/" + userId + "/";
+        }
+        return "";
     }
 }

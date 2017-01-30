@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class GamesFragment extends Fragment implements FragmentChangeListener {
     private static final String LOG_TAG = GamesFragment.class.getSimpleName();
@@ -46,6 +48,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     private ArrayList<String> multiplayerIDList;
 
     private NuggetInjector nuggetInjector;
+    private TextFeedbackFragment textFeedbackFragment;
     private View view;
     private int numberOfFriends;
     private int numberLocked;
@@ -61,6 +64,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
         multiplayerGamesItemList = new ArrayList<>();
         multiplayerIDList = new ArrayList<>();
         nuggetInjector = NuggetInjector.getInstance();
+        textFeedbackFragment = new TextFeedbackFragment();
 
         numberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
         numberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * numberOfFriends;
@@ -256,6 +260,12 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
                 }
             }
         });
+    }
+
+    @OnClick(R.id.show_text_feedback_button)
+    /* package-local */ void showFeedbackFragment() {
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        textFeedbackFragment.show(fragmentTransaction, "feedback");
     }
 
     @Override

@@ -17,4 +17,8 @@
     <color name="grey_text">#686868</color>
     <color name="add_friends_background_color">#FFF2BB</color>
     <color name="status_blue">#36dee9</color>
+    <color name="color_white">#FEFEFE</color>
+    <color name="card_expand_title_color">#B3B2B2</color>
+    <color name="feedback_send_button">#DD4B39</color>
+    <color name="profile_title_text_color">#FF706A</color>
 </resources>
