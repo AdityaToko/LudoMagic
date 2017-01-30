@@ -4,6 +4,7 @@ import android.media.AudioManager;
 import android.support.multidex.MultiDexApplication;
 
 import com.facebook.FacebookSdk;
+import com.facebook.LoggingBehavior;
 import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -25,13 +26,19 @@ public class NuggetApplication extends MultiDexApplication {
         }
 
         initialized = true;
-        FacebookSdk.sdkInitialize(getApplicationContext());
+
+        if (!BuildConfig.DEBUG) {
+            FacebookSdk.sdkInitialize(getApplicationContext());
+            AppEventsLogger.activateApp(this);
+            FacebookSdk.setIsDebugEnabled(false);
+            FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS);
+            FacebookSdk.addLoggingBehavior(LoggingBehavior.DEVELOPER_ERRORS);
+        }
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseApp.initializeApp(this, FirebaseOptions.fromResource(this));
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         NuggetInjector.getInstance().setAppContext(this);
-        AppEventsLogger.activateApp(this);
     }
 
     private void handleUncaughtExceptions() {
