@@ -8,7 +8,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1089559694082:android:1ec2762abe0bd625",
+        "mobilesdk_app_id": "1:1089559694082:android:a6e376c920fefd88",
         "android_client_info": {
           "package_name": "com.nuggetmessenger.games"
         }
@@ -39,7 +39,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1089559694082:android:bf3d2e39fe3dad26",
+        "mobilesdk_app_id": "1:1089559694082:android:a319596b3de1afd7",
         "android_client_info": {
           "package_name": "com.nuggetmessenger.games.debug"
         }
