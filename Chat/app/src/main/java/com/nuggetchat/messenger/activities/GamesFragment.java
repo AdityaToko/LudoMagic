@@ -1,9 +1,6 @@
 package com.nuggetchat.messenger.activities;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -28,7 +25,6 @@ import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
-import com.nuggetchat.messenger.utils.ViewUtils;
 
 import java.util.ArrayList;
 
@@ -76,38 +72,6 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     @Override
     public void onResume() {
         super.onResume();
-
-        if (numberOfFriends < SharedPreferenceUtility.getNumberOfFriends(this.getContext())) {
-            int newNumberOfFriends = SharedPreferenceUtility.getNumberOfFriends(this.getContext());
-            int newNumberLocked = TOTAL_NUMBER_LOCKED - UNLOCK_INCENTIVE * newNumberOfFriends;
-            int toBeUnlocked = newNumberLocked - numberLocked;
-            processUnlockGames(toBeUnlocked, newNumberOfFriends, newNumberLocked);
-        }
-    }
-
-    private void processUnlockGames(int toBeUnlocked, final int newNumberOfFriends, final int newNumberLocked) {
-        new AlertDialog.Builder(this.getContext())
-                .setTitle(R.string.unlock_games_dialog_title)
-                .setMessage(R.string.unlock_games_dialog_message)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // continue with unlock
-                        unlockGames(newNumberLocked);
-                        numberOfFriends = newNumberOfFriends;
-                        numberLocked = newNumberLocked;
-                    }
-                })
-                .setIcon(R.drawable.games_icon)
-                .show();
-    }
-
-    private void unlockGames(int newNumberLocked) {
-        for (int i = gamesItemList.size() - numberLocked; i <= gamesItemList.size() - numberLocked; i++) {
-            MyLog.d("GAMESFRAGMENT", ">>>>UNLOCKING: " + String.valueOf(i) + "  " + gamesItemList.get(i).getGamesName());
-            gamesItemList.get(i).setLocked(false);
-            gamesItemList.get(i).setNewlyUnlocked(true);
-        }
-        setUpGridView(this.getContext());
     }
 
     private void fetchDataForGames(final Context context) {
@@ -215,49 +179,16 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Toast.makeText(getActivity(), "Starting " + gamesItemList.get(position).getGamesName(),
+                        Toast.LENGTH_SHORT).show();
+                nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
+                        null /* bundle */);
+                MyLog.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
+                ((GamesChatActivity) getActivity()).launchGameActivity(
+                        gamesItemList.get(position).getGamesUrl(),
+                        gamesItemList.get(position).getPortrait(),
+                        false /*isMultiplayer*/, "", "");
 
-                if (gamesItemList.get(position).getLocked()) {
-
-                    new AlertDialog.Builder(context)
-                            .setTitle(R.string.add_friends_dialog_title)
-                            .setMessage(R.string.add_friends_dialog_message)
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // continue with add friends
-                                    Intent intent = new Intent(Intent.ACTION_SEND);
-                                    intent.setPackage("com.facebook.orca");
-                                    intent.setType("text/plain");
-                                    intent.putExtra(Intent.EXTRA_TEXT, ViewUtils.getInviteBody());
-
-                                    try {
-                                        startActivity(intent);
-                                    } catch (android.content.ActivityNotFoundException ex) {
-                                        Toast.makeText(context, "You do not have Facebook Messenger installed", Toast.LENGTH_LONG).show();
-                                    }
-                                    NuggetInjector.getInstance().logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
-                                            null /* bundle */);
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // continue with unlock
-
-                                }
-                            })
-                            .setIcon(R.drawable.child_pic_one_icon)
-                            .show();
-
-                } else {
-                    Toast.makeText(getActivity(), "Starting " + gamesItemList.get(position).getGamesName(),
-                            Toast.LENGTH_SHORT).show();
-                    nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
-                            null /* bundle */);
-                    MyLog.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
-                    ((GamesChatActivity) getActivity()).launchGameActivity(
-                            gamesItemList.get(position).getGamesUrl(),
-                            gamesItemList.get(position).getPortrait(),
-                            false /*isMultiplayer*/, "", "");
-                }
             }
         });
     }

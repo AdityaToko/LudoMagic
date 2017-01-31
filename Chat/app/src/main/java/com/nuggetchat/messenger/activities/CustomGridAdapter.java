@@ -53,14 +53,6 @@ public class CustomGridAdapter extends BaseAdapter {
 
         textView.setText(gameItemList.get(position).getGamesName());
 
-        if(gameItemList.get(position).getLocked()) {
-            lockIcon.setVisibility(View.VISIBLE);
-            imageView.setAlpha(0.5f);
-        } else {
-            lockIcon.setVisibility(View.INVISIBLE);
-            imageView.setAlpha(1.0f);
-        }
-
         int value = gameItemList.get(position).getValue();
         if(value >=5) {
             stars.setBackgroundResource(R.drawable.five_stars);
