@@ -1,8 +1,12 @@
 package com.nuggetchat.messenger.utils;
 
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
+
+import com.appsee.Appsee;
+import com.nuggetchat.messenger.BuildConfig;
 
 public class ViewUtils {
 
@@ -56,4 +60,20 @@ public class ViewUtils {
                 "voice-calling! Install it from " + appId;
     }
 
+    public static void hideViewsFromAppsee(View view, String logTag) {
+        MyLog.i(logTag, "hiding a view from Appsee");
+        Appsee.markViewAsSensitive(view);
+    }
+
+    public static void startAppseeAnalytics(String appSeeId, String logTag) {
+        /**
+         * Starting Appsee for User analytics
+         */
+        if (BuildConfig.DEBUG) {
+            Log.i(logTag, "Starting Appsee in debug");
+            Appsee.start(appSeeId);
+        } else {
+            Log.i(logTag, "Appsee not enabled on production");
+        }
+    }
 }

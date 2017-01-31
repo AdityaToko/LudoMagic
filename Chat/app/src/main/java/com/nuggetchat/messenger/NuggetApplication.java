@@ -26,19 +26,20 @@ public class NuggetApplication extends MultiDexApplication {
         }
 
         initialized = true;
-
-        if (!BuildConfig.DEBUG) {
-            FacebookSdk.sdkInitialize(getApplicationContext());
-            AppEventsLogger.activateApp(this);
-            FacebookSdk.setIsDebugEnabled(false);
-            FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS);
-            FacebookSdk.addLoggingBehavior(LoggingBehavior.DEVELOPER_ERRORS);
-        }
+        FacebookSdk.sdkInitialize(getApplicationContext());
+//        if (!BuildConfig.DEBUG) {
+//            FacebookSdk.sdkInitialize(getApplicationContext());
+//            AppEventsLogger.activateApp(this);
+//            FacebookSdk.setIsDebugEnabled(false);
+//            FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS);
+//            FacebookSdk.addLoggingBehavior(LoggingBehavior.DEVELOPER_ERRORS);
+//        }
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseApp.initializeApp(this, FirebaseOptions.fromResource(this));
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         NuggetInjector.getInstance().setAppContext(this);
+        AppEventsLogger.activateApp(this);
     }
 
     private void handleUncaughtExceptions() {

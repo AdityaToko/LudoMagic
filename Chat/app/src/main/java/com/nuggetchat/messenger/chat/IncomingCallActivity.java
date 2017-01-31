@@ -34,6 +34,7 @@ import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
+import com.nuggetchat.messenger.utils.ViewUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,6 +61,9 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ViewUtils.startAppseeAnalytics(getString(R.string.appsee_id), LOG_TAG);
+
         if (!NuggetInjector.getInstance().isChatServiceRunning()){
             Log.d(LOG_TAG, "onCreate: Chat Service started from Incoming Call");
             startService(new Intent(this, ChatService.class));

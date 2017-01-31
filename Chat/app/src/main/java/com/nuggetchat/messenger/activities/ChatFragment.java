@@ -2,7 +2,6 @@ package com.nuggetchat.messenger.activities;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
@@ -16,12 +15,10 @@ import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -210,12 +207,11 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         triggerImageChanges();
         audioManagerInit();
         MyLog.i(LOG_TAG, "onCreate - call update View");
-
         initWebRtc(myUserId);
         bindChatService();
+        ViewUtils.hideViewsFromAppsee(videoCallView, LOG_TAG);
         return view;
     }
-
 
 
     private void audioManagerInit() {
