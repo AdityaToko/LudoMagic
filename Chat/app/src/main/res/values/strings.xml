@@ -44,11 +44,10 @@
 
     <string name="appsee_id">347522695c5248318f658b29adf90867</string>
 
-    <string name="feedback_edit_text"><![CDATA[Please enter your feedback here...\n\nWe\'re working
-    hard to give a great experience to your children & you,\n and your help will go a long way
-    in achieving that!]]></string>
-    <string name="send_button_text">Send</string>
+    <string name="feedback_edit_text"><![CDATA[Please enter your feedback here...]]></string>
+    <string name="send_button_text">SEND</string>
     <string name="text_feedback_title">What would you like to change in the app?</string>
     <string name="toast_message_on_not_entering_any_feedback">Please Enter Feedback</string>
     <string name="toast_error_message_on_getting_feedback">Error in getting feedback</string>
+    <string name="cancel_button_text">CANCEL</string>
 </resources>

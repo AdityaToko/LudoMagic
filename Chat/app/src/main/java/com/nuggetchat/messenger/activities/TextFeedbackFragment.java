@@ -118,6 +118,11 @@ public class TextFeedbackFragment extends DialogFragment {
             }
         });
 
+        cancelFeedback();
+    }
+
+    @OnClick(R.id.text_feedback_cancel_button)
+    /* package-local */ void cancelFeedback() {
         feedbackContent.setText(null);
         dismiss();
     }
