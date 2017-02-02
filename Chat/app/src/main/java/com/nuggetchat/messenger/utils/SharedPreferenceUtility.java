@@ -7,7 +7,6 @@ import com.nuggetchat.messenger.BuildConfig;
 
 public class SharedPreferenceUtility {
     private static final String PREF_FILE_NAME = BuildConfig.APPLICATION_ID + ".common.pref";
-    private final static String LOG_TAG = SharedPreferenceUtility.class.getSimpleName();
     private static final String FACEBOOK_USER_ID = "facebook_user_id";
     private static final String FACEBOOK_USER_NAME = "facebook_username";
     private static final String ICE_SERVERS_STRING = "ice_servers";
