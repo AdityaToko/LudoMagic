@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger.chat;
+package com.nuggetchat.messenger.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -8,6 +8,8 @@ import android.util.Log;
 
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.chat.MessageHandler;
+import com.nuggetchat.messenger.chat.UpdateInterface;
 import com.nuggetchat.messenger.rtcclient.EventListener;
 import com.nuggetchat.messenger.utils.MyLog;
 

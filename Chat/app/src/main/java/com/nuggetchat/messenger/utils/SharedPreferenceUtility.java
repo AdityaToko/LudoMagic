@@ -16,6 +16,8 @@ public class SharedPreferenceUtility {
     private static final String FAV_FRIEND_1 = "fav_friend_1";
     private static final String FAV_FRIEND_2 = "fav_friend_2";
     private static final String NUMBER_OF_FRIENDS = "number_of_friends";
+    private static final String MIXPANEL_USER_DETAIL_UPDATED = "mixpanel_userdetail_updated";
+    private static final String DEVICE_TOKEN_PUSHED_TO_SERVER = "device_token_pushed_to_server_v1";
 
     public static int getNumberOfFriends(Context context) {
         return getPreferences(context).getInt(NUMBER_OF_FRIENDS,0);
@@ -96,6 +98,27 @@ public class SharedPreferenceUtility {
 
     public static String getFirebaseUid(Context context) {
         return getPreferences(context).getString(FIREBASE_UID,"");
+    }
+
+    public static void setUserLoggedInMixpanel(Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putBoolean(MIXPANEL_USER_DETAIL_UPDATED, true);
+        editor.apply();
+    }
+
+    public static boolean isUserLoggedInMixpanel(Context context) {
+        return getPreferences(context).getBoolean(MIXPANEL_USER_DETAIL_UPDATED, false);
+    }
+
+
+    public static void setDeviceTokenPushedToServer(Context context) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putBoolean(DEVICE_TOKEN_PUSHED_TO_SERVER, true);
+        editor.apply();
+    }
+
+    public static boolean isDeviceTokenPushedToServer(Context context) {
+        return getPreferences(context).getBoolean(DEVICE_TOKEN_PUSHED_TO_SERVER, false);
     }
 
     public static void setFavFriend1(String favFriend1, Context context) {

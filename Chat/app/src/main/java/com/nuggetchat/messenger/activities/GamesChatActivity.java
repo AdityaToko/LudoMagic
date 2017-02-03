@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -30,11 +29,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,12 +40,12 @@ import com.nuggetchat.lib.model.UserInfo;
 import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
-import com.nuggetchat.messenger.chat.ChatService;
 import com.nuggetchat.messenger.chat.UpdateInterface;
 import com.nuggetchat.messenger.datamodel.CurrentLeader;
 import com.nuggetchat.messenger.datamodel.LastLeader;
 import com.nuggetchat.messenger.datamodel.PrizeWinner;
-import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
+import com.nuggetchat.messenger.services.ChatService;
+import com.nuggetchat.messenger.services.RegistrationIntentService;
 import com.nuggetchat.messenger.utils.FirebaseUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -111,10 +105,13 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
     private Intent intent;
     private Bundle requestBundle;
     private Handler mainHandler;
+    private NuggetInjector nuggetInjector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        nuggetInjector = NuggetInjector.getInstance();
+        nuggetInjector.getMixpanel().logCreateView(LOG_TAG);
 
         MyLog.i(LOG_TAG, "onCreate GameChatActivity");
         if(!NuggetInjector.getInstance().isChatServiceRunning()){
@@ -142,7 +139,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
 
         gamesChatTabLayout.setupWithViewPager(viewPager);
 
-        refreshFirebaseToken();
+        pushDeviceTokenToServerOnce();
 
         setUpTabItems();
 
@@ -211,6 +208,11 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        NuggetInjector.getInstance().getMixpanel().flush();
+        super.onDestroy();
+    }
 
     private void counterOverResetPeriod(Context context) {
         resetPrizePeriod(context);
@@ -824,28 +826,12 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         }
     }
 
-    private void refreshFirebaseToken() {
-        MyLog.i(LOG_TAG, "Refreshing firebase token");
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            MyLog.w(LOG_TAG, "Unable to authenticate firebase");
-            return;
+    private void pushDeviceTokenToServerOnce() {
+        if (!SharedPreferenceUtility.isDeviceTokenPushedToServer(this)) {
+            MyLog.i(LOG_TAG, "Push device token to server");
+            startService(new Intent(this, RegistrationIntentService.class));
+            SharedPreferenceUtility.setDeviceTokenPushedToServer(this);
         }
-        final String firebaseUid = SharedPreferenceUtility.getFirebaseUid(this);
-        final String facebookUid = SharedPreferenceUtility.getFacebookUserId(this);
-        user.getToken(false /* forceRefresh */)
-                .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
-                        String firebaseIdToken = tokenTask.getResult().getToken();
-                        if (firebaseIdToken != null) {
-                            FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseUid,
-                                    facebookUid, GamesChatActivity.this);
-                        } else {
-                            MyLog.e(LOG_TAG, "Firebase returned null token ");
-                        }
-                    }
-                });
     }
 
     public static Intent getNewIntentGameChatActivity(Context fromActivityContext) {
@@ -915,6 +901,7 @@ public class GamesChatActivity extends AppCompatActivity implements UpdateInterf
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            nuggetInjector.getMixpanel().logCreateView(YouWonDialog.class.getSimpleName());
 
             getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override

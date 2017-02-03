@@ -43,7 +43,7 @@ import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
-import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.services.ChatService;
 import com.nuggetchat.messenger.chat.IncomingCallActivity;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.rtcclient.EventListener;
@@ -51,7 +51,7 @@ import com.nuggetchat.messenger.rtcclient.Peer;
 import com.nuggetchat.messenger.rtcclient.PeerConnectionParameters;
 import com.nuggetchat.messenger.rtcclient.RtcListener;
 import com.nuggetchat.messenger.rtcclient.WebRtcClient;
-import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.GlideUtils;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
@@ -253,7 +253,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         MyLog.i(LOG_TAG, "end call Button clicked");
         audioPlayer.stopRingtone();
         JSONObject payload = new JSONObject();
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.END_CALL_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.END_CALL_BUTTON_CLICKED,
                 null /* bundle */);
         try {
             MyLog.e(LOG_TAG, "Users: " + myUserId + " " + targetUserId);
@@ -318,21 +318,21 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     /* package-local */ void addFriendsForCall() {
         Intent intent = new Intent(gamesChatActivity, FriendsManagerActivity.class);
         intent.putExtra("user_id", "dummy");
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.ADD_FRIENDS_TO_CHAT_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.ADD_FRIENDS_TO_CHAT_BUTTON_CLICKED,
                 null /* bundle */);
         startActivityForResult(intent, 1234);
     }
 
     @OnClick({R.id.popular_friend_1})
     /* package-local */ void callFavFriend1() {
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.POPULAR_FRIEND_1_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.POPULAR_FRIEND_1_BUTTON_CLICKED,
                 null /* bundle */);
         sendPreCallHandshake(SharedPreferenceUtility.getFavFriend1(gamesChatActivity));
     }
 
     @OnClick({R.id.popular_friend_2})
     /* package-local */ void callFavFriend2() {
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.POPULAR_FRIEND_2_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.POPULAR_FRIEND_2_BUTTON_CLICKED,
                 null /* bundle */);
         sendPreCallHandshake(SharedPreferenceUtility.getFavFriend2(gamesChatActivity));
     }
@@ -1059,7 +1059,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         @Override
         public void onClick(View view) {
             if (nuggetInjector.isOngoingCall()) {
-                nuggetInjector.logEvent(FirebaseAnalyticsConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
+                nuggetInjector.logEvent(AnalyticConstants.MULTIPLAYER_GAMES_BUTTON_CLICKED,
                         null /* bundle */);
                 String gameSessionId = UUID.randomUUID().toString();
                 String thisGameUrl = gamesItem.getGamesUrl()

@@ -18,8 +18,10 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.DataFormat;
 import com.nuggetchat.lib.model.UserFeedback;
 import com.nuggetchat.messenger.BuildConfig;
+import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.FeedbackConstants;
+import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 
 import butterknife.BindView;
@@ -52,9 +54,6 @@ public class TextFeedbackFragment extends DialogFragment {
 
         View view = inflater.inflate(R.layout.text_feedback_fragment, container, false);
         ButterKnife.bind(this, view);
-
-        //injector.logEvent(FirebaseAnalyticsConstants.QA_FEEDBACK_VISITED, null /* bundle */);
-
         return view;
     }
 
@@ -66,6 +65,9 @@ public class TextFeedbackFragment extends DialogFragment {
                     Toast.LENGTH_LONG).show();
             return;
         }
+
+        NuggetInjector.getInstance().getMixpanel()
+                .track(AnalyticConstants.USER_TEXT_FEEDBACK, feedbackContentText);
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {

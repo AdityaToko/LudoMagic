@@ -42,7 +42,7 @@ import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.UserFriendsAdapter;
-import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
@@ -84,6 +84,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         intent = getIntent();
         nuggetInjector = NuggetInjector.getInstance();
+        nuggetInjector.getMixpanel().logCreateView(LOG_TAG);
         getUserFriends();
         callbackManager = CallbackManager.Factory.create();
         mainHandler = new Handler(Looper.getMainLooper());
@@ -120,7 +121,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.facebook_messenger_not_found, Toast.LENGTH_LONG)
                     .show();
         }
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.ADD_FACEBOOK_FRIENDS_BUTTON_CLICKED,
                 null /* bundle */);
     }
 
@@ -130,7 +131,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
         intent.putExtra(Intent.EXTRA_SUBJECT, ViewUtils.getInviteSubject());
         intent.putExtra(Intent.EXTRA_TEXT, ViewUtils.getInviteBody());
         startActivity(intent);
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.ADD_OTHER_FRIENDS_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.ADD_OTHER_FRIENDS_BUTTON_CLICKED,
                 null /* bundle */);
     }
 
@@ -141,7 +142,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
             Intent intent = new Intent(FriendsManagerActivity.this, GamesChatActivity.class);
             startActivity(intent);
         }
-        nuggetInjector.logEvent(FirebaseAnalyticsConstants.SKIP_FRIENDS_ADDITION_BUTTON_CLICKED,
+        nuggetInjector.logEvent(AnalyticConstants.SKIP_FRIENDS_ADDITION_BUTTON_CLICKED,
                 null /* bundle */);
         finish();
     }
@@ -204,8 +205,7 @@ public class FriendsManagerActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             String firebaseToken = task.getResult().getToken();
                             MyLog.i(LOG_TAG,
-                                    "Refreshing - getUserFriends token:" + firebaseToken + " user:"
-                                            + firebaseUid);
+                                    "Refreshing - getUserFriends" + " user:" + firebaseUid);
                             updateFriendsList(firebaseUid, firebaseToken, facebookToken);
                         } else {
                             MyLog.e(LOG_TAG, "Error in updating friends.", task.getException());

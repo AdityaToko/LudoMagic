@@ -37,6 +37,7 @@ public class NuggetApplication extends MultiDexApplication {
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         NuggetInjector.getInstance().setAppContext(this);
+        NuggetInjector.getInstance().getMixpanel().identifyUser();
     }
 
     private void handleUncaughtExceptions() {

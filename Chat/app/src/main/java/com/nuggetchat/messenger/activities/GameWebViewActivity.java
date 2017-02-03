@@ -20,7 +20,7 @@ import android.webkit.WebViewClient;
 
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
-import com.nuggetchat.messenger.chat.ChatService;
+import com.nuggetchat.messenger.services.ChatService;
 import com.nuggetchat.messenger.chat.MessageHandler;
 import com.nuggetchat.messenger.rtcclient.GameLeftListener;
 import com.nuggetchat.messenger.utils.MyLog;
@@ -73,6 +73,7 @@ public class GameWebViewActivity extends AppCompatActivity implements GameLeftLi
         myUserId = bundle.getString(EXTRA_FROM);
         targetUserId = bundle.getString(EXTRA_TO);
         nuggetInjector = NuggetInjector.getInstance();
+        nuggetInjector.getMixpanel().logCreateView(LOG_TAG);
         Boolean portrait = null;
         if (bundle.containsKey(EXTRA_GAME_ORIENTATION)) {
             portrait = bundle.getBoolean(EXTRA_GAME_ORIENTATION);

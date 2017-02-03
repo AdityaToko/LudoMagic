@@ -22,7 +22,7 @@ import com.nuggetchat.messenger.FragmentChangeListener;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
-import com.nuggetchat.messenger.utils.FirebaseAnalyticsConstants;
+import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 
@@ -181,8 +181,10 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Toast.makeText(getActivity(), "Starting " + gamesItemList.get(position).getGamesName(),
                         Toast.LENGTH_SHORT).show();
-                nuggetInjector.logEvent(FirebaseAnalyticsConstants.SOLO_GAMES_BUTTON_CLICKED,
+                nuggetInjector.logEvent(AnalyticConstants.SOLO_GAMES_BUTTON_CLICKED,
                         null /* bundle */);
+                nuggetInjector.getMixpanel().track(AnalyticConstants.SOLO_GAMES_BUTTON_CLICKED,
+                        gamesItemList.get(position).getGamesName());
                 MyLog.i(LOG_TAG, "the games url, " + gamesItemList.get(position).getGamesUrl());
                 ((GamesChatActivity) getActivity()).launchGameActivity(
                         gamesItemList.get(position).getGamesUrl(),

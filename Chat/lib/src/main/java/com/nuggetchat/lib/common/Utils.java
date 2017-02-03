@@ -1,5 +1,7 @@
 package com.nuggetchat.lib.common;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,8 +10,13 @@ import java.util.Locale;
 public class Utils {
     private Utils() {}
 
+
+    public static String getCleanStr(String str) {
+        return (str == null) ? "" : str.trim();
+    }
+
     public static boolean isNullOrEmpty(String str) {
-        str = (str == null) ? "" : str.trim();
+        str = getCleanStr(str);
         return str.isEmpty();
     }
 
@@ -38,5 +45,17 @@ public class Utils {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         return getCurrentDate(cal);
+    }
+
+    /**
+     * Get exception stack trace to string
+     * @param throwable
+     * @return
+     */
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
     }
 }

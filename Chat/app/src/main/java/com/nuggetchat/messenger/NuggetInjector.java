@@ -10,12 +10,14 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.nuggetchat.messenger.utils.MixpanelHelper;
 
 public class NuggetInjector {
     @SuppressLint("StaticFieldLeak")
     private static NuggetInjector nuggetInjector;
 
     private FirebaseAnalytics firebaseAnalytics;
+    private MixpanelHelper mixpanelHelper;
     private Context appContext;
     private boolean isInitiator = false;
     private boolean isOngoingCall = false;
@@ -24,15 +26,22 @@ public class NuggetInjector {
     private int screenLandscapeWidth;
     private int screenLandscapeHeight;
 
+
     private NuggetInjector() {
     }
     public void setAppContext(Context appContext) {
         nuggetInjector.appContext = appContext;
         firebaseAnalytics = FirebaseAnalytics.getInstance(appContext);
         firebaseAnalytics.setAnalyticsCollectionEnabled(true);
+        mixpanelHelper = MixpanelHelper.getInstance(appContext);
     }
+
     public Context getAppContext() {
         return appContext;
+    }
+
+    public String getString(int resourceId) {
+        return appContext.getString(resourceId);
     }
 
 
@@ -49,6 +58,10 @@ public class NuggetInjector {
 
     public void logEvent(String event, Bundle bundle) {
         firebaseAnalytics.logEvent(event, bundle);
+    }
+
+    public MixpanelHelper getMixpanel() {
+        return mixpanelHelper;
     }
 
     public boolean isInitiator() {

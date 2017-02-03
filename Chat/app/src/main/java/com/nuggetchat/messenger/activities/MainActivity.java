@@ -30,6 +30,7 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -38,16 +39,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
 import com.nuggetchat.messenger.NuggetInjector;
 import com.nuggetchat.messenger.R;
-import com.nuggetchat.messenger.utils.FirebaseTokenUtils;
+import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;
@@ -91,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ViewUtils.startAppseeAnalytics(getString(R.string.appsee_id), LOG_TAG);
+
+        nuggetInjector = NuggetInjector.getInstance();
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         if (accessToken != null) {
             if (accessToken.isExpired()) {
@@ -112,11 +112,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        nuggetInjector.getMixpanel().logCreateView(LOG_TAG);
+
         videoPlaceholder.setVisibility(View.VISIBLE);
-        nuggetInjector = NuggetInjector.getInstance();
         mainHandler = new Handler(Looper.getMainLooper());
 
         Typeface font = Typeface.createFromAsset(getAssets(), "handwriting.ttf");
@@ -131,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
         fbOverlayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                nuggetInjector.getMixpanel()
+                        .startTimer(AnalyticConstants.FACEBOOK_LOGIN_TIMER);
                 restartAnimOnResume = false;
                 loginAnimOverlay.setVisibility(View.VISIBLE);
                 loginButton.performClick();
@@ -143,18 +146,22 @@ public class MainActivity extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                nuggetInjector.getMixpanel()
+                        .stopTimer(AnalyticConstants.FACEBOOK_LOGIN_TIMER);
                 loginToFirebase(loginResult);
             }
 
             @Override
             public void onCancel() {
-                // App code
+                nuggetInjector.getMixpanel()
+                        .track(AnalyticConstants.FACEBOOK_LOGIN_RESULT, "Cancelled");
                 MyLog.i(LOG_TAG, "ON CANCEL");
             }
 
             @Override
             public void onError(FacebookException exception) {
-                // App code'
+                nuggetInjector.getMixpanel()
+                        .track(AnalyticConstants.FACEBOOK_LOGIN_RESULT, "Error");
                 MyLog.i(LOG_TAG, "ON ERROR", exception);
             }
         });
@@ -225,23 +232,25 @@ public class MainActivity extends AppCompatActivity {
         loginPageText2.startAnimation(fadeInText2);
         loginPageText3.startAnimation(fadeInText3);
         loginPageText4.startAnimation(fadeInText4);
-//        loginButton.startAnimation(fadeInFBButton);
+//      loginButton.startAnimation(fadeInFBButton);
     }
 
-    private void loginToFirebase(final LoginResult loginResult) {
+    private void loginToFirebase(final LoginResult facebookLoginResult) {
         loginProgressBar.setVisibility(View.VISIBLE);
         // App code
-        final String accessToken = loginResult.getAccessToken().getToken();
-        MyLog.i(LOG_TAG, "Trying Login");
+        final AccessToken facebookAccessToken = facebookLoginResult.getAccessToken();
+        nuggetInjector.getMixpanel().startTimer(AnalyticConstants.FIREBASE_LOGIN_TIMER);
+        MyLog.i(LOG_TAG, "Firebase Login");
         FirebaseAuth.getInstance()
-                .signInWithCredential(FacebookAuthProvider.getCredential(accessToken))
+                .signInWithCredential(FacebookAuthProvider.getCredential(facebookAccessToken.getToken()))
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        getFirebaseIdTokenAndStartNextActivity(task, loginResult.getAccessToken());
+                        getFirebaseIdTokenAndStartNextActivity(task, facebookAccessToken);
                     }
                 });
     }
+
 
     private void getFirebaseIdTokenAndStartNextActivity(final Task<AuthResult> task,
                                                         final AccessToken accessToken) {
@@ -254,6 +263,8 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
                     @Override
                     public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
+                        nuggetInjector.getMixpanel()
+                                .stopTimer(AnalyticConstants.FIREBASE_LOGIN_TIMER);
                         String facebookToken = accessToken.getToken();
                         String firebaseIdToken = tokenTask.getResult().getToken();
                         String firebaseUid = task.getResult().getUser().getUid();
@@ -262,11 +273,10 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFacebookAccessToken(facebookToken, MainActivity.this);
                         SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
                         SharedPreferenceUtility.setFacebookUserName(facebookName, MainActivity.this);
-
+                        nuggetInjector.getMixpanel().loginUserAndUpdateUserDetails(firebaseUid);
                         refreshUserFriendsAndStartNextActivity(facebookToken, firebaseIdToken);
                     }
                 });
-
     }
 
     private void saveFacebookToFirebaseMap(String facebookUserId, String firebaseId) {
@@ -281,51 +291,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveFacebookIdAndStartNextActivity() {
         final String firebaseId = SharedPreferenceUtility.getFirebaseUid(this);
-        String firebaseUri = Conf.firebaseUsersUri() + firebaseId + "/facebookId";
-        MyLog.i(LOG_TAG, "Fetching user's facebook id: " + firebaseUri);
-
-        final DatabaseReference firebaseRef = FirebaseDatabase.getInstance()
-                .getReferenceFromUrl(firebaseUri);
-
-        if (firebaseRef == null) {
-            MyLog.e(LOG_TAG, "Unable to get database reference.");
-            return;
-        }
-        firebaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    String facebookUserId = dataSnapshot.getValue().toString();
-                    SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
-                    MyLog.i(LOG_TAG, "Facebook id " + facebookUserId);
-                    FirebaseTokenUtils.saveAllDeviceRegistrationToken(firebaseId, facebookUserId, MainActivity.this);
-                    saveFacebookToFirebaseMap(facebookUserId, firebaseId);
-                    startFriendManagerActivity();
-                } else {
-                    MyLog.i(LOG_TAG, "No firebase id yet in server");
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                MyLog.w(LOG_TAG, "Facebook id fetch cancelled");
-            }
-        });
+        String facebookUserId = Profile.getCurrentProfile().getId();
+        SharedPreferenceUtility.setFacebookUserId(facebookUserId, MainActivity.this);
+        MyLog.i(LOG_TAG, "Facebook id " + facebookUserId);
+        saveFacebookToFirebaseMap(facebookUserId, firebaseId);
+        startFriendManagerActivity();
     }
 
     private void startFriendManagerActivity() {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
-                startActivity(intent);
-                loginProgressBar.setVisibility(View.INVISIBLE);
-                finish();
-            }
-        });
+        nuggetInjector.getMixpanel().track(AnalyticConstants.LOGGED_IN_USER,
+                Profile.getCurrentProfile().getName());
+        Intent intent = new Intent(MainActivity.this, FriendsManagerActivity.class);
+        startActivity(intent);
+        loginProgressBar.setVisibility(View.INVISIBLE);
+        finish();
     }
 
     private void gotoGameChatActivity() {
+        nuggetInjector.getMixpanel().track(AnalyticConstants.RETURNING_USER, "I am back");
         Intent intent = GamesChatActivity.getNewIntentGameChatActivity(MainActivity.this);
         startActivity(intent);
         finish();
@@ -338,19 +321,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void refreshUserFriendsAndStartNextActivity(final String facebookToken, final String firebaseToken) {
-        MyLog.i(LOG_TAG, "Refresh friends Firebase token " + firebaseToken);
+        MyLog.i(LOG_TAG, "Refresh friends Firebase token");
+        nuggetInjector.getMixpanel().startTimer(AnalyticConstants.GET_FRIENDS_TIMER);
         RequestQueue queue = Volley.newRequestQueue(this);
         StringRequest sr = new StringRequest(Request.Method.POST, Conf.GET_FRIENDS_API_URL,
                 new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 MyLog.i(LOG_TAG, "Facebook login success ");
+                nuggetInjector.getMixpanel().stopTimer(AnalyticConstants.GET_FRIENDS_TIMER);
                 saveFacebookIdAndStartNextActivity();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                MyLog.d(LOG_TAG, "Error in making friends request", error);
+                nuggetInjector.getMixpanel().trackError(LOG_TAG, "Friend request", error);
+                MyLog.e(LOG_TAG, "Error in making friends request", error);
             }
         }){
             @Override

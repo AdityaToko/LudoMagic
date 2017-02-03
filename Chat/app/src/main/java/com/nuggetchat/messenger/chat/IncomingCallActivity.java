@@ -32,6 +32,7 @@ import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
 import com.nuggetchat.messenger.activities.GamesChatActivity;
+import com.nuggetchat.messenger.services.ChatService;
 import com.nuggetchat.messenger.utils.MyLog;
 import com.nuggetchat.messenger.utils.SharedPreferenceUtility;
 import com.nuggetchat.messenger.utils.ViewUtils;

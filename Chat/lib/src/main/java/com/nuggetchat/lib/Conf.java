@@ -21,7 +21,7 @@ public final class Conf {
     public static final String FIREBASE_DEVICE_TOKEN = "devices";
     public static final String FACEBOOK_DEVICE_TOKEN = "devices-facebook";
     public static final String GAME_SESSION = "game-session/";
-    public static final String CHAT_WEBRTC_SERVER = "https://chat.nuggetkids.com/";
+    public static final String CHAT_WEBRTC_SERVER = "https://rtc-server.nuggetchat.com/"; 
 
 
     public static String firebaseDomainUri() {
