@@ -148,6 +148,22 @@ public class WebRtcClient{
         }
     }
 
+    public void addVideoSource() {
+        if (localMediaStream != null) {
+            if (videoTrack != null) {
+                localMediaStream.addTrack(videoTrack);
+            }
+        }
+    }
+
+    public void removeVideoSource() {
+        if (localMediaStream != null) {
+            if (videoTrack != null) {
+                localMediaStream.removeTrack(videoTrack);
+            }
+        }
+    }
+
     public void setCameraAndUpdateVideoViews() {
         MyLog.i(LOG_TAG, "setCameraAndUpdateVideoViews method");
         localMediaStream = factory.createLocalMediaStream("ARDAMS");

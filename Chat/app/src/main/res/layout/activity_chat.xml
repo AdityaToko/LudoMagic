@@ -80,6 +80,26 @@
         android:src="@drawable/end_call_button"
         android:visibility="invisible" />
 
+    <ImageView
+        android:id="@+id/video_toggle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@id/end_call_button"
+        android:paddingBottom="10dp"
+        android:clickable="true"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/video_icon"/>
+
+    <ImageView
+        android:id="@+id/video_disabled"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@id/end_call_button"
+        android:paddingBottom="10dp"
+        android:visibility="invisible"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/video_disabled" />
+
     <LinearLayout
         android:id="@+id/friends_add_cluster"
         android:layout_width="wrap_content"

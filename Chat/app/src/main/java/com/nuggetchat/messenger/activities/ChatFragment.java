@@ -104,6 +104,8 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     TextView textPlayWithFriends;
     @BindView(R.id.end_call_button) /* package-local */ ImageView endCall;
     @BindView(R.id.end_busy_call_button) /* package-local */ ImageView endBusyCallBtn;
+    @BindView(R.id.video_disabled) /* package-local */ ImageView videoDisabledButton;
+
     private GLSurfaceView videoCallView;
     private VideoRenderer.Callbacks local;
     private VideoRenderer.Callbacks remote;
@@ -127,6 +129,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
     private VideoRenderer localRenderer;
     private String myUserId;
     private String targetUserId;
+    private boolean videoVisible;
 
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -210,6 +213,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         initWebRtc(myUserId);
         bindChatService();
         ViewUtils.hideViewsFromAppsee(videoCallView, LOG_TAG);
+        videoVisible = true;
         return view;
     }
 
@@ -274,6 +278,20 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
+    }
+
+    @OnClick(R.id.video_toggle)
+    /* package-local */ void toggleVideo() {
+        if (videoVisible) {
+            webRtcClient.stopVideoSource();
+            webRtcClient.removeVideoSource();
+            videoDisabledButton.setVisibility(View.VISIBLE);
+        } else {
+            webRtcClient.restartVideoSource();
+            webRtcClient.addVideoSource();
+            videoDisabledButton.setVisibility(View.INVISIBLE);
+        }
+        videoVisible = !videoVisible;
     }
 
     private void updateVideoViews() {
@@ -419,7 +437,9 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         MyLog.d(LOG_TAG, "onShowFragment: Chat Fragment shown");
         if (videoCallView != null) {
             MyLog.d(LOG_TAG, "ChatFragment shown... show local stream");
-            webRtcClient.restartVideoSource();
+            if (videoVisible) {
+                webRtcClient.restartVideoSource();
+            }
             if (videoCallView.getVisibility() == View.INVISIBLE ){
                 videoCallView.setVisibility(View.VISIBLE);
             }
@@ -548,7 +568,7 @@ public class ChatFragment extends Fragment implements RtcListener, EventListener
         super.onResume();
         MyLog.i(LOG_TAG, "onResume" + (isAdded() && isVisible() && getUserVisibleHint()));
         videoCallView.onResume();
-        if (webRtcClient != null) {
+        if (webRtcClient != null && videoVisible) {
             webRtcClient.onResume();
         }
 
