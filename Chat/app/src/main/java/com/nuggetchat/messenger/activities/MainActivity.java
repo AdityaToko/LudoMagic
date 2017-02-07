@@ -43,7 +43,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.RequestParams;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.AnalyticConstants;
 import com.nuggetchat.messenger.utils.MyLog;
@@ -88,9 +88,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        nuggetInjector = NuggetInjector.getInstance();
+
         ViewUtils.startAppseeAnalytics(getString(R.string.appsee_id), LOG_TAG);
 
-        nuggetInjector = NuggetInjector.getInstance();
+        // Init AppFlyer for install tracking, pass mixpanel id
+        nuggetInjector.getAppsFlyer().initTracking();
+
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         if (accessToken != null) {
             if (accessToken.isExpired()) {
@@ -274,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferenceUtility.setFirebaseUid(firebaseUid, MainActivity.this);
                         SharedPreferenceUtility.setFacebookUserName(facebookName, MainActivity.this);
                         nuggetInjector.getMixpanel().loginUserAndUpdateUserDetails(firebaseUid);
+                        nuggetInjector.getAppsFlyer().setUserId(firebaseUid);
                         refreshUserFriendsAndStartNextActivity(facebookToken, firebaseIdToken);
                     }
                 });

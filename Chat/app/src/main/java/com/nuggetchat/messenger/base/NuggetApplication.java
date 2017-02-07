@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.base;
 
 import android.media.AudioManager;
 import android.support.multidex.MultiDexApplication;
@@ -9,6 +9,8 @@ import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
+import com.nuggetchat.messenger.BuildConfig;
+import com.nuggetchat.messenger.utils.MixpanelHelper;
 import com.nuggetchat.messenger.utils.MyLog;
 
 public class NuggetApplication extends MultiDexApplication {
@@ -32,12 +34,19 @@ public class NuggetApplication extends MultiDexApplication {
             FacebookSdk.addLoggingBehavior(LoggingBehavior.APP_EVENTS);
             FacebookSdk.addLoggingBehavior(LoggingBehavior.DEVELOPER_ERRORS);
         }
+
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseApp.initializeApp(this, FirebaseOptions.fromResource(this));
         }
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
+        // Init Nugget Injector & contained singleton objects
         NuggetInjector.getInstance().setAppContext(this);
-        NuggetInjector.getInstance().getMixpanel().identifyUser();
+
+        // Init Mixpanel for tracking
+        MixpanelHelper mixpanelHelper = NuggetInjector.getInstance().getMixpanel();
+        mixpanelHelper.identifyUser();
+        NuggetInjector.getInstance().getAppsFlyer().setUserId(mixpanelHelper.getUserId());
     }
 
     private void handleUncaughtExceptions() {

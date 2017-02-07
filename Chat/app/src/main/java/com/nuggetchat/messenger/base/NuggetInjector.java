@@ -1,6 +1,7 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.base;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -10,6 +11,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.nuggetchat.messenger.utils.AppsFlyerHelper;
 import com.nuggetchat.messenger.utils.MixpanelHelper;
 
 public class NuggetInjector {
@@ -18,7 +20,8 @@ public class NuggetInjector {
 
     private FirebaseAnalytics firebaseAnalytics;
     private MixpanelHelper mixpanelHelper;
-    private Context appContext;
+    private AppsFlyerHelper appsFlyerHelper;
+    private Application appContext;
     private boolean isInitiator = false;
     private boolean isOngoingCall = false;
     private boolean isIncomingCall = false;
@@ -29,14 +32,16 @@ public class NuggetInjector {
 
     private NuggetInjector() {
     }
-    public void setAppContext(Context appContext) {
-        nuggetInjector.appContext = appContext;
+
+    public void setAppContext(Application  context) {
+        appContext = context;
         firebaseAnalytics = FirebaseAnalytics.getInstance(appContext);
         firebaseAnalytics.setAnalyticsCollectionEnabled(true);
         mixpanelHelper = MixpanelHelper.getInstance(appContext);
+        appsFlyerHelper = AppsFlyerHelper.getInstance(appContext);
     }
 
-    public Context getAppContext() {
+    public Application getAppContext() {
         return appContext;
     }
 
@@ -62,6 +67,10 @@ public class NuggetInjector {
 
     public MixpanelHelper getMixpanel() {
         return mixpanelHelper;
+    }
+
+    public AppsFlyerHelper getAppsFlyer() {
+        return appsFlyerHelper;
     }
 
     public boolean isInitiator() {

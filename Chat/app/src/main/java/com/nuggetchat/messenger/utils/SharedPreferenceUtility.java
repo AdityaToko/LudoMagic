@@ -3,6 +3,7 @@ package com.nuggetchat.messenger.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.nuggetchat.lib.common.Utils;
 import com.nuggetchat.messenger.BuildConfig;
 
 public class SharedPreferenceUtility {
@@ -18,6 +19,8 @@ public class SharedPreferenceUtility {
     private static final String NUMBER_OF_FRIENDS = "number_of_friends";
     private static final String MIXPANEL_USER_DETAIL_UPDATED = "mixpanel_userdetail_updated";
     private static final String DEVICE_TOKEN_PUSHED_TO_SERVER = "device_token_pushed_to_server_v1";
+    private static final String INSTALL_REFERRER = "install_referrer";
+    private static final String APPS_FLYER_CONV_DATA = "apps_flyer_conv_data";
 
     public static int getNumberOfFriends(Context context) {
         return getPreferences(context).getInt(NUMBER_OF_FRIENDS,0);
@@ -40,10 +43,20 @@ public class SharedPreferenceUtility {
         return context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
     }
 
-    public static void setFacebookUserId(String facebookUserId, Context context){
+    private static void setPreference(Context context, String key, String value) {
         SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FACEBOOK_USER_ID, facebookUserId);
+        editor.putString(key, value);
         editor.apply();
+    }
+
+    private static void setPreference(Context context, String key, boolean value) {
+        SharedPreferences.Editor editor = getEditor(context);
+        editor.putBoolean(key, value);
+        editor.apply();
+    }
+
+    public static void setFacebookUserId(String facebookUserId, Context context){
+        setPreference(context, FACEBOOK_USER_ID, facebookUserId);
     }
 
     public static String getFacebookUserId(Context context){
@@ -51,9 +64,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFacebookUserName(String facebookUserName, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FACEBOOK_USER_NAME, facebookUserName);
-        editor.apply();
+        setPreference(context, FACEBOOK_USER_NAME, facebookUserName);
     }
 
     public static String getFacebookUserName(Context context) {
@@ -61,9 +72,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setIceServersUrls(String iceServers, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(ICE_SERVERS_STRING, iceServers);
-        editor.apply();
+        setPreference(context, ICE_SERVERS_STRING, iceServers);
     }
 
     public static String getIceServersUrls(Context context) {
@@ -71,9 +80,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFacebookAccessToken(String facebookAccessToken, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FACEBOOK_ACCESS_TOKEN, facebookAccessToken);
-        editor.apply();
+        setPreference(context, FACEBOOK_ACCESS_TOKEN, facebookAccessToken);
     }
 
     public static String getFacebookAccessToken(Context context) {
@@ -81,9 +88,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFirebaseIdToken(String firebaseIdToken, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FIREBASE_ID_TOKEN, firebaseIdToken);
-        editor.apply();
+        setPreference(context, FIREBASE_ID_TOKEN, firebaseIdToken);
     }
 
     public static String getFirebaseIdToken(Context context) {
@@ -91,9 +96,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFirebaseUid(String firebaseUid, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FIREBASE_UID, firebaseUid);
-        editor.apply();
+        setPreference(context, FIREBASE_UID, firebaseUid);
     }
 
     public static String getFirebaseUid(Context context) {
@@ -101,9 +104,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setUserLoggedInMixpanel(Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putBoolean(MIXPANEL_USER_DETAIL_UPDATED, true);
-        editor.apply();
+        setPreference(context, MIXPANEL_USER_DETAIL_UPDATED, true);
     }
 
     public static boolean isUserLoggedInMixpanel(Context context) {
@@ -112,9 +113,7 @@ public class SharedPreferenceUtility {
 
 
     public static void setDeviceTokenPushedToServer(Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putBoolean(DEVICE_TOKEN_PUSHED_TO_SERVER, true);
-        editor.apply();
+        setPreference(context, DEVICE_TOKEN_PUSHED_TO_SERVER, true);
     }
 
     public static boolean isDeviceTokenPushedToServer(Context context) {
@@ -122,9 +121,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFavFriend1(String favFriend1, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FAV_FRIEND_1, favFriend1);
-        editor.apply();
+        setPreference(context, FAV_FRIEND_1, favFriend1);
     }
 
     public static String getFavFriend1(Context context) {
@@ -132,9 +129,7 @@ public class SharedPreferenceUtility {
     }
 
     public static void setFavFriend2(String favFriend2, Context context) {
-        SharedPreferences.Editor editor = getEditor(context);
-        editor.putString(FAV_FRIEND_2, favFriend2);
-        editor.apply();
+        setPreference(context, FAV_FRIEND_2, favFriend2);
     }
 
     public static String getFavFriend2(Context context) {
@@ -150,5 +145,36 @@ public class SharedPreferenceUtility {
                 setFavFriend1(favFriend, context);
             }
         }
+    }
+
+    public static String getInstallReferrer(Context context) {
+        return getPreferences(context).getString(INSTALL_REFERRER, "");
+    }
+
+    public static void setInstallReferrer(Context context, String dataReceived) {
+        setPreference(context, INSTALL_REFERRER, dataReceived);
+    }
+
+
+    /**
+     * Retrieves appsflyers conversion data received in a deep link, or install
+     *
+     * @param context application context
+     * @param key check for available keys here
+     *            https://support.appsflyer.com/hc/en-us/articles/207032096-Accessing-AppsFlyer-Attribution-Conversion-Data-from-the-SDK-iOS-Deferred-Deeplinking-
+     * @return string stored for each attribution key
+     */
+    public static String getAppsFlyerConversionData(Context context, String key) {
+        if (Utils.isNullOrEmpty(key)) {
+            return "";
+        }
+        return getPreferences(context).getString(APPS_FLYER_CONV_DATA + "_" + key, "");
+    }
+
+    public static void setAppsFlyerConversionData(Context context, String key, String value) {
+        if (Utils.isNullOrEmpty(key) || Utils.isNullOrEmpty(value)) {
+            return;
+        }
+        setPreference(context, APPS_FLYER_CONV_DATA + "_" + key, value);
     }
 }

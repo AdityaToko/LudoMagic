@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.utils;
 
 import android.content.Context;
 import android.util.AttributeSet;

@@ -18,8 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.nuggetchat.lib.Conf;
-import com.nuggetchat.messenger.FragmentChangeListener;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.datamodel.GamesData;
 import com.nuggetchat.messenger.utils.AnalyticConstants;
@@ -204,6 +203,7 @@ public class GamesFragment extends Fragment implements FragmentChangeListener {
     @Override
     public void onShowFragment() {
         MyLog.d(LOG_TAG, "onShowFragment: Games Fragment shown");
+        nuggetInjector.getMixpanel().logShowView(LOG_TAG);
     }
 
     @Override

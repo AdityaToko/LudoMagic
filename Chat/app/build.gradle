@@ -78,13 +78,21 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.4.0'
     compile 'com.facebook.android:facebook-android-sdk:4.18.0'
 
+    // AppsFlyer needs play services to get google advertisment id
+    compile 'com.google.android.gms:play-services-base:9.6.1'
+    compile 'com.google.android.gms:play-services-basement:9.6.1'
+    // Mixpanel, Apps Flyer and current app needs GCM for messaging & notification
+    compile 'com.google.android.gms:play-services-gcm:9.6.1'
+
     // Appsee integration for user videos.
     // https://www.appsee.com/docs/android/native - for proguard settings
     compile 'com.appsee:appsee-android:2.3'
 
     // Mixpanel uses GCM hence switching to GCM instead of firebase messaging
     compile "com.mixpanel.android:mixpanel-android:4.9.3"
-    compile "com.google.android.gms:play-services-gcm:9.6.1"
+
+    // AppsFlyer skd for install, uninstall and marketing tracking
+    compile 'com.appsflyer:af-android-sdk:4.6.7@aar'
 
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.android.support:appcompat-v7:25.1.0'

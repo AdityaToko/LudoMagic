@@ -18,7 +18,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.model.DataFormat;
 import com.nuggetchat.lib.model.UserFeedback;
 import com.nuggetchat.messenger.BuildConfig;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.utils.FeedbackConstants;
 import com.nuggetchat.messenger.utils.AnalyticConstants;

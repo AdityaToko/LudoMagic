@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.utils.MyLog;
 
 import org.webrtc.AudioSource;

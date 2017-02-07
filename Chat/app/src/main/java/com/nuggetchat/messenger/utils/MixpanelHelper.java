@@ -57,6 +57,14 @@ public class MixpanelHelper {
         }
     }
 
+    /**
+     * Returns distinct id might be one id before install and after Identify is called
+     * @return
+     */
+    public String getUserId() {
+        return mixpanel.getDistinctId();
+    }
+
 
     public void loginUserAndUpdateUserDetails(String firebaseUid) {
         if(SharedPreferenceUtility.isUserLoggedInMixpanel(appContext)) {

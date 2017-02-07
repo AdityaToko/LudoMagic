@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.nuggetchat.lib.Conf;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.chat.MessageHandler;
 import com.nuggetchat.messenger.chat.UpdateInterface;
 import com.nuggetchat.messenger.rtcclient.EventListener;

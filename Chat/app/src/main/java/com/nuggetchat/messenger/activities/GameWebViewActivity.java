@@ -18,7 +18,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.services.ChatService;
 import com.nuggetchat.messenger.chat.MessageHandler;

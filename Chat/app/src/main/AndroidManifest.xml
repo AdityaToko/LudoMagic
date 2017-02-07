@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.nuggetchat.messenger">
 
     <uses-feature android:name="android.hardware.camera" />
@@ -24,7 +25,7 @@
     <uses-permission android:name="android.permission.GET_TASKS" /> <!-- For audio permission error on kitkat -->
 
     <application
-        android:name=".NuggetApplication"
+        android:name=".base.NuggetApplication"
         android:allowBackup="true"
         android:icon="@drawable/game_login_icon"
         android:label="@string/app_name"
@@ -41,15 +42,34 @@
         <meta-data android:name="com.mixpanel.android.MPConfig.ResourcePackageName"
             android:value="com.nuggetchat.messenger" />
 
-
-        <!-- Install referrer tracking using mixpanel -->
-        <receiver
-            android:name="com.mixpanel.android.mpmetrics.InstallReferrerReceiver"
+        <!-- The AppsFlyer Install Receiver is first and will broadcast to all receivers placed below it -->
+        <receiver android:name="com.appsflyer.MultipleInstallBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
         </receiver>
+        <!--AppsFlyer: SingleInstallBroadcastReceiver doesn't have to be the first receiver within the <application> tag-->
+        <receiver
+            android:name="com.appsflyer.SingleInstallBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+        <!-- Other install track receivers below AppsFlyer one -->
+        <receiver android:name=".receivers.ManyInstallTrackersReceiver"
+            android:exported="true"
+            android:permission="android.permission.INSTALL_PACKAGES"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver"
+            android:enabled="false"
+            tools:replace="android:enabled" />
+
 
         <activity
             android:name=".activities.MainActivity"
@@ -58,7 +78,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -107,6 +126,32 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
+
+        <activity
+            android:name=".activities.AppsFlyerDeeplink"
+            android:label="@string/deeplink_activity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="nuggetchat.com"/>
+                <!--AppsFlyer:  to test this deep link, navigate to "http://app.appsflyer.com/android.appsflyer.sampleapp?pid=Blog&af_dp=http%3A%2F%2Faftest.com&af_force_dp=true" (make sure to change the package name in the path!)-->
+            </intent-filter>
+
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="nuggetchat"/>
+                <!--AppsFlyer:  to test this deep link, navigate to "http://app.appsflyer.com/android.appsflyer.sampleapp?pid=Blog&af_dp=aftest%3A%2F%2F&af_force_dp=true" (make sure to change the package name in the path!)-->
+            </intent-filter>
+        </activity>
+
         <!-- Survey activity from Mixpanel -->
         <activity android:name="com.mixpanel.android.surveys.SurveyActivity" />
 
@@ -124,7 +169,6 @@
             </intent-filter>
         </service-->
 
-        <!-- TODO Our own receiver might not be needed verify calling -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -155,6 +199,13 @@
             android:name=".services.RegistrationIntentService"
             android:exported="false">
         </service>
+
+        <!--
+        AppsFlyer needs to collect the Google Advertising ID (GAID)
+        https://support.appsflyer.com/hc/en-us/articles/207032126-AppsFlyer-SDK-Integration-Android
+        -->
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>

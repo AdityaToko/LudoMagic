@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.receivers;
 
 import android.content.Context;
 import android.content.Intent;

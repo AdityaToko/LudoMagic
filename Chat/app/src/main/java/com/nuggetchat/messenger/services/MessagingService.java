@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.nuggetchat.lib.common.Utils;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.chat.IncomingCallActivity;
 import com.nuggetchat.messenger.utils.MyLog;
 

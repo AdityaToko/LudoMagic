@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.activities;
 
 public interface FragmentChangeListener {
     void onShowFragment();

@@ -1,7 +1,9 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.nuggetchat.messenger.R;
 
 public class AddFriendsActivity extends AppCompatActivity {
 

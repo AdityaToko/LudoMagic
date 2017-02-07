@@ -50,4 +50,5 @@
     <string name="toast_message_on_not_entering_any_feedback">Please Enter Feedback</string>
     <string name="toast_error_message_on_getting_feedback">Error in getting feedback</string>
     <string name="cancel_button_text">CANCEL</string>
+    <string name="deeplink_activity">Deeplink Activity</string>
 </resources>

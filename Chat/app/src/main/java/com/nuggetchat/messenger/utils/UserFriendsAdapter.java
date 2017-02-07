@@ -1,4 +1,4 @@
-package com.nuggetchat.messenger;
+package com.nuggetchat.messenger.utils;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
+import com.nuggetchat.messenger.R;
 
 import java.util.List;
 

@@ -27,7 +27,7 @@ import com.nuggetchat.lib.Conf;
 import com.nuggetchat.lib.common.Utils;
 import com.nuggetchat.lib.model.FriendInfo;
 import com.nuggetchat.lib.model.UserInfo;
-import com.nuggetchat.messenger.NuggetInjector;
+import com.nuggetchat.messenger.base.NuggetInjector;
 import com.nuggetchat.messenger.R;
 import com.nuggetchat.messenger.activities.AudioPlayer;
 import com.nuggetchat.messenger.activities.ChatFragment;
